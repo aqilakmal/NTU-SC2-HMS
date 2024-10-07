@@ -1,0 +1,3 @@
+prescriptionID,appointmentID,medicationID,status
+PR00001,A00002,M00001,PENDING
+PR00002,A00002,M00002,PENDING

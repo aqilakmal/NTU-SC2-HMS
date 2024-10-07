@@ -1,0 +1,3 @@
+doctorID,availableDateTime,isAvailable
+D00001,2023-10-01 09:00,TRUE
+D00001,2023-10-03 10:00,FALSE

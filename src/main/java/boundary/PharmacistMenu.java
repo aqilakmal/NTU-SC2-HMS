@@ -1,6 +1,5 @@
 package boundary;
 
-import controller.MenuController;
 import controller.PrescriptionController;
 import controller.InventoryController;
 import entity.Pharmacist;
@@ -10,7 +9,6 @@ import entity.Pharmacist;
  */
 public class PharmacistMenu {
     
-    private MenuController menuController;
     private PrescriptionController prescriptionController;
     private InventoryController inventoryController;
     private Pharmacist currentPharmacist;

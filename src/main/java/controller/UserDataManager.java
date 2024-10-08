@@ -35,13 +35,15 @@ public class UserDataManager {
      * @throws IOException If there's an error reading the file.
      */
     public void loadUsersFromCSV(String fileName) throws IOException {
+        users.clear(); // Clear existing users before loading
         try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
             String line;
             br.readLine(); // Skip header line
 
             while ((line = br.readLine()) != null) {
                 String[] values = line.split(",");
-                if (values.length < 9) {
+                if (values.length < 8) { // Changed from 9 to 8
+                    System.out.println("Skipping invalid line: " + line);
                     continue; // Skip invalid lines
                 }
 
@@ -53,29 +55,36 @@ public class UserDataManager {
                 String gender = values[5];
                 String contactNumber = values[6];
                 String emailAddress = values[7];
-                String bloodType = values[8];
+                String bloodType = values.length > 8 ? values[8] : "";
                 String specialization = values.length > 9 ? values[9] : "";
 
                 User user;
-                switch (User.UserRole.valueOf(role.toUpperCase())) {
-                    case PATIENT:
-                        user = new Patient(userID, password, User.UserRole.PATIENT, name, dateOfBirth, gender, contactNumber, emailAddress, bloodType);
-                        break;
-                    case DOCTOR:
-                        user = new Doctor(userID, password, User.UserRole.DOCTOR, name, dateOfBirth, gender, contactNumber, emailAddress, specialization);
-                        break;
-                    case PHARMACIST:
-                        user = new Pharmacist(userID, password, User.UserRole.PHARMACIST, name, dateOfBirth, gender, contactNumber, emailAddress);
-                        break;
-                    case ADMINISTRATOR:
-                        user = new Administrator(userID, password, User.UserRole.ADMINISTRATOR, name, dateOfBirth, gender, contactNumber, emailAddress);
-                        break;
-                    default:
-                        continue; // Skip unknown roles
+                try {
+                    switch (User.UserRole.valueOf(role.toUpperCase())) {
+                        case PATIENT:
+                            user = new Patient(userID, password, User.UserRole.PATIENT, name, dateOfBirth, gender, contactNumber, emailAddress, bloodType);
+                            break;
+                        case DOCTOR:
+                            user = new Doctor(userID, password, User.UserRole.DOCTOR, name, dateOfBirth, gender, contactNumber, emailAddress, specialization);
+                            break;
+                        case PHARMACIST:
+                            user = new Pharmacist(userID, password, User.UserRole.PHARMACIST, name, dateOfBirth, gender, contactNumber, emailAddress);
+                            break;
+                        case ADMINISTRATOR:
+                            user = new Administrator(userID, password, User.UserRole.ADMINISTRATOR, name, dateOfBirth, gender, contactNumber, emailAddress);
+                            break;
+                        default:
+                            System.out.println("Skipping unknown role: " + role);
+                            continue; // Skip unknown roles
+                    }
+                    users.add(user);
+                    System.out.println("Loaded user: " + user); // Debug output
+                } catch (IllegalArgumentException e) {
+                    System.out.println("Error creating user with role " + role + ": " + e.getMessage());
                 }
-                users.add(user);
             }
         }
+        System.out.println("Total users loaded: " + users.size()); // Debug output
     }
 
     /**

@@ -1,8 +1,7 @@
-package main.java;
-
 import boundary.*;
 import controller.*;
 import entity.*;
+import java.util.List;
 
 /**
  * Main class for the Hospital Management System.
@@ -20,9 +19,17 @@ public class Main {
         // Initialize UserDataManager and load user data
         UserDataManager userDataManager = new UserDataManager();
         try {
-            userDataManager.loadUsersFromCSV("users.csv");
+            // Use a relative path to the resources directory
+            userDataManager.loadUsersFromCSV("src/main/resources/data/users.csv");
+
+            // Print the list of users
+            List<User> users = userDataManager.getUsers();
+            for (User user : users) {
+                System.out.println(user.toString());
+            }
         } catch (Exception e) {
             System.out.println("Error loading user data: " + e.getMessage());
+            e.printStackTrace(); // Add this line to print the full stack trace
             return;
         }
 

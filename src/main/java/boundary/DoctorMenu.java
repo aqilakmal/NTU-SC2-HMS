@@ -1,6 +1,5 @@
 package boundary;
 
-import controller.MenuController;
 import controller.AppointmentController;
 import controller.MedicalRecordController;
 import entity.Doctor;
@@ -10,7 +9,6 @@ import entity.Doctor;
  */
 public class DoctorMenu {
     
-    private MenuController menuController;
     private AppointmentController appointmentController;
     private MedicalRecordController medicalRecordController;
     private Doctor currentDoctor;

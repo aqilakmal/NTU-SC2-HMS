@@ -194,4 +194,13 @@ public class User {
     public void updateEmailAddress(String newEmailAddress) {
         this.emailAddress = newEmailAddress;
     }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "userID='" + userID + '\'' +
+                ", role=" + role +
+                ", name='" + name + '\'' +
+                '}';
+    }
 }

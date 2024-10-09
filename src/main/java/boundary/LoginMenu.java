@@ -26,28 +26,48 @@ public class LoginMenu {
      * @return Authenticated User object or null if login fails
      */
     public User displayLoginScreen() {
-        System.out.println("Welcome to the Hospital Management System");
-        System.out.println("Please log in to continue");
+        System.out.println("\nLogin Screen");
         
         while (true) {
-            System.out.print("Enter your user ID: ");
-            String userID = scanner.nextLine();
-            
-            System.out.print("Enter your password: ");
-            String password = scanner.nextLine();
-            
-            User authenticatedUser = authController.login(userID, password);
-            
-            if (authenticatedUser != null) {
-                System.out.println("Login successful. Welcome, " + authenticatedUser.getName() + "!");
-                return authenticatedUser;
-            } else {
-                System.out.println("Invalid user ID or password. Please try again.");
-                System.out.print("Do you want to try again? (y/n): ");
-                String retry = scanner.nextLine();
-                if (!retry.equalsIgnoreCase("y")) {
-                    return null;
+            int attempts = 0;
+            while (attempts < 3) {
+                try {
+                    System.out.print("Enter your user ID: ");
+                    String userID = scanner.nextLine().trim();
+                    
+                    if (userID.isEmpty()) {
+                        System.out.println("Error: User ID cannot be empty. Please try again.");
+                        continue;
+                    }
+                    
+                    System.out.print("Enter your password: ");
+                    String password = scanner.nextLine().trim();
+                    
+                    if (password.isEmpty()) {
+                        System.out.println("Error: Password cannot be empty. Please try again.");
+                        continue;
+                    }
+                    
+                    User authenticatedUser = authController.login(userID, password);
+                    
+                    if (authenticatedUser != null) {
+                        System.out.println("\nLogin successful. Welcome, " + authenticatedUser.getName() + "!");
+                        return authenticatedUser;
+                    } else {
+                        attempts++;
+                        System.out.println("Invalid user ID or password. Attempts remaining: " + (3 - attempts));
+                    }
+                } catch (Exception e) {
+                    System.err.println("An error occurred during login: " + e.getMessage());
+                    attempts++;
                 }
+            }
+            
+            System.out.print("Maximum attempts reached. Do you want to try again? (y/n): ");
+            String retry = scanner.nextLine().trim().toLowerCase();
+            if (!retry.equals("y")) {
+                System.out.println("Returning to home screen...");
+                return null;
             }
         }
     }
@@ -55,20 +75,53 @@ public class LoginMenu {
     /**
      * Prompts the user to change their password.
      * @param user The authenticated User object
+     * @return true if password was changed successfully, false otherwise
      */
-    public void changePassword(User user) {
+    public boolean changePassword(User user) {
         System.out.println("\nChange Password");
-        System.out.print("Enter your current password: ");
-        String oldPassword = scanner.nextLine();
+        int attempts = 0;
+        while (attempts < 3) {
+            try {
+                System.out.print("Enter your current password: ");
+                String oldPassword = scanner.nextLine().trim();
+                
+                if (oldPassword.isEmpty()) {
+                    System.out.println("Error: Current password cannot be empty. Please try again.");
+                    continue;
+                }
+                
+                System.out.print("Enter your new password: ");
+                String newPassword = scanner.nextLine().trim();
+                
+                if (newPassword.isEmpty()) {
+                    System.out.println("Error: New password cannot be empty. Please try again.");
+                    continue;
+                }
+                
+                if (newPassword.equals(oldPassword)) {
+                    System.out.println("Error: New password must be different from the current password.");
+                    continue;
+                }
+                
+                authController.changePassword(user.getUserID(), oldPassword, newPassword);
+                System.out.println("Password changed successfully.");
+                return true;
+            } catch (AuthenticationController.AuthenticationException e) {
+                attempts++;
+                System.out.println("Failed to change password: " + e.getMessage());
+                System.out.println("Attempts remaining: " + (3 - attempts));
+            } catch (Exception e) {
+                System.err.println("An unexpected error occurred: " + e.getMessage());
+                attempts++;
+            }
+        }
         
-        System.out.print("Enter your new password: ");
-        String newPassword = scanner.nextLine();
-        
-        try {
-            authController.changePassword(user.getUserID(), oldPassword, newPassword);
-            System.out.println("Password changed successfully.");
-        } catch (AuthenticationController.AuthenticationException e) {
-            System.out.println("Failed to change password: " + e.getMessage());
+        System.out.print("Maximum attempts reached. Do you want to try again? (y/n): ");
+        String retry = scanner.nextLine().trim().toLowerCase();
+        if (retry.equals("y")) {
+            return changePassword(user);
+        } else {
+            return false;
         }
     }
 }

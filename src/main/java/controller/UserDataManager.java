@@ -78,13 +78,13 @@ public class UserDataManager {
                             continue; // Skip unknown roles
                     }
                     users.add(user);
-                    System.out.println("Loaded user: " + user); // Debug output
+                    System.out.println("[DEV] Loaded user: " + user); // Debug output
                 } catch (IllegalArgumentException e) {
                     System.out.println("Error creating user with role " + role + ": " + e.getMessage());
                 }
             }
         }
-        System.out.println("Total users loaded: " + users.size()); // Debug output
+        System.out.println("[DEV] Total users loaded: " + users.size()); // Debug output
     }
 
     /**

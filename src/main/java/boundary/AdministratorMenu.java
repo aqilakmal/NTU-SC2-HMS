@@ -2,13 +2,15 @@ package boundary;
 
 import controller.*;
 import entity.*;
+import utility.*;
 import java.util.Scanner;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.InputMismatchException;
 import java.time.format.DateTimeFormatter;
-
+import java.util.LinkedHashMap;
+import java.time.LocalDateTime;
 /**
  * Interface for administrator tasks in the Hospital Management System.
  */
@@ -146,19 +148,13 @@ public class AdministratorMenu {
      * @param staffList The list of staff to display
      */
     private void displayStaffList(List<User> staffList) {
-        System.out.println("\nStaff List:");
-        // System.out.println("------------------------------------------------------------------------");
-        System.out.println("-".repeat(70));
-        System.out.printf("%-10s %-20s %-20s %-15s%n", "User ID", "Name", "Role", "Contact Number");
-        System.out.println("-".repeat(70));
-        for (User staff : staffList) {
-            System.out.printf("%-10s %-20s %-20s %-15s%n", 
-                staff.getUserID(), 
-                staff.getName(), 
-                staff.getRole(), 
-                staff.getContactNumber());
-        }
-        System.out.println("-".repeat(70));
+        LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
+        columnMapping.put("userID", new TableBuilder.ColumnMapping("User ID", null));
+        columnMapping.put("name", new TableBuilder.ColumnMapping("Name", null));
+        columnMapping.put("role", new TableBuilder.ColumnMapping("Role", null));
+        columnMapping.put("contactNumber", new TableBuilder.ColumnMapping("Contact Number", null));
+
+        TableBuilder.createTable("Staff List", staffList, columnMapping, 20);
     }
 
     /**
@@ -363,24 +359,15 @@ public class AdministratorMenu {
      * @param appointments The list of appointments to display
      */
     private void displayAppointmentList(List<Appointment> appointments) {
-        System.out.println("Appointment List:");
-        System.out.println("-".repeat(85));
-        System.out.printf("%-15s %-15s %-15s %-20s %-15s%n", 
-            "Appointment ID", "Patient ID", "Doctor ID", "Date/Time", "Status");
-        System.out.println("-".repeat(85));
+        LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
+        columnMapping.put("appointmentID", new TableBuilder.ColumnMapping("Appointment ID", null));
+        columnMapping.put("patientID", new TableBuilder.ColumnMapping("Patient ID", null));
+        columnMapping.put("doctorID", new TableBuilder.ColumnMapping("Doctor ID", null));
+        columnMapping.put("dateTime", new TableBuilder.ColumnMapping("Date/Time", 
+            (val) -> ((LocalDateTime) val).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))));
+        columnMapping.put("status", new TableBuilder.ColumnMapping("Status", null));
 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-
-        for (Appointment appointment : appointments) {
-            System.out.printf("%-15s %-15s %-15s %-20s %-15s%n",
-                appointment.getAppointmentID(),
-                appointment.getPatientID(),
-                appointment.getDoctorID(),
-                appointment.getDateTime().format(formatter),
-                appointment.getStatus()
-            );
-        }
-        System.out.println("-".repeat(85));
+        TableBuilder.createTable("Appointment List", appointments, columnMapping, 20);
     }
 
     /**
@@ -482,15 +469,13 @@ public class AdministratorMenu {
         if (medications.isEmpty()) {
             System.out.println("No medications found.");
         } else {
-            System.out.println("\nMedication List:");
-            System.out.println("-".repeat(80));
-            System.out.printf("%-10s %-30s %-15s %-20s%n", "ID", "Name", "Stock Level", "Low Stock Alert Level");
-            System.out.println("-".repeat(80));
-            for (Medication med : medications) {
-                System.out.printf("%-10s %-30s %-15d %-20d%n", 
-                    med.getMedicationID(), med.getName(), med.getStockLevel(), med.getLowStockAlertLevel());
-            }
-            System.out.println("-".repeat(80));
+            LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
+            columnMapping.put("medicationID", new TableBuilder.ColumnMapping("ID", null));
+            columnMapping.put("name", new TableBuilder.ColumnMapping("Name", null));
+            columnMapping.put("stockLevel", new TableBuilder.ColumnMapping("Stock Level", null));
+            columnMapping.put("lowStockAlertLevel", new TableBuilder.ColumnMapping("Low Stock Alert Level", null));
+
+            TableBuilder.createTable("Medication List", medications, columnMapping, 30);
         }
     }
 
@@ -674,22 +659,14 @@ public class AdministratorMenu {
      * @param pendingRequests The list of pending requests to display
      */
     private void displayPendingRequests(List<Request> pendingRequests) {
-        System.out.println("Pending Replenishment Requests:");
-        System.out.println("-".repeat(80));
-        System.out.printf("%-15s %-15s %-10s %-15s %-10s%n", 
-            "Request ID", "Medication ID", "Quantity", "Requested By", "Status");
-        System.out.println("-".repeat(80));
+        LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
+        columnMapping.put("requestID", new TableBuilder.ColumnMapping("Request ID", null));
+        columnMapping.put("medicationID", new TableBuilder.ColumnMapping("Medication ID", null));
+        columnMapping.put("quantity", new TableBuilder.ColumnMapping("Quantity", null));
+        columnMapping.put("requestedBy", new TableBuilder.ColumnMapping("Requested By", null));
+        columnMapping.put("status", new TableBuilder.ColumnMapping("Status", null));
 
-        for (Request request : pendingRequests) {
-            System.out.printf("%-15s %-15s %-10d %-15s %-10s%n",
-                request.getRequestID(),
-                request.getMedicationID(),
-                request.getQuantity(),
-                request.getRequestedBy(),
-                request.getStatus()
-            );
-        }
-        System.out.println("-".repeat(80));
+        TableBuilder.createTable("Pending Replenishment Requests", pendingRequests, columnMapping, 15);
     }
 
     /**

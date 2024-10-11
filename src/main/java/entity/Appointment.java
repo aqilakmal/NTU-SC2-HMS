@@ -42,7 +42,7 @@ public class Appointment {
     /**
      * The outcome record of the appointment (null if not completed).
      */
-    private AppointmentOutcomeRecord outcomeRecord;
+    private String outcomeID;
     
     /**
      * Constructor for Appointment.
@@ -53,13 +53,13 @@ public class Appointment {
      * @param status The current status of the appointment
      * @param outcomeRecord The outcome record of the appointment (null if not completed)
      */
-    public Appointment(String appointmentID, String patientID, String doctorID, LocalDateTime dateTime, AppointmentStatus status, AppointmentOutcomeRecord outcomeRecord) {
+    public Appointment(String appointmentID, String patientID, String doctorID, LocalDateTime dateTime, AppointmentStatus status, String outcomeID) {
         this.appointmentID = appointmentID;
         this.patientID = patientID;
         this.doctorID = doctorID;
         this.dateTime = dateTime;
         this.status = status;
-        this.outcomeRecord = outcomeRecord;
+        this.outcomeID = outcomeID;
     }
     
     /**
@@ -106,8 +106,8 @@ public class Appointment {
      * Get the outcome record of the appointment (null if not completed).
      * @return The outcome record of the appointment
      */
-    public AppointmentOutcomeRecord getOutcomeRecord() {
-        return outcomeRecord;
+    public String getOutcomeID() {
+        return outcomeID;
     }
 
     /**
@@ -122,7 +122,12 @@ public class Appointment {
      * Set the outcome record of the appointment (null if not completed).
      * @param outcomeRecord The outcome record of the appointment
      */
-    public void setOutcomeRecord(AppointmentOutcomeRecord outcomeRecord) {
-        this.outcomeRecord = outcomeRecord;
+    public void setOutcomeID(String outcomeID) {
+        this.outcomeID = outcomeID;
+    }
+
+    @Override
+    public String toString() {
+        return "Appointment{" + appointmentID + "," + patientID + "," + doctorID + "," + dateTime + "," + status + "," + outcomeID + "}";
     }
 }

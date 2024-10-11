@@ -1,3 +1,4 @@
 medicationID,medicationName,stockLevel,lowStockAlertLevel
-M00001,Amoxicillin,150,30
-M00002,Ibuprofen,200,50
+M01,Amoxicillin,300,30
+M02,Ibuprofen,200,50
+M03,Paracetanol,300,50

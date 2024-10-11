@@ -21,7 +21,7 @@ public class Patient extends User {
     /**
      * Patient's medical record.
      */
-    private MedicalRecord medicalRecord;
+    private History History;
 
     /**
      * Constructor for Patient.
@@ -50,10 +50,10 @@ public class Patient extends User {
     
     /**
      * Get the patient's medical record.
-     * @return MedicalRecord object containing the patient's medical information
+     * @return History object containing the patient's medical information
      */
-    public MedicalRecord getMedicalRecord() {
-        return medicalRecord;
+    public History getHistory() {
+        return History;
     }
 
     /**
@@ -66,11 +66,9 @@ public class Patient extends User {
     
     /**
      * Updates the patient's medical record.
-     * @param newMedicalRecord The new medical record to set
+     * @param newHistory The new medical record to set
      */
-    public void updateMedicalRecord(MedicalRecord newMedicalRecord) {
-        this.medicalRecord = newMedicalRecord;
+    public void updateHistory(History newHistory) {
+        this.History = newHistory;
     }
-    
-    // TODO: Other patient-specific methods
 }

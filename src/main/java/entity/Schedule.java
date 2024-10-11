@@ -77,21 +77,4 @@ public class Schedule {
     public void setBookedAppointments(List<Appointment> bookedAppointments) {
         this.bookedAppointments = bookedAppointments;
     }
-
-    /**
-     * Adds a new available time slot to the schedule.
-     * @param slot The time slot to add
-     */
-    public void addAvailability(TimeSlot slot) {
-        // TODO: Implement logic to add availability
-    }
-
-    /**
-     * Removes an available time slot from the schedule.
-     * @param slot The time slot to remove
-     */
-    public void removeAvailability(TimeSlot slot) {
-        // TODO: Implement logic to remove availability
-    }
-    
 }

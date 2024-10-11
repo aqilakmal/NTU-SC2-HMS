@@ -8,7 +8,6 @@ package boundary;
  */
 public class PharmacistMenu {
 
-    // private InventoryController inventoryController;
     // private Pharmacist currentPharmacist;
     
     /**

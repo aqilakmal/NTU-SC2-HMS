@@ -1,34 +1,33 @@
 package boundary;
 
-import controller.UserController;
-import controller.StaffManagementController;
-import entity.Administrator;
-import entity.User;
+import controller.*;
+import entity.*;
 import java.util.Scanner;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.InputMismatchException;
+import java.time.format.DateTimeFormatter;
 
 /**
  * Interface for administrator tasks in the Hospital Management System.
  */
 public class AdministratorMenu {
     
-    private StaffManagementController staffManagementController;
+    private AdministratorController administratorController;
     private UserController userController;
     private Scanner scanner;
     
     /**
      * Constructor for AdministratorMenu.
-     * @param staffManagementController The StaffManagementController instance
+     * @param AdministratorController The AdministratorController instance
      * @param userController The UserController instance
      */
     public AdministratorMenu(
-        StaffManagementController staffManagementController,
+        AdministratorController administratorController,
         UserController userController
     ) {
-        this.staffManagementController = staffManagementController;
+        this.administratorController = administratorController;
         this.userController = userController;
         this.scanner = new Scanner(System.in);
     }
@@ -55,16 +54,13 @@ public class AdministratorMenu {
                         manageStaffMenu();
                         break;
                     case 2:
-                        // Implement view appointment details
-                        System.out.println("View Appointment Details - Not implemented yet.");
+                        viewAppointmentDetails();
                         break;
                     case 3:
-                        // Implement manage medication inventory
-                        System.out.println("Manage Medication Inventory - Not implemented yet.");
+                        manageMedicationInventory();
                         break;
                     case 4:
-                        // Implement approve replenishment requests
-                        System.out.println("Approve Replenishment Requests - Not implemented yet.");
+                        approveReplenishmentRequests();
                         break;
                     case 5:
                         System.out.println("Logging out and returning to home screen...");
@@ -134,7 +130,7 @@ public class AdministratorMenu {
         try {
             Map<String, String> filters = new HashMap<>();
             // You can add filter options here if needed
-            List<User> staffList = staffManagementController.getFilteredStaffList(filters);
+            List<User> staffList = administratorController.getFilteredStaffList(filters);
             if (staffList.isEmpty()) {
                 System.out.println("No staff members found.");
             } else {
@@ -225,7 +221,7 @@ public class AdministratorMenu {
                 }
 
                 User newStaff = new User(userID, "password", role, name, "", "", contactNumber, email);
-                boolean success = staffManagementController.manageStaff(Administrator.StaffAction.ADD, newStaff);
+                boolean success = administratorController.manageStaff(Administrator.StaffAction.ADD, newStaff);
                 if (success) {
                     System.out.println("New staff added successfully.");
                     return;
@@ -276,7 +272,7 @@ public class AdministratorMenu {
                 staffToUpdate.updateName(newName);
             }
 
-            boolean success = staffManagementController.manageStaff(Administrator.StaffAction.UPDATE, staffToUpdate);
+            boolean success = administratorController.manageStaff(Administrator.StaffAction.UPDATE, staffToUpdate);
             if (success) {
                 System.out.println("Staff information updated successfully.");
             } else {
@@ -312,7 +308,7 @@ public class AdministratorMenu {
                 return;
             }
 
-            boolean success = staffManagementController.manageStaff(Administrator.StaffAction.REMOVE, staffToRemove);
+            boolean success = administratorController.manageStaff(Administrator.StaffAction.REMOVE, staffToRemove);
             if (success) {
                 System.out.println("Staff removed successfully.");
             } else {
@@ -320,6 +316,405 @@ public class AdministratorMenu {
             }
         } catch (Exception e) {
             System.err.println("Error removing staff: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Views the details of all appointments.
+     */
+    private void viewAppointmentDetails() {
+        while (true) {
+            List<Appointment> appointments = administratorController.getAllAppointments();
+
+            if (appointments.isEmpty()) {
+                System.out.println("No appointments found.");
+                return;
+            }
+
+            displayAppointmentList(appointments);
+
+            System.out.println("Options:");
+            System.out.println("{1} View detailed appointment information");
+            System.out.println("{2} Return to main menu");
+            System.out.print("Enter your choice: ");
+
+            try {
+                int choice = scanner.nextInt();
+                scanner.nextLine(); // Consume newline
+
+                switch (choice) {
+                    case 1:
+                        viewDetailedAppointment(appointments);
+                        break;
+                    case 2:
+                        return;
+                    default:
+                        System.out.println("Invalid choice. Please enter 1 or 2.");
+                }
+            } catch (InputMismatchException e) {
+                System.out.println("Invalid input. Please enter a number.");
+                scanner.nextLine(); // Clear the invalid input
+            }
+        }
+    }
+
+    /**
+     * Displays the list of appointments.
+     * @param appointments The list of appointments to display
+     */
+    private void displayAppointmentList(List<Appointment> appointments) {
+        System.out.println("Appointment List:");
+        System.out.println("-".repeat(85));
+        System.out.printf("%-15s %-15s %-15s %-20s %-15s%n", 
+            "Appointment ID", "Patient ID", "Doctor ID", "Date/Time", "Status");
+        System.out.println("-".repeat(85));
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+
+        for (Appointment appointment : appointments) {
+            System.out.printf("%-15s %-15s %-15s %-20s %-15s%n",
+                appointment.getAppointmentID(),
+                appointment.getPatientID(),
+                appointment.getDoctorID(),
+                appointment.getDateTime().format(formatter),
+                appointment.getStatus()
+            );
+        }
+        System.out.println("-".repeat(85));
+    }
+
+    /**
+     * Views the details of a specific appointment, including its outcome if available.
+     * @param appointments The list of all appointments
+     */
+    private void viewDetailedAppointment(List<Appointment> appointments) {
+        System.out.print("Enter the Appointment ID to view details: ");
+        String appointmentID = scanner.nextLine().trim();
+
+        Appointment selectedAppointment = appointments.stream()
+            .filter(a -> a.getAppointmentID().equals(appointmentID))
+            .findFirst()
+            .orElse(null);
+
+        if (selectedAppointment == null) {
+            System.out.println("Appointment not found.");
+            return;
+        }
+
+        System.out.println("Detailed Appointment Information:");
+        System.out.println("-".repeat(40));
+        System.out.printf("Appointment ID: %s%n", selectedAppointment.getAppointmentID());
+        System.out.printf("Patient ID: %s%n", selectedAppointment.getPatientID());
+        System.out.printf("Doctor ID: %s%n", selectedAppointment.getDoctorID());
+        System.out.printf("Date/Time: %s%n", selectedAppointment.getDateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
+        System.out.printf("Status: %s%n", selectedAppointment.getStatus());
+        System.out.println("-".repeat(40));
+
+        String outcomeID = selectedAppointment.getOutcomeID();
+        if (outcomeID != null && !outcomeID.isEmpty()) {
+            Outcome outcome = administratorController.getOutcomeByID(outcomeID);
+            if (outcome != null) {
+                System.out.println("Outcome Information:");
+                System.out.println("-".repeat(40));
+                System.out.printf("Outcome ID: %s%n", outcome.getOutcomeID());
+                System.out.printf("Service Provided: %s%n", outcome.getServiceProvided());
+                System.out.printf("Prescription ID: %s%n", outcome.getPrescriptionID());
+                System.out.printf("Consultation Notes: %s%n", outcome.getConsultationNotes());
+                System.out.println("-".repeat(40));
+            } else {
+                System.out.println("Outcome information not found for this appointment.");
+            }
+        } else {
+            System.out.println("No outcome information available for this appointment.");
+        }
+    }
+
+    /**
+     * Manages the medication inventory.
+     */
+    private void manageMedicationInventory() {
+        while (true) {
+            try {
+                System.out.println("\nManage Medication Inventory:");
+                System.out.println("{1} View Medications");
+                System.out.println("{2} Add Medication");
+                System.out.println("{3} Update Medication Information");
+                System.out.println("{4} Remove Medication");
+                System.out.println("{5} Back to Admin Menu");
+                System.out.print("Enter your choice: ");
+
+                int choice = scanner.nextInt();
+                scanner.nextLine(); // Consume newline
+
+                switch (choice) {
+                    case 1:
+                        viewMedications();
+                        break;
+                    case 2:
+                        addMedication();
+                        break;
+                    case 3:
+                        updateMedicationInformation();
+                        break;
+                    case 4:
+                        removeMedication();
+                        break;
+                    case 5:
+                        return;
+                    default:
+                        System.out.println("Invalid choice. Please enter a number between 1 and 5.");
+                }
+            } catch (InputMismatchException e) {
+                System.out.println("Error: Invalid input. Please enter a number.");
+                scanner.nextLine(); // Clear the invalid input
+            } catch (Exception e) {
+                System.err.println("An unexpected error occurred: " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * Displays the list of medications.
+     */
+    private void viewMedications() {
+        List<Medication> medications = administratorController.getAllMedications();
+        if (medications.isEmpty()) {
+            System.out.println("No medications found.");
+        } else {
+            System.out.println("\nMedication List:");
+            System.out.println("-".repeat(80));
+            System.out.printf("%-10s %-30s %-15s %-20s%n", "ID", "Name", "Stock Level", "Low Stock Alert Level");
+            System.out.println("-".repeat(80));
+            for (Medication med : medications) {
+                System.out.printf("%-10s %-30s %-15d %-20d%n", 
+                    med.getMedicationID(), med.getName(), med.getStockLevel(), med.getLowStockAlertLevel());
+            }
+            System.out.println("-".repeat(80));
+        }
+    }
+
+    /**
+     * Adds a new medication to the inventory.
+     */
+    private void addMedication() {
+        try {
+            System.out.print("Enter medication ID: ");
+            String medicationID = scanner.nextLine().trim();
+            if (medicationID.isEmpty()) {
+                System.out.println("Error: Medication ID cannot be empty.");
+                return;
+            }
+
+            System.out.print("Enter medication name: ");
+            String name = scanner.nextLine().trim();
+            if (name.isEmpty()) {
+                System.out.println("Error: Medication name cannot be empty.");
+                return;
+            }
+
+            System.out.print("Enter initial stock level: ");
+            int stockLevel = Integer.parseInt(scanner.nextLine().trim());
+            if (stockLevel < 0) {
+                System.out.println("Error: Stock level cannot be negative.");
+                return;
+            }
+
+            System.out.print("Enter low stock alert level: ");
+            int lowStockAlertLevel = Integer.parseInt(scanner.nextLine().trim());
+            if (lowStockAlertLevel < 0) {
+                System.out.println("Error: Low stock alert level cannot be negative.");
+                return;
+            }
+
+            Medication newMedication = new Medication(medicationID, name, stockLevel, lowStockAlertLevel);
+            boolean success = administratorController.addMedication(newMedication);
+            if (success) {
+                System.out.println("Medication added successfully.");
+            } else {
+                System.out.println("Failed to add medication. It may already exist.");
+            }
+        } catch (NumberFormatException e) {
+            System.out.println("Error: Invalid number format. Please enter valid integers for stock levels.");
+        } catch (Exception e) {
+            System.err.println("Error adding medication: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Updates the information of an existing medication.
+     */
+    private void updateMedicationInformation() {
+        try {
+            System.out.print("Enter medication ID to update: ");
+            String medicationID = scanner.nextLine().trim();
+            if (medicationID.isEmpty()) {
+                System.out.println("Error: Medication ID cannot be empty.");
+                return;
+            }
+
+            Medication medicationToUpdate = administratorController.getMedicationByID(medicationID);
+            if (medicationToUpdate == null) {
+                System.out.println("Medication not found.");
+                return;
+            }
+
+            System.out.print("Enter new name (or press enter to skip): ");
+            String newName = scanner.nextLine().trim();
+            if (!newName.isEmpty()) {
+                medicationToUpdate.setName(newName);
+            }
+
+            System.out.print("Enter new stock level (or press enter to skip): ");
+            String stockLevelInput = scanner.nextLine().trim();
+            if (!stockLevelInput.isEmpty()) {
+                int newStockLevel = Integer.parseInt(stockLevelInput);
+                if (newStockLevel < 0) {
+                    System.out.println("Error: Stock level cannot be negative.");
+                    return;
+                }
+                medicationToUpdate.setStockLevel(newStockLevel);
+            }
+
+            System.out.print("Enter new low stock alert level (or press enter to skip): ");
+            String alertLevelInput = scanner.nextLine().trim();
+            if (!alertLevelInput.isEmpty()) {
+                int newAlertLevel = Integer.parseInt(alertLevelInput);
+                if (newAlertLevel < 0) {
+                    System.out.println("Error: Low stock alert level cannot be negative.");
+                    return;
+                }
+                medicationToUpdate.setLowStockAlertLevel(newAlertLevel);
+            }
+
+            boolean success = administratorController.updateMedication(medicationToUpdate);
+            if (success) {
+                System.out.println("Medication information updated successfully.");
+            } else {
+                System.out.println("Failed to update medication information.");
+            }
+        } catch (NumberFormatException e) {
+            System.out.println("Error: Invalid number format. Please enter valid integers for stock levels.");
+        } catch (Exception e) {
+            System.err.println("Error updating medication information: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Removes a medication from the inventory.
+     */
+    private void removeMedication() {
+        try {
+            System.out.print("Enter medication ID to remove: ");
+            String medicationID = scanner.nextLine().trim();
+            if (medicationID.isEmpty()) {
+                System.out.println("Error: Medication ID cannot be empty.");
+                return;
+            }
+
+            System.out.print("Are you sure you want to remove this medication? (y/n): ");
+            String confirm = scanner.nextLine().trim().toLowerCase();
+            if (!confirm.equals("y")) {
+                System.out.println("Medication removal cancelled.");
+                return;
+            }
+
+            boolean success = administratorController.removeMedication(medicationID);
+            if (success) {
+                System.out.println("Medication removed successfully.");
+            } else {
+                System.out.println("Failed to remove medication. It may not exist.");
+            }
+        } catch (Exception e) {
+            System.err.println("Error removing medication: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Handles the approval of replenishment requests.
+     */
+    private void approveReplenishmentRequests() {
+        while (true) {
+            List<Request> pendingRequests = administratorController.getPendingRequests();
+
+            if (pendingRequests.isEmpty()) {
+                System.out.println("No pending replenishment requests found.");
+                return;
+            }
+
+            displayPendingRequests(pendingRequests);
+
+            System.out.println("Options:");
+            System.out.println("{1} Select replenishment ID to approve");
+            System.out.println("{2} Return to main menu");
+            System.out.print("Enter your choice: ");
+
+            try {
+                int choice = scanner.nextInt();
+                scanner.nextLine(); // Consume newline
+
+                switch (choice) {
+                    case 1:
+                        approveRequest(pendingRequests);
+                        break;
+                    case 2:
+                        return;
+                    default:
+                        System.out.println("Invalid choice. Please enter 1 or 2.");
+                }
+            } catch (InputMismatchException e) {
+                System.out.println("Invalid input. Please enter a number.");
+                scanner.nextLine(); // Clear the invalid input
+            }
+        }
+    }
+
+    /**
+     * Displays the list of pending replenishment requests.
+     * @param pendingRequests The list of pending requests to display
+     */
+    private void displayPendingRequests(List<Request> pendingRequests) {
+        System.out.println("Pending Replenishment Requests:");
+        System.out.println("-".repeat(80));
+        System.out.printf("%-15s %-15s %-10s %-15s %-10s%n", 
+            "Request ID", "Medication ID", "Quantity", "Requested By", "Status");
+        System.out.println("-".repeat(80));
+
+        for (Request request : pendingRequests) {
+            System.out.printf("%-15s %-15s %-10d %-15s %-10s%n",
+                request.getRequestID(),
+                request.getMedicationID(),
+                request.getQuantity(),
+                request.getRequestedBy(),
+                request.getStatus()
+            );
+        }
+        System.out.println("-".repeat(80));
+    }
+
+    /**
+     * Approves a selected replenishment request.
+     * @param pendingRequests The list of pending requests
+     */
+    private void approveRequest(List<Request> pendingRequests) {
+        System.out.print("Enter the Request ID to approve: ");
+        String requestID = scanner.nextLine().trim();
+
+        Request selectedRequest = pendingRequests.stream()
+            .filter(r -> r.getRequestID().equals(requestID))
+            .findFirst()
+            .orElse(null);
+
+        if (selectedRequest == null) {
+            System.out.println("Request not found.");
+            return;
+        }
+
+        boolean success = administratorController.approveRequest(requestID);
+        if (success) {
+            System.out.println("Request approved successfully. Medication stock has been updated.");
+        } else {
+            System.out.println("Failed to approve request. Please try again.");
         }
     }
 }

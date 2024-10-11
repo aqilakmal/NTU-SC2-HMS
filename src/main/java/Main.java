@@ -1,5 +1,6 @@
 import boundary.*;
 import controller.*;
+import controller.data.*;
 import entity.*;
 import java.util.Scanner;
 import java.util.InputMismatchException;
@@ -15,7 +16,7 @@ public class Main {
 	private static LoginMenu loginMenu;
 	private static AuthenticationController authController;
 	private static UserController userController;
-	private static StaffManagementController staffManagementController;
+	private static AdministratorController AdministratorController;
 
 	/**
 	 * The main method that starts the Hospital Management System.
@@ -24,23 +25,35 @@ public class Main {
 	public static void main(String[] args) {
 		System.out.println("Welcome to the Hospital Management System");
 
-		// Initialize UserDataManager and load user data
+		// Initialize all data managers and load user data
 		UserDataManager userDataManager = new UserDataManager();
+		MedicationDataManager medicationDataManager = new MedicationDataManager();
+		AppointmentDataManager appointmentDataManager = new AppointmentDataManager();
+		OutcomeDataManager outcomeDataManager = new OutcomeDataManager();
+		RequestDataManager requestDataManager = new RequestDataManager();
+		
+		// Load system data from CSV files
 		try {
-			// Use a relative path to the resources directory
-			userDataManager.loadUsersFromCSV("src/main/resources/data/users.csv");
-		} catch (Exception e) {
-			System.err.println("Critical Error: Failed to load user data. The system cannot start.");
-			System.err.println("Error details: " + e.getMessage());
-			e.printStackTrace();
-			return;
+			userDataManager.loadUsersFromCSV();
+			medicationDataManager.loadMedicationsFromCSV();
+			appointmentDataManager.loadAppointmentsFromCSV();
+			outcomeDataManager.loadOutcomesFromCSV();
+			requestDataManager.loadRequestsFromCSV();
+		} catch (IOException e) {
+			System.err.println("Error loading data: " + e.getMessage());
 		}
 
-		// Initialize controllers
+		// Initialize all controllers
 		try {
 			userController = new UserController(userDataManager);
-			authController = new AuthenticationController(userDataManager, userController);
-			staffManagementController = new StaffManagementController(userDataManager);
+			authController = new AuthenticationController(userController);
+			AdministratorController = new AdministratorController(
+				userDataManager,
+				appointmentDataManager,
+				outcomeDataManager,
+				medicationDataManager,
+				requestDataManager
+			);
 		} catch (Exception e) {
 			System.err.println("Critical Error: Failed to initialize controllers. The system cannot start.");
 			System.err.println("Error details: " + e.getMessage());
@@ -56,9 +69,13 @@ public class Main {
 
 		// Save all data when the program is terminated
 		try {
-			userDataManager.saveUsersToCSV("src/main/resources/data/users.csv");
+			userDataManager.saveUsersToCSV();
+			medicationDataManager.saveMedicationsToCSV();
+			appointmentDataManager.saveAppointmentsToCSV();
+			outcomeDataManager.saveOutcomesToCSV();
+			requestDataManager.saveRequestsToCSV();
 		} catch (IOException e) {
-			System.err.println("Error saving users to CSV: " + e.getMessage());
+			System.err.println("Error saving data to CSV: " + e.getMessage());
 		}
 
 		System.out.println("Thank you for using the Hospital Management System");
@@ -130,7 +147,7 @@ public class Main {
 						pharmacistUI.displayMenu();
 						break;
 					case ADMINISTRATOR:
-						AdministratorMenu adminUI = new AdministratorMenu(staffManagementController, userController);
+						AdministratorMenu adminUI = new AdministratorMenu(AdministratorController, userController);
 						adminUI.displayMenu();
 						break;
 					default:

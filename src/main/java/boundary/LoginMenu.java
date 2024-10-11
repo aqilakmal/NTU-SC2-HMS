@@ -1,7 +1,7 @@
 package boundary;
 
-import controller.AuthenticationController;
-import entity.User;
+import controller.*;
+import entity.*;
 import java.util.Scanner;
 
 /**

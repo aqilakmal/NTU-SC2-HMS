@@ -4,11 +4,16 @@ import entity.User;
 import java.util.List;
 import java.util.Map;
 
+import controller.data.*;
+
 /**
  * Manages hospital staff and patient accounts in the Hospital Management System.
  */
 public class UserController {
 
+    /**
+     * UserDataManager instance to manage user data.
+     */
     private UserDataManager userDataManager;
 
     /**

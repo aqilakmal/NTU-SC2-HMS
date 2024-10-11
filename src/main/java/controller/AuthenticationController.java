@@ -7,10 +7,16 @@ import entity.User;
  */
 public class AuthenticationController {
 
-    private UserDataManager userDataManager;
+    /**
+     * UserController instance to manage user data.
+     */
     private UserController userController;
-    public AuthenticationController(UserDataManager userDataManager, UserController userController) {
-        this.userDataManager = userDataManager;
+    
+    /**
+     * Constructor for AuthenticationController.
+     * @param userController UserController instance to manage user data.
+     */
+    public AuthenticationController(UserController userController) {
         this.userController = userController;
     }
 
@@ -47,7 +53,11 @@ public class AuthenticationController {
             throw new AuthenticationException("New password cannot be empty");
         }
         user.updatePassword(newPassword);
-        userDataManager.updateUser(user);
+        try {
+            userController.updateUser(user);
+        } catch (UserController.UserException e) {
+            throw new AuthenticationException(e.getMessage());
+        }
     }
 
     /**

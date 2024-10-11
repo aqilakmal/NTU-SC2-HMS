@@ -1,17 +1,14 @@
 package boundary;
 
-import controller.AppointmentController;
-import controller.MedicalRecordController;
-import entity.Patient;
+// import controller.*;
+// import entity.*;
 
 /**
  * Interface for patient interactions in the Hospital Management System.
  */
 public class PatientMenu {
     
-    private AppointmentController appointmentController;
-    private MedicalRecordController medicalRecordController;
-    private Patient currentPatient;
+    // private Patient currentPatient;
     
     /**
      * Displays the menu options available to the patient.

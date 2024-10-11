@@ -1,17 +1,15 @@
 package boundary;
 
-import controller.PrescriptionController;
-import controller.InventoryController;
-import entity.Pharmacist;
+// import controller.*;
+// import entity.*;
 
 /**
  * Interface for pharmacist operations in the Hospital Management System.
  */
 public class PharmacistMenu {
-    
-    private PrescriptionController prescriptionController;
-    private InventoryController inventoryController;
-    private Pharmacist currentPharmacist;
+
+    // private InventoryController inventoryController;
+    // private Pharmacist currentPharmacist;
     
     /**
      * Displays the menu options available to the pharmacist.

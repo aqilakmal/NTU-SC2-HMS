@@ -72,6 +72,14 @@ public class Medication {
     }
 
     /**
+     * Set the name of the medication.
+     * @param name The new name of the medication
+     */
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    /**
      * Set the current stock level of the medication.
      * @param stockLevel The new stock level
      */
@@ -103,4 +111,8 @@ public class Medication {
         this.stockLevel -= amount;
     }
 
+    @Override
+    public String toString() {
+        return "Medication{" + medicationID + "," + name + "," + stockLevel + "," + lowStockAlertLevel + "}";
+    }
 }

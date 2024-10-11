@@ -1,20 +1,36 @@
 package controller;
 
 import entity.Medication;
+import controller.data.*;
 import java.util.List;
-
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
 /**
  * Manages medication inventory in the Hospital Management System.
  */
 public class InventoryController {
+
+
+    /**
+     * MedicationDataManager instance to manage medication data.
+     */
+    private MedicationDataManager medicationDataManager;
+
+    /**
+     * Constructor for InventoryController.
+     * Initializes the MedicationDataManager and loads medication data.
+     */
+    public InventoryController() {
+        medicationDataManager = new MedicationDataManager();
+    }
     
     /**
      * Retrieves the current inventory of medications.
      * @return List of Medication objects
      */
     public List<Medication> viewInventory() {
-        // TODO: Implement logic to retrieve all medications in inventory
-        return null;
+        return medicationDataManager.getMedications();
     }
     
     /**
@@ -24,7 +40,15 @@ public class InventoryController {
      * @throws InventoryException if the medication doesn't exist or the quantity is invalid
      */
     public void updateStockLevel(String medicationID, int quantity) throws InventoryException {
-        // TODO: Implement logic to update stock level
+        Medication medication = medicationDataManager.getMedicationByID(medicationID);
+        if (medication == null) {
+            throw new InventoryException("Medication with ID " + medicationID + " not found.");
+        }
+        if (quantity < 0) {
+            throw new InventoryException("Stock level cannot be negative.");
+        }
+        medication.setStockLevel(quantity);
+        medicationDataManager.updateMedication(medication);
     }
     
     /**
@@ -33,7 +57,11 @@ public class InventoryController {
      * @throws InventoryException if the medication already exists or is invalid
      */
     public void addMedication(Medication medication) throws InventoryException {
-        // TODO: Implement logic to add new medication
+        try {
+            medicationDataManager.addMedication(medication);
+        } catch (IllegalArgumentException e) {
+            throw new InventoryException(e.getMessage());
+        }
     }
     
     /**
@@ -42,9 +70,13 @@ public class InventoryController {
      * @throws InventoryException if the medication doesn't exist or cannot be removed
      */
     public void removeMedication(String medicationID) throws InventoryException {
-        // TODO: Implement logic to remove medication
+        try {
+            medicationDataManager.removeMedication(medicationID);
+        } catch (IllegalArgumentException e) {
+            throw new InventoryException(e.getMessage());
+        }
     }
-    
+
     /**
      * Updates the low stock alert level for a specific medication.
      * @param medicationID The unique identifier of the medication
@@ -52,7 +84,19 @@ public class InventoryController {
      * @throws InventoryException if the medication doesn't exist or the alert level is invalid
      */
     public void updateLowStockAlert(String medicationID, int alertLevel) throws InventoryException {
-        // TODO: Implement logic to update low stock alert level
+        Medication medication = medicationDataManager.getMedicationByID(medicationID);
+        if (medication == null) {
+            throw new InventoryException("Medication with ID " + medicationID + " not found.");
+        }
+        if (alertLevel < 0) {
+            throw new InventoryException("Low stock alert level cannot be negative.");
+        }
+        medication.setLowStockAlertLevel(alertLevel);
+        try {
+            medicationDataManager.updateMedication(medication);
+        } catch (IllegalArgumentException e) {
+            throw new InventoryException(e.getMessage());
+        }
     }
     
     /**
@@ -60,8 +104,11 @@ public class InventoryController {
      * @return List of Medication objects that are low in stock
      */
     public List<Medication> getLowStockMedications() {
-        // TODO: Implement logic to retrieve low stock medications
-        return null;
+        Map<String, String> filters = new HashMap<>();
+        filters.put("lowStock", "true");
+        return medicationDataManager.getFilteredMedications(filters).stream()
+            .filter(med -> med.getStockLevel() < med.getLowStockAlertLevel())
+            .collect(Collectors.toList());
     }
 
     /**

@@ -8,9 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.InputMismatchException;
-import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
-import java.time.LocalDateTime;
 /**
  * Interface for administrator tasks in the Hospital Management System.
  */
@@ -40,7 +38,7 @@ public class AdministratorMenu {
     public void displayMenu() {
         while (true) {
             try {
-                System.out.println("\nAdministrator Menu:");
+                ConsoleUtility.printHeader("ADMINISTRATOR MENU");
                 System.out.println("{1} Manage Staff");
                 System.out.println("{2} View Appointment Details");
                 System.out.println("{3} Manage Medication Inventory");
@@ -86,7 +84,7 @@ public class AdministratorMenu {
     private void manageStaffMenu() {
         while (true) {
             try {
-                System.out.println("\nStaff Management Menu:");
+                ConsoleUtility.printHeader("STAFF MANAGEMENT MENU");
                 System.out.println("{1} View Staff List");
                 System.out.println("{2} Add New Staff");
                 System.out.println("{3} Update Staff Information");
@@ -164,57 +162,13 @@ public class AdministratorMenu {
         int attempts = 0;
         while (attempts < 3) {
             try {
-                System.out.print("Enter new staff ID: ");
-                String userID = scanner.nextLine().trim();
-                if (userID.isEmpty()) {
-                    System.out.println("Error: Staff ID cannot be empty.");
-                    attempts++;
-                    continue;
-                }
-
-                System.out.print("Enter staff name: ");
-                String name = scanner.nextLine().trim();
-                if (name.isEmpty()) {
-                    System.out.println("Error: Staff name cannot be empty.");
-                    attempts++;
-                    continue;
-                }
-
-                System.out.print("Enter staff role (1 for DOCTOR, 2 for PHARMACIST): ");
-                String roleInput = scanner.nextLine().trim();
-                User.UserRole role;
-                try {
-                    switch (roleInput) {
-                        case "1":
-                            role = User.UserRole.DOCTOR;
-                            break;
-                        case "2":
-                            role = User.UserRole.PHARMACIST;
-                            break;
-                        default:
-                            throw new IllegalArgumentException();
-                    }
-                } catch (IllegalArgumentException e) {
-                    System.out.println("Error: Invalid role. Please enter either 1 for DOCTOR or 2 for PHARMACIST.");
-                    attempts++;
-                    continue;
-                }
-
-                System.out.print("Enter contact number: ");
-                String contactNumber = scanner.nextLine().trim();
-                if (contactNumber.isEmpty()) {
-                    System.out.println("Error: Contact number cannot be empty.");
-                    attempts++;
-                    continue;
-                }
-
-                System.out.print("Enter email address: ");
-                String email = scanner.nextLine().trim();
-                if (email.isEmpty()) {
-                    System.out.println("Error: Email address cannot be empty.");
-                    attempts++;
-                    continue;
-                }
+                ConsoleUtility.printHeader("ADD NEW STAFF");
+                
+                String userID = ConsoleUtility.validateInput("Enter new staff ID: ", ConsoleUtility::isValidID);
+                String name = ConsoleUtility.validateInput("Enter staff name: ", ConsoleUtility::isValidName);
+                User.UserRole role = ConsoleUtility.validateRole();
+                String contactNumber = ConsoleUtility.validateInput("Enter contact number (8 digits): ", ConsoleUtility::isValidContactNumber);
+                String email = ConsoleUtility.validateInput("Enter email address: ", ConsoleUtility::isValidEmail);
 
                 User newStaff = new User(userID, "password", role, name, "", "", contactNumber, email);
                 boolean success = administratorController.manageStaff(Administrator.StaffAction.ADD, newStaff);
@@ -235,9 +189,7 @@ public class AdministratorMenu {
             }
         }
 
-        System.out.print("Maximum attempts reached. Do you want to try again? (y/n): ");
-        String retry = scanner.nextLine().trim().toLowerCase();
-        if (retry.equals("y")) {
+        if (ConsoleUtility.getConfirmation("Maximum attempts reached. Do you want to try again?")) {
             addNewStaff();
         } else {
             System.out.println("Returning to the menu...");
@@ -249,12 +201,8 @@ public class AdministratorMenu {
      */
     private void updateStaffInformation() {
         try {
-            System.out.print("Enter staff ID to update: ");
-            String userID = scanner.nextLine().trim();
-            if (userID.isEmpty()) {
-                System.out.println("Error: Staff ID cannot be empty.");
-                return;
-            }
+            ConsoleUtility.printHeader("UPDATE STAFF INFORMATION");
+            String userID = ConsoleUtility.validateInput("Enter staff ID to update: ", ConsoleUtility::isValidID);
 
             User staffToUpdate = userController.getUserByID(userID);
             if (staffToUpdate == null) {
@@ -262,10 +210,22 @@ public class AdministratorMenu {
                 return;
             }
 
-            System.out.print("Enter new name (or press enter to skip): ");
-            String newName = scanner.nextLine().trim();
+            String newName = ConsoleUtility.validateInput("Enter new name (or press enter to skip): ", 
+                input -> input.isEmpty() || ConsoleUtility.isValidName(input));
             if (!newName.isEmpty()) {
                 staffToUpdate.updateName(newName);
+            }
+
+            String newContactNumber = ConsoleUtility.validateInput("Enter new contact number (8 digits, or press enter to skip): ", 
+                input -> input.isEmpty() || ConsoleUtility.isValidContactNumber(input));
+            if (!newContactNumber.isEmpty()) {
+                staffToUpdate.updateContactNumber(newContactNumber);
+            }
+
+            String newEmail = ConsoleUtility.validateInput("Enter new email address (or press enter to skip): ", 
+                input -> input.isEmpty() || ConsoleUtility.isValidEmail(input));
+            if (!newEmail.isEmpty()) {
+                staffToUpdate.updateEmailAddress(newEmail);
             }
 
             boolean success = administratorController.manageStaff(Administrator.StaffAction.UPDATE, staffToUpdate);
@@ -284,22 +244,16 @@ public class AdministratorMenu {
      */
     private void removeStaff() {
         try {
-            System.out.print("Enter staff ID to remove: ");
-            String userID = scanner.nextLine().trim();
-            if (userID.isEmpty()) {
-                System.out.println("Error: Staff ID cannot be empty.");
-                return;
-            }
-
+            ConsoleUtility.printHeader("REMOVE STAFF");
+            String userID = ConsoleUtility.validateInput("Enter staff ID to remove: ", ConsoleUtility::isValidID);
+            
             User staffToRemove = userController.getUserByID(userID);
             if (staffToRemove == null) {
                 System.out.println("Staff not found.");
                 return;
             }
 
-            System.out.print("Are you sure you want to remove this staff member? (y/n): ");
-            String confirm = scanner.nextLine().trim().toLowerCase();
-            if (!confirm.equals("y")) {
+            if (!ConsoleUtility.getConfirmation("Are you sure you want to remove this staff member?")) {
                 System.out.println("Staff removal cancelled.");
                 return;
             }
@@ -320,6 +274,7 @@ public class AdministratorMenu {
      */
     private void viewAppointmentDetails() {
         while (true) {
+            ConsoleUtility.printHeader("VIEW APPOINTMENT DETAILS", false);
             List<Appointment> appointments = administratorController.getAllAppointments();
 
             if (appointments.isEmpty()) {
@@ -327,29 +282,21 @@ public class AdministratorMenu {
                 return;
             }
 
+            System.out.println();
             displayAppointmentList(appointments);
 
-            System.out.println("Options:");
-            System.out.println("{1} View detailed appointment information");
+            System.out.println("\n{1} View detailed appointment information");
             System.out.println("{2} Return to main menu");
-            System.out.print("Enter your choice: ");
+            int choice = Integer.parseInt(ConsoleUtility.validateInput("Enter your choice: ", input -> input.matches("^[12]$")));
 
-            try {
-                int choice = scanner.nextInt();
-                scanner.nextLine(); // Consume newline
-
-                switch (choice) {
-                    case 1:
-                        viewDetailedAppointment(appointments);
-                        break;
-                    case 2:
-                        return;
-                    default:
-                        System.out.println("Invalid choice. Please enter 1 or 2.");
-                }
-            } catch (InputMismatchException e) {
-                System.out.println("Invalid input. Please enter a number.");
-                scanner.nextLine(); // Clear the invalid input
+            switch (choice) {
+                case 1:
+                    viewDetailedAppointment(appointments);
+                    break;
+                case 2:
+                    return;
+                default:
+                    System.out.println("Invalid choice. Please enter 1 or 2.");
             }
         }
     }
@@ -363,8 +310,7 @@ public class AdministratorMenu {
         columnMapping.put("appointmentID", new TableBuilder.ColumnMapping("Appointment ID", null));
         columnMapping.put("patientID", new TableBuilder.ColumnMapping("Patient ID", null));
         columnMapping.put("doctorID", new TableBuilder.ColumnMapping("Doctor ID", null));
-        columnMapping.put("dateTime", new TableBuilder.ColumnMapping("Date/Time", 
-            (val) -> ((LocalDateTime) val).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))));
+        columnMapping.put("slotID", new TableBuilder.ColumnMapping("Slot ID", null));
         columnMapping.put("status", new TableBuilder.ColumnMapping("Status", null));
 
         TableBuilder.createTable("Appointment List", appointments, columnMapping, 20);
@@ -378,23 +324,24 @@ public class AdministratorMenu {
         System.out.print("Enter the Appointment ID to view details: ");
         String appointmentID = scanner.nextLine().trim();
 
-        Appointment selectedAppointment = appointments.stream()
-            .filter(a -> a.getAppointmentID().equals(appointmentID))
-            .findFirst()
-            .orElse(null);
-
-        if (selectedAppointment == null) {
-            System.out.println("Appointment not found.");
+        Map<String, Object> appointmentDetails = administratorController.getAppointmentDetails(appointmentID);
+        if (appointmentDetails == null) {
+            System.out.println("Appointment not found or slot information is missing.");
             return;
         }
 
-        System.out.println("Detailed Appointment Information:");
+        Appointment selectedAppointment = (Appointment) appointmentDetails.get("appointment");
+        Slot slot = (Slot) appointmentDetails.get("slot");
+
+        System.out.println("\nDetailed Appointment Information:");
         System.out.println("-".repeat(40));
         System.out.printf("Appointment ID: %s%n", selectedAppointment.getAppointmentID());
         System.out.printf("Patient ID: %s%n", selectedAppointment.getPatientID());
         System.out.printf("Doctor ID: %s%n", selectedAppointment.getDoctorID());
-        System.out.printf("Date/Time: %s%n", selectedAppointment.getDateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
+        System.out.printf("Date: %s%n", slot.getDate());
+        System.out.printf("Time: %s - %s%n", slot.getStartTime(), slot.getEndTime());
         System.out.printf("Status: %s%n", selectedAppointment.getStatus());
+        System.out.printf("Slot Status: %s%n", slot.getStatus());
         System.out.println("-".repeat(40));
 
         String outcomeID = selectedAppointment.getOutcomeID();
@@ -422,7 +369,7 @@ public class AdministratorMenu {
     private void manageMedicationInventory() {
         while (true) {
             try {
-                System.out.println("\nManage Medication Inventory:");
+                ConsoleUtility.printHeader("MANAGE MEDICATION INVENTORY");
                 System.out.println("{1} View Medications");
                 System.out.println("{2} Add Medication");
                 System.out.println("{3} Update Medication Information");
@@ -469,6 +416,8 @@ public class AdministratorMenu {
         if (medications.isEmpty()) {
             System.out.println("No medications found.");
         } else {
+            ConsoleUtility.printHeader("MEDICATION LIST", false);
+            System.out.println();
             LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
             columnMapping.put("medicationID", new TableBuilder.ColumnMapping("ID", null));
             columnMapping.put("name", new TableBuilder.ColumnMapping("Name", null));
@@ -484,29 +433,17 @@ public class AdministratorMenu {
      */
     private void addMedication() {
         try {
-            System.out.print("Enter medication ID: ");
-            String medicationID = scanner.nextLine().trim();
-            if (medicationID.isEmpty()) {
-                System.out.println("Error: Medication ID cannot be empty.");
-                return;
-            }
-
-            System.out.print("Enter medication name: ");
-            String name = scanner.nextLine().trim();
-            if (name.isEmpty()) {
-                System.out.println("Error: Medication name cannot be empty.");
-                return;
-            }
-
-            System.out.print("Enter initial stock level: ");
-            int stockLevel = Integer.parseInt(scanner.nextLine().trim());
+            ConsoleUtility.printHeader("ADD MEDICATION");
+            String medicationID = ConsoleUtility.validateInput("Enter medication ID: ", ConsoleUtility::isValidID);
+            String name = ConsoleUtility.validateInput("Enter medication name: ", ConsoleUtility::isValidName);
+            
+            int stockLevel = Integer.parseInt(ConsoleUtility.validateInput("Enter initial stock level: ", ConsoleUtility::isValidInteger));
             if (stockLevel < 0) {
                 System.out.println("Error: Stock level cannot be negative.");
                 return;
             }
 
-            System.out.print("Enter low stock alert level: ");
-            int lowStockAlertLevel = Integer.parseInt(scanner.nextLine().trim());
+            int lowStockAlertLevel = Integer.parseInt(ConsoleUtility.validateInput("Enter low stock alert level: ", ConsoleUtility::isValidInteger));
             if (lowStockAlertLevel < 0) {
                 System.out.println("Error: Low stock alert level cannot be negative.");
                 return;
@@ -531,12 +468,8 @@ public class AdministratorMenu {
      */
     private void updateMedicationInformation() {
         try {
-            System.out.print("Enter medication ID to update: ");
-            String medicationID = scanner.nextLine().trim();
-            if (medicationID.isEmpty()) {
-                System.out.println("Error: Medication ID cannot be empty.");
-                return;
-            }
+            ConsoleUtility.printHeader("UPDATE MEDICATION INFORMATION");
+            String medicationID = ConsoleUtility.validateInput("Enter medication ID to update: ", ConsoleUtility::isValidID);
 
             Medication medicationToUpdate = administratorController.getMedicationByID(medicationID);
             if (medicationToUpdate == null) {
@@ -544,14 +477,14 @@ public class AdministratorMenu {
                 return;
             }
 
-            System.out.print("Enter new name (or press enter to skip): ");
-            String newName = scanner.nextLine().trim();
+            String newName = ConsoleUtility.validateInput("Enter new name (or press enter to skip): ", 
+                input -> input.isEmpty() || ConsoleUtility.isValidName(input));
             if (!newName.isEmpty()) {
                 medicationToUpdate.setName(newName);
             }
 
-            System.out.print("Enter new stock level (or press enter to skip): ");
-            String stockLevelInput = scanner.nextLine().trim();
+            String stockLevelInput = ConsoleUtility.validateInput("Enter new stock level (or press enter to skip): ", 
+                input -> input.isEmpty() || ConsoleUtility.isValidInteger(input));
             if (!stockLevelInput.isEmpty()) {
                 int newStockLevel = Integer.parseInt(stockLevelInput);
                 if (newStockLevel < 0) {
@@ -561,8 +494,8 @@ public class AdministratorMenu {
                 medicationToUpdate.setStockLevel(newStockLevel);
             }
 
-            System.out.print("Enter new low stock alert level (or press enter to skip): ");
-            String alertLevelInput = scanner.nextLine().trim();
+            String alertLevelInput = ConsoleUtility.validateInput("Enter new low stock alert level (or press enter to skip): ", 
+                input -> input.isEmpty() || ConsoleUtility.isValidInteger(input));
             if (!alertLevelInput.isEmpty()) {
                 int newAlertLevel = Integer.parseInt(alertLevelInput);
                 if (newAlertLevel < 0) {
@@ -590,16 +523,10 @@ public class AdministratorMenu {
      */
     private void removeMedication() {
         try {
-            System.out.print("Enter medication ID to remove: ");
-            String medicationID = scanner.nextLine().trim();
-            if (medicationID.isEmpty()) {
-                System.out.println("Error: Medication ID cannot be empty.");
-                return;
-            }
+            ConsoleUtility.printHeader("REMOVE MEDICATION");
+            String medicationID = ConsoleUtility.validateInput("Enter medication ID to remove: ", ConsoleUtility::isValidID);
 
-            System.out.print("Are you sure you want to remove this medication? (y/n): ");
-            String confirm = scanner.nextLine().trim().toLowerCase();
-            if (!confirm.equals("y")) {
+            if (!ConsoleUtility.getConfirmation("Are you sure you want to remove this medication?")) {
                 System.out.println("Medication removal cancelled.");
                 return;
             }
@@ -620,17 +547,18 @@ public class AdministratorMenu {
      */
     private void approveReplenishmentRequests() {
         while (true) {
+            ConsoleUtility.printHeader("PENDING REPLENISHMENT REQUESTS", false);
             List<Request> pendingRequests = administratorController.getPendingRequests();
 
             if (pendingRequests.isEmpty()) {
-                System.out.println("No pending replenishment requests found.");
+                System.out.println("\n\nNo pending replenishment requests found.");
                 return;
             }
 
+            System.out.println();
             displayPendingRequests(pendingRequests);
-
-            System.out.println("Options:");
-            System.out.println("{1} Select replenishment ID to approve");
+            
+            System.out.println("\n{1} Select replenishment ID to approve");
             System.out.println("{2} Return to main menu");
             System.out.print("Enter your choice: ");
 

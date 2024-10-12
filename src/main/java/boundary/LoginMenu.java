@@ -26,7 +26,7 @@ public class LoginMenu {
      * @return Authenticated User object or null if login fails
      */
     public User displayLoginScreen() {
-        System.out.println("\nLogin Screen");
+        System.out.println("\n<======= LOGIN SCREEN =======>\n");
         
         while (true) {
             int attempts = 0;
@@ -56,6 +56,7 @@ public class LoginMenu {
                     } else {
                         attempts++;
                         System.out.println("Invalid user ID or password. Attempts remaining: " + (3 - attempts));
+                        System.out.println();
                     }
                 } catch (Exception e) {
                     System.err.println("An error occurred during login: " + e.getMessage());

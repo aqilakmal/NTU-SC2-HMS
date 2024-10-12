@@ -1,6 +1,6 @@
 package controller.data;
 
-import entity.Medication;
+import entity.*;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,7 +33,7 @@ public class MedicationDataManager {
      */
     public void loadMedicationsFromCSV() throws IOException {
         medications.clear(); // Clear existing medications before loading
-        System.out.println("\n[DEV] Loading medications: " + MEDICATION_FILE);
+        System.out.println("\n[DEV] Loading: " + MEDICATION_FILE);
         try (BufferedReader br = new BufferedReader(new FileReader(MEDICATION_FILE))) {
             String line;
             br.readLine(); // Skip header line

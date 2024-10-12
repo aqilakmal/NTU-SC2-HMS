@@ -1,6 +1,6 @@
 package controller.data;
 
-import entity.Outcome;
+import entity.*;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +29,7 @@ public class OutcomeDataManager {
     public void loadOutcomesFromCSV() throws IOException {
         outcomes.clear();
 
-        System.out.println("\n[DEV] Loading outcomes: " + OUTCOME_FILE);
+        System.out.println("\n[DEV] Loading: " + OUTCOME_FILE);
         try (BufferedReader br = new BufferedReader(new FileReader(OUTCOME_FILE))) {
             String line;
             br.readLine(); // Skip header line

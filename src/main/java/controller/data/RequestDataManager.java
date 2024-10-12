@@ -1,6 +1,6 @@
 package controller.data;
 
-import entity.Request;
+import entity.*;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +32,7 @@ public class RequestDataManager {
      */
     public void loadRequestsFromCSV() throws IOException {
         requests.clear(); // Clear existing requests before loading
-        System.out.println("\n[DEV] Loading requests: " + REQUEST_FILE);
+        System.out.println("\n[DEV] Loading: " + REQUEST_FILE);
         try (BufferedReader br = new BufferedReader(new FileReader(REQUEST_FILE))) {
             String line;
             br.readLine(); // Skip header line
@@ -47,15 +47,17 @@ public class RequestDataManager {
                 String requestID = values[0].trim();
                 String medicationID = values[1].trim();
                 int quantity = Integer.parseInt(values[2].trim());
-                String requestedBy = values[3].trim();
-                Request.RequestStatus status = Request.RequestStatus.valueOf(values[4].trim());
+                Request.RequestStatus status = Request.RequestStatus.valueOf(values[3].trim());
+                String requestedBy = values[4].trim();
+                String approvedBy = values.length > 5 ? values[5].trim() : "";
 
                 Request request = new Request(
                     requestID,
                     medicationID,
                     quantity,
                     status,
-                    requestedBy
+                    requestedBy,
+                    approvedBy
                 );
                 requests.add(request);
                 System.out.println("[DEV] " + request); // Debug output
@@ -71,7 +73,7 @@ public class RequestDataManager {
     public void saveRequestsToCSV() throws IOException {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(REQUEST_FILE))) {
             // Write header
-            bw.write("requestID,medicationID,quantity,requestedBy,status");
+            bw.write("requestID,medicationID,quantity,requestedBy,status,approvedBy");
             bw.newLine();
 
             for (Request request : requests) {
@@ -79,8 +81,9 @@ public class RequestDataManager {
                 sb.append(request.getRequestID()).append(",");
                 sb.append(request.getMedicationID()).append(",");
                 sb.append(request.getQuantity()).append(",");
+                sb.append(request.getStatus()).append(",");
                 sb.append(request.getRequestedBy()).append(",");
-                sb.append(request.getStatus());
+                sb.append(request.getApprovedBy());
                 
                 bw.write(sb.toString());
                 bw.newLine();

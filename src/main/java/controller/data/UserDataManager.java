@@ -33,7 +33,7 @@ public class UserDataManager {
      */
     public void loadUsersFromCSV() throws IOException {
         users.clear(); // Clear existing users before loading
-        System.out.println("\n[DEV] Loading users: " + USER_FILE);
+        System.out.println("\n[DEV] Loading: " + USER_FILE);
         try (BufferedReader br = new BufferedReader(new FileReader(USER_FILE))) {
             String line;
             br.readLine(); // Skip header line

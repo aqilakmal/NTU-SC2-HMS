@@ -2,13 +2,11 @@ package controller.data;
 
 import entity.*;
 import java.io.*;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
+import java.util.HashMap;
 /**
  * Manages appointment data operations including loading from and saving to CSV files,
  * as well as basic CRUD operations for appointments in the Hospital Management System.
@@ -18,12 +16,14 @@ public class AppointmentDataManager {
     private static final String APPOINTMENT_FILE = "src/main/resources/data/appointments.csv";
 
     private List<Appointment> appointments;
+    private SlotDataManager slotDataManager;
 
     /**
      * Constructs a new AppointmentDataManager with an empty list of appointments.
      */
-    public AppointmentDataManager() {
+    public AppointmentDataManager(SlotDataManager slotDataManager) {
         this.appointments = new ArrayList<>();
+        this.slotDataManager = slotDataManager;
     }
 
     /**
@@ -33,18 +33,18 @@ public class AppointmentDataManager {
     public void loadAppointmentsFromCSV() throws IOException {
         appointments.clear();
 
-        System.out.println("\n[DEV] Loading appointments: " + APPOINTMENT_FILE);
+        System.out.println("\n[DEV] Loading: " + APPOINTMENT_FILE);
         try (BufferedReader br = new BufferedReader(new FileReader(APPOINTMENT_FILE))) {
             String line;
             br.readLine(); // Skip header line
             while ((line = br.readLine()) != null) {
-                String[] values = line.split(",", -1); // Use -1 to keep empty trailing fields
+                String[] values = line.split(",", -1);
                 if (values.length >= 5) {
                     Appointment appointment = new Appointment(
                         values[0].trim(), // appointmentID
                         values[1].trim(), // patientID
                         values[2].trim(), // doctorID
-                        LocalDateTime.parse(values[3].trim()), // dateTime
+                        values[3].trim(), // slotID
                         Appointment.AppointmentStatus.valueOf(values[4].trim()), // status
                         values.length > 5 ? values[5].trim() : "" // outcomeID
                     );
@@ -62,15 +62,16 @@ public class AppointmentDataManager {
      */
     public void saveAppointmentsToCSV() throws IOException {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(APPOINTMENT_FILE))) {
-            bw.write("appointmentID,patientID,doctorID,appointmentDateTime,status");
+            bw.write("appointmentID,patientID,doctorID,slotID,status,outcomeID");
             bw.newLine();
             for (Appointment appointment : appointments) {
-                bw.write(String.format("%s,%s,%s,%s,%s",
+                bw.write(String.format("%s,%s,%s,%s,%s,%s",
                     appointment.getAppointmentID(),
                     appointment.getPatientID(),
                     appointment.getDoctorID(),
-                    appointment.getDateTime().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
-                    appointment.getStatus()
+                    appointment.getSlotID(),
+                    appointment.getStatus(),
+                    appointment.getOutcomeID()
                 ));
                 bw.newLine();
             }
@@ -109,5 +110,31 @@ public class AppointmentDataManager {
                     }
                 }))
             .collect(Collectors.toList());
+    }
+
+    /**
+     * Retrieves appointment details including slot information.
+     * @param appointmentID The ID of the appointment to retrieve.
+     * @return A map containing appointment and slot details, or null if not found.
+     */
+    public Map<String, Object> getAppointmentDetails(String appointmentID) {
+        Appointment appointment = appointments.stream()
+                .filter(a -> a.getAppointmentID().equals(appointmentID))
+                .findFirst()
+                .orElse(null);
+
+        if (appointment == null) {
+            return null;
+        }
+
+        Slot slot = slotDataManager.getSlotByID(appointment.getSlotID());
+        if (slot == null) {
+            return null;
+        }
+
+        Map<String, Object> details = new HashMap<>();
+        details.put("appointment", appointment);
+        details.put("slot", slot);
+        return details;
     }
 }

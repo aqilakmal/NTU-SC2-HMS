@@ -1,11 +1,16 @@
 package entity;
 
-import java.util.List;
+import java.time.LocalDate;
 
 /**
  * Contains a patient's medical history in the Hospital Management System.
  */
 public class History {
+
+    /**
+     * Unique identifier for the medical history record.
+     */
+    private String historyID;
     
     /**
      * The id of the patient associated with this medical record.
@@ -13,88 +18,121 @@ public class History {
     private String patientID;
     
     /**
-     * List of diagnoses in the patient's medical history.
+     * The date of the diagnosis.
      */
-    private List<String> diagnoses;
-    
+    private LocalDate diagnosisDate;
+
     /**
-     * List of treatments in the patient's medical history.
+     * The diagnosis.
      */
-    private List<String> treatments;
-    
+    private String diagnosis;
+
     /**
-     * List of prescriptions in the patient's medical history.
+     * The treatment.
      */
-    private List<Prescription> prescriptions;
+    private String treatment;
 
     /**
      * Constructor for History.
-     * @param patient The patient associated with this medical record
-     * @param diagnoses List of diagnoses in the patient's medical history
-     * @param treatments List of treatments in the patient's medical history
-     * @param prescriptions List of prescriptions in the patient's medical history
+     * @param patientID The id of the patient associated with this medical record
+     * @param diagnosisDate The date of the diagnosis
+     * @param diagnosis The diagnosis
+     * @param treatment The treatment
      */
-    public History(String patientID, List<String> diagnoses, List<String> treatments, List<Prescription> prescriptions) {
+    public History(String historyID, String patientID, LocalDate diagnosisDate, String diagnosis, String treatment) {
+        this.historyID = historyID;
         this.patientID = patientID;
-        this.diagnoses = diagnoses;
-        this.treatments = treatments;
-        this.prescriptions = prescriptions;
+        this.diagnosisDate = diagnosisDate;
+        this.diagnosis = diagnosis;
+        this.treatment = treatment;
     }
     
     /**
-     * Get the patient associated with this medical record.
-     * @return The patient
+     * Get the history ID.
+     * @return The history ID
+     */
+    public String getHistoryID() {
+        return historyID;
+    }
+    
+    /**
+     * Get the patient ID.
+     * @return The patient ID
      */
     public String getPatientID() {
         return patientID;
     }
 
     /**
-     * Get the list of diagnoses in the patient's medical history.
-     * @return The list of diagnoses
+     * Get the diagnosis date.
+     * @return The diagnosis date
      */
-    public List<String> getDiagnoses() {
-        return diagnoses;
-    }
-    
-    /**
-     * Get the list of treatments in the patient's medical history.
-     * @return The list of treatments
-     */
-    public List<String> getTreatments() {
-        return treatments;
-    }
-    
-    /**
-     * Get the list of prescriptions in the patient's medical history.
-     * @return The list of prescriptions
-     */
-    public List<Prescription> getPrescriptions() {
-        return prescriptions;
+    public LocalDate getDiagnosisDate() {
+        return diagnosisDate;
     }
 
     /**
-     * Adds a new diagnosis to the medical record.
-     * @param diagnosis The diagnosis to add
+     * Get the diagnosis.
+     * @return The diagnosis
      */
-    public void addDiagnosis(String diagnosis) {
-        diagnoses.add(diagnosis);
+    public String getDiagnosis() {
+        return diagnosis;
     }
-    
+
     /**
-     * Adds a new treatment to the medical record.
-     * @param treatment The treatment to add
+     * Get the treatment.
+     * @return The treatment
      */
-    public void addTreatment(String treatment) {
-        treatments.add(treatment);
+    public String getTreatment() {
+        return treatment;
     }
-    
+
     /**
-     * Adds a new prescription to the medical record.
-     * @param prescription The prescription to add
+     * Set the history ID.
+     * @param historyID The history ID
      */
-    public void addPrescription(Prescription prescription) {
-        prescriptions.add(prescription);
+    public void setHistoryID(String historyID) {
+        this.historyID = historyID;
     }
-    
+
+    /**
+     * Set the patient ID.
+     * @param patientID The patient ID
+     */
+    public void setPatientID(String patientID) {
+        this.patientID = patientID;
+    }
+
+    /**
+     * Set the diagnosis date.
+     * @param diagnosisDate The diagnosis date
+     */
+    public void setDiagnosisDate(LocalDate diagnosisDate) {
+        this.diagnosisDate = diagnosisDate;
+    }
+
+    /**
+     * Set the diagnosis.
+     * @param diagnosis The diagnosis
+     */
+    public void setDiagnosis(String diagnosis) {
+        this.diagnosis = diagnosis;
+    }
+
+    /**
+     * Set the treatment.
+     * @param treatment The treatment
+     */
+    public void setTreatment(String treatment) {
+        this.treatment = treatment;
+    }
+
+    /**
+     * Returns a string representation of the history.  
+     * @return A string representation of the history
+     */
+    @Override
+    public String toString() {
+        return "History{" + historyID + "," + patientID + "," + diagnosisDate + "," + diagnosis + "," + treatment + "}";
+    }
 }

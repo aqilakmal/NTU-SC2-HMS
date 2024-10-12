@@ -51,13 +51,13 @@ public class Request {
      * @param requestedBy The pharmacist who created the request
      * @param approvedBy The administrator who approved the request (null if not yet approved)
      */
-    public Request(String requestID, String medicationID, int quantity, RequestStatus status, String requestedBy) {
+    public Request(String requestID, String medicationID, int quantity, RequestStatus status, String requestedBy, String approvedBy) {
         this.requestID = requestID;
         this.medicationID = medicationID;
         this.quantity = quantity;
         this.status = status;
         this.requestedBy = requestedBy;
-        this.approvedBy = null;
+        this.approvedBy = approvedBy;
     }
     
     /**
@@ -122,5 +122,10 @@ public class Request {
      */
     public void setApprovedBy(String approvedBy) {
         this.approvedBy = approvedBy;
+    }
+
+    @Override
+    public String toString() {
+        return "Request{" + requestID + "," + medicationID + "," + quantity + "," + status + "," + requestedBy + "," + approvedBy + "}";
     }
 }

@@ -1,7 +1,5 @@
 package entity;
 
-import java.util.List;
-
 /**
  * Represents a doctor with scheduling and patient management capabilities in the Hospital Management System.
  * Extends the User class.
@@ -19,16 +17,6 @@ public class Doctor extends User {
      * Doctor's medical specialization.
      */
     private String specialization;
-    
-    /**
-     * Doctor's work schedule.
-     */
-    private Schedule schedule;
-    
-    /**
-     * List of patients assigned to this doctor.
-     */
-    private List<Patient> assignedPatients;
 
     /**
      * Constructor for Doctor.
@@ -56,42 +44,10 @@ public class Doctor extends User {
     }
 
     /**
-     * Get the doctor's schedule.
-     * @return Schedule object containing the doctor's schedule
-     */
-    public Schedule getSchedule() {
-        return schedule;
-    }
-    
-    /**
-     * Get the list of patients assigned to this doctor.
-     * @return List of Patient objects assigned to the doctor
-     */
-    public List<Patient> getAssignedPatients() {
-        return assignedPatients;
-    }
-
-    /**
      * Update the doctor's specialization.
      * @param newSpecialization The new specialization to set
      */
     public void updateSpecialization(String newSpecialization) {
         this.specialization = newSpecialization;
-    }
-
-    /**
-     * Update the doctor's schedule.
-     * @param newSchedule The new schedule to set
-     */
-    public void updateSchedule(Schedule newSchedule) {
-        this.schedule = newSchedule;
-    }
-
-    /**
-     * Update the list of patients assigned to this doctor.
-     * @param newAssignedPatients The new list of Patient objects to assign to the doctor
-     */
-    public void updateAssignedPatients(List<Patient> newAssignedPatients) {
-        this.assignedPatients = newAssignedPatients;
     }
 }

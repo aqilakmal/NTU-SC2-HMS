@@ -16,27 +16,48 @@ public class Prescription {
      * Unique identifier for the prescription.
      */
     private String prescriptionID;
+
+    /**
+     * Unique identifier for the appointment.
+     */
+    private String appointmentID;
     
     /**
-     * The medication prescribed.
+     * Unique identifier for the medication prescribed.
      */
-    private Medication medication;
+    private String medicationID;
     
+    /**
+     * Quantity of the medication prescribed.
+     */
+    private int quantity;
+
     /**
      * The current status of the prescription.
      */
     private PrescriptionStatus status;
     
     /**
+     * Notes for the prescription.
+     */
+    private String notes;
+
+    /**
      * Constructor for Prescription.
      * @param prescriptionID The unique identifier for the prescription
-     * @param medication The medication prescribed
+     * @param appointmentID The unique identifier for the appointment
+     * @param medicationID The unique identifier for the medication prescribed
+     * @param quantity The quantity of the medication prescribed
      * @param status The current status of the prescription
+     * @param notes The notes for the prescription
      */
-    public Prescription(String prescriptionID, Medication medication, PrescriptionStatus status) {
+    public Prescription(String prescriptionID, String appointmentID, String medicationID, int quantity, PrescriptionStatus status, String notes) {
         this.prescriptionID = prescriptionID;
-        this.medication = medication;
+        this.appointmentID = appointmentID;
+        this.medicationID = medicationID;
+        this.quantity = quantity;
         this.status = status;
+        this.notes = notes;
     }
     
     /**
@@ -48,13 +69,29 @@ public class Prescription {
     }
     
     /**
-     * Get the medication prescribed.
-     * @return The medication object
+     * Get the unique identifier for the appointment.
+     * @return The appointment ID
      */
-    public Medication getMedication() {
-        return medication;
+    public String getAppointmentID() {
+        return appointmentID;
     }
-    
+
+    /**
+     * Get the unique identifier for the medication prescribed.
+     * @return The medication ID
+     */
+    public String getMedicationID() {
+        return medicationID;
+    }
+
+    /**
+     * Get the quantity of the medication prescribed.
+     * @return The quantity
+     */
+    public int getQuantity() {
+        return quantity;
+    }
+
     /**
      * Get the current status of the prescription.
      * @return The prescription status
@@ -64,6 +101,14 @@ public class Prescription {
     }
 
     /**
+     * Get the notes for the prescription.
+     * @return The notes
+     */
+    public String getNotes() {
+        return notes;
+    }
+    
+    /**
      * Set the unique identifier for the prescription.
      * @param prescriptionID The prescription ID to set
      */
@@ -72,18 +117,47 @@ public class Prescription {
     }
 
     /**
-     * Set the medication prescribed.
-     * @param medication The medication to set
+     * Set the unique identifier for the appointment.
+     * @param appointmentID The appointment ID to set
      */
-    public void setMedication(Medication medication) {
-        this.medication = medication;
+    public void setAppointmentID(String appointmentID) {
+        this.appointmentID = appointmentID;
     }
-    
+
     /**
-     * Set the status of the prescription.
-     * @param status The new status of the prescription
+     * Set the unique identifier for the medication prescribed.
+     * @param medicationID The medication ID to set
+     */
+    public void setMedicationID(String medicationID) {
+        this.medicationID = medicationID;
+    }
+
+    /**
+     * Set the quantity of the medication prescribed.
+     * @param quantity The quantity to set
+     */
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
+    }
+
+    /**
+     * Set the current status of the prescription.
+     * @param status The prescription status to set
      */
     public void setStatus(PrescriptionStatus status) {
         this.status = status;
+    }
+
+    /**
+     * Set the notes for the prescription.
+     * @param notes The notes to set
+     */
+    public void setNotes(String notes) {
+        this.notes = notes;
+    }
+    
+    @Override
+    public String toString() {
+        return "Prescription{" + prescriptionID + "," + appointmentID + "," + medicationID + "," + quantity + "," + status + "," + notes + "}";
     }
 }

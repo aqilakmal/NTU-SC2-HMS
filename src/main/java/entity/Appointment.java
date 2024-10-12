@@ -1,7 +1,5 @@
 package entity;
 
-import java.time.LocalDateTime;
-
 /**
  * Represents an appointment between a patient and a doctor in the Hospital Management System.
  */
@@ -30,9 +28,9 @@ public class Appointment {
     private String doctorID;
     
     /**
-     * The date and time of the appointment.
+     * The id of the slot associated with this appointment.
      */
-    private LocalDateTime dateTime;
+    private String slotID;
     
     /**
      * The current status of the appointment.
@@ -49,15 +47,15 @@ public class Appointment {
      * @param appointmentID The unique identifier for the appointment
      * @param patientID The id of the patient associated with this appointment
      * @param doctorID The id of the doctor associated with this appointment
-     * @param dateTime The date and time of the appointment
+     * @param slotID The id of the slot associated with this appointment
      * @param status The current status of the appointment
-     * @param outcomeRecord The outcome record of the appointment (null if not completed)
+     * @param outcomeID The outcome ID of the appointment (null if not completed)
      */
-    public Appointment(String appointmentID, String patientID, String doctorID, LocalDateTime dateTime, AppointmentStatus status, String outcomeID) {
+    public Appointment(String appointmentID, String patientID, String doctorID, String slotID, AppointmentStatus status, String outcomeID) {
         this.appointmentID = appointmentID;
         this.patientID = patientID;
         this.doctorID = doctorID;
-        this.dateTime = dateTime;
+        this.slotID = slotID;
         this.status = status;
         this.outcomeID = outcomeID;
     }
@@ -87,11 +85,11 @@ public class Appointment {
     }
     
     /**
-     * Get the date and time of the appointment.
-     * @return The date and time of the appointment
+     * Get the id of the slot associated with this appointment.
+     * @return The slot ID
      */
-    public LocalDateTime getDateTime() {
-        return dateTime;
+    public String getSlotID() {
+        return slotID;
     }
     
     /**
@@ -128,6 +126,6 @@ public class Appointment {
 
     @Override
     public String toString() {
-        return "Appointment{" + appointmentID + "," + patientID + "," + doctorID + "," + dateTime + "," + status + "," + outcomeID + "}";
+        return "Appointment{" + appointmentID + "," + patientID + "," + doctorID + "," + slotID + "," + status + "," + outcomeID + "}";
     }
 }

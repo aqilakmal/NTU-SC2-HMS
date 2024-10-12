@@ -9,7 +9,6 @@ import java.util.function.Function;
 
 public class TableBuilder {
 
-    // ColumnMapping class to store both column name and optional callback (transformation function)
     public static class ColumnMapping {
         private String columnName;
         private Function<Object, String> callback;
@@ -72,32 +71,37 @@ public class TableBuilder {
         totalWidth += colWidths.length - 1; // Add space between columns
 
         // Print the table name with a line above and below
-        printLine(totalWidth);
-        System.out.println(tableName);
-        printLine(totalWidth);
+        System.out.println();
+        printLine(totalWidth - 1, '┌', '┐');
+        System.out.println("│ " + tableName + " ".repeat(Math.max(0, totalWidth - tableName.length())) + "│");
+        printLine(totalWidth - 1, '├', '┤');
 
         // Print the header
         index = 0;
+        System.out.print("│ ");
         for (String header : headers) {
             printCell(header, colWidths[index]);
             if (index < colWidths.length - 1) System.out.print(" "); // Add space between columns
             index++;
         }
-        System.out.println();
+        System.out.println("│");
 
-        // Print a line under the headers
-        printLine(totalWidth);
+        printLine(totalWidth - 1, '├', '┤');
 
         // Print the rows
         for (Object obj : objects) {
             index = 0;
+            System.out.print("│ ");
             for (Map.Entry<String, ColumnMapping> entry : columnMapping.entrySet()) {
                 try {
                     String attributeName = entry.getKey();
                     String stringValue = getAttributeValue(obj, attributeName, entry.getValue().getCallback());
+                    
+                    // Handle truncation and ellipsis
                     if (stringValue.length() > maxLenCol) {
-                        stringValue = stringValue.substring(0, maxLenCol - 3) + "..."; // Truncate with ellipsis
+                        stringValue = stringValue.substring(0, maxLenCol - 4) + "...";  // Truncate with ellipsis
                     }
+                    
                     printCell(stringValue, colWidths[index]);
                     if (index < colWidths.length - 1) System.out.print(" "); // Add space between columns
                 } catch (Exception e) {
@@ -105,24 +109,25 @@ public class TableBuilder {
                 }
                 index++;
             }
-            System.out.println();
+            System.out.println("│");
         }
 
-        // Print the final line after the table
-        printLine(totalWidth);
+        printLine(totalWidth - 1, '└', '┘');
     }
 
     // Helper method to print cell content with proper padding
     private static void printCell(String content, int width) {
-        System.out.printf("%-" + width + "s", content);
+        // Calculate padding after adding ellipsis if necessary
+        int padding = Math.max(0, width - content.length());  // Ensure no negative padding
+        System.out.print(content + " ".repeat(padding));  // Add spaces to match width
     }
 
-    // Helper method to print line separator
-    private static void printLine(int totalWidth) {
-        for (int i = 0; i < totalWidth; i++) {
+    private static void printLine(int totalWidth, char leftCorner, char rightCorner) {
+        System.out.print(leftCorner);
+        for (int i = 0; i < totalWidth + 2; i++) {
             System.out.print("-");
         }
-        System.out.println();
+        System.out.println(rightCorner);
     }
 
     // Helper method to get attribute value via getter method or direct field access

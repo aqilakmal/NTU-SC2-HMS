@@ -1,6 +1,7 @@
 package controller;
 
 import entity.User;
+import controller.data.UserDataManager;
 
 /**
  * Handles user authentication and password management in the Hospital Management System.
@@ -8,16 +9,16 @@ import entity.User;
 public class AuthenticationController {
 
     /**
-     * UserController instance to manage user data.
+     * UserDataManager instance to manage user data.
      */
-    private UserController userController;
+    private UserDataManager userDataManager;
     
     /**
      * Constructor for AuthenticationController.
-     * @param userController UserController instance to manage user data.
+     * @param userDataManager UserDataManager instance to manage user data.
      */
-    public AuthenticationController(UserController userController) {
-        this.userController = userController;
+    public AuthenticationController(UserDataManager userDataManager) {
+        this.userDataManager = userDataManager;
     }
 
     /**
@@ -27,7 +28,7 @@ public class AuthenticationController {
      * @return User object if authentication is successful, null otherwise
      */
     public User login(String userID, String password) {
-        User user = userController.getUserByID(userID);
+        User user = userDataManager.getUserByID(userID);
         if (user != null && user.getPassword().equals(password)) {
             return user;
         }
@@ -42,7 +43,7 @@ public class AuthenticationController {
      * @throws AuthenticationException if the old password is incorrect or the new password is invalid
      */
     public void changePassword(String userID, String oldPassword, String newPassword) throws AuthenticationException {
-        User user = userController.getUserByID(userID);
+        User user = userDataManager.getUserByID(userID);
         if (user == null) {
             throw new AuthenticationException("User not found");
         }
@@ -54,8 +55,8 @@ public class AuthenticationController {
         }
         user.updatePassword(newPassword);
         try {
-            userController.updateUser(user);
-        } catch (UserController.UserException e) {
+            userDataManager.updateUser(user);
+        } catch (IllegalArgumentException e) {
             throw new AuthenticationException(e.getMessage());
         }
     }

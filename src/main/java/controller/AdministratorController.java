@@ -46,23 +46,25 @@ public class AdministratorController {
     public boolean manageStaff(Administrator.StaffAction staffAction, User staffData) {
         try {
             switch (staffAction) {
-                case ADD:
-                    userDataManager.addUser(staffData);
-                    break;
-                case UPDATE:
-                    userDataManager.updateUser(staffData);
-                    break;
-                case REMOVE:
-                    userDataManager.removeUser(staffData.getUserID());
-                    break;
-                default:
-                    return false;
+                case ADD: userDataManager.addUser(staffData); break;
+                case UPDATE: userDataManager.updateUser(staffData); break;
+                case REMOVE: userDataManager.removeUser(staffData.getUserID()); break;
+                default: return false;
             }
             return true;
         } catch (IllegalArgumentException e) {
             System.out.println("Error: " + e.getMessage());
             return false;
         }
+    }
+
+    /**
+     * Get a user by their ID.
+     * @param userID The ID of the user to retrieve.
+     * @return The User object if found, null otherwise.
+     */
+    public User getUserByID(String userID) {
+        return userDataManager.getUserByID(userID);
     }
 
     /**

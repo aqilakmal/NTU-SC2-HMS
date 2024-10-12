@@ -9,31 +9,27 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.InputMismatchException;
 import java.util.LinkedHashMap;
+
 /**
  * Interface for administrator tasks in the Hospital Management System.
  */
 public class AdministratorMenu {
-    
+
     private AdministratorController administratorController;
-    private UserController userController;
     private Scanner scanner;
-    
+
     /**
      * Constructor for AdministratorMenu.
+     * 
      * @param AdministratorController The AdministratorController instance
-     * @param userController The UserController instance
      */
-    public AdministratorMenu(
-        AdministratorController administratorController,
-        UserController userController
-    ) {
+    public AdministratorMenu(AdministratorController administratorController) {
         this.administratorController = administratorController;
-        this.userController = userController;
         this.scanner = new Scanner(System.in);
     }
-    
+
     /**
-     * Displays the menu options available to the administrator.
+     * [MAIN MENU] Displays the menu options available to the administrator.
      */
     public void displayMenu() {
         while (true) {
@@ -50,23 +46,12 @@ public class AdministratorMenu {
                 scanner.nextLine(); // Consume newline
 
                 switch (choice) {
-                    case 1:
-                        manageStaffMenu();
-                        break;
-                    case 2:
-                        viewAppointmentDetails();
-                        break;
-                    case 3:
-                        manageMedicationInventory();
-                        break;
-                    case 4:
-                        approveReplenishmentRequests();
-                        break;
-                    case 5:
-                        System.out.println("Logging out and returning to home screen...");
-                        return;
-                    default:
-                        System.out.println("Invalid choice. Please enter a number between 1 and 5.");
+                    case 1: manageStaffMenu(); break;
+                    case 2: viewAppointmentDetails(); break;
+                    case 3: manageMedicationInventory(); break;
+                    case 4: approveReplenishmentRequests(); break;
+                    case 5: System.out.println("Logging out and returning to home screen..."); return;
+                    default: System.out.println("Invalid choice. Please enter a number between 1 and 5.");
                 }
             } catch (InputMismatchException e) {
                 System.out.println("Error: Invalid input. Please enter a number.");
@@ -79,7 +64,7 @@ public class AdministratorMenu {
     }
 
     /**
-     * Displays the staff management menu.
+     * [OPTION 1] Displays the staff management menu.
      */
     private void manageStaffMenu() {
         while (true) {
@@ -96,22 +81,12 @@ public class AdministratorMenu {
                 scanner.nextLine(); // Consume newline
 
                 switch (choice) {
-                    case 1:
-                        viewStaffList();
-                        break;
-                    case 2:
-                        addNewStaff();
-                        break;
-                    case 3:
-                        updateStaffInformation();
-                        break;
-                    case 4:
-                        removeStaff();
-                        break;
-                    case 5:
-                        return;
-                    default:
-                        System.out.println("Invalid choice. Please enter a number between 1 and 5.");
+                    case 1: viewStaffList(); break;
+                    case 2: addNewStaff(); break;
+                    case 3: updateStaffInformation(); break;
+                    case 4: removeStaff(); break;
+                    case 5: return;
+                    default: System.out.println("Invalid choice. Please enter a number between 1 and 5.");
                 }
             } catch (InputMismatchException e) {
                 System.out.println("Error: Invalid input. Please enter a number.");
@@ -124,7 +99,7 @@ public class AdministratorMenu {
     }
 
     /**
-     * Views the list of staff.
+     * [OPTION 1.1] Views the list of staff.
      */
     private void viewStaffList() {
         try {
@@ -132,7 +107,7 @@ public class AdministratorMenu {
             // You can add filter options here if needed
             List<User> staffList = administratorController.getFilteredStaffList(filters);
             if (staffList.isEmpty()) {
-                System.out.println("No staff members found.");
+                System.out.println("\nNo staff members found.");
             } else {
                 displayStaffList(staffList);
             }
@@ -143,6 +118,7 @@ public class AdministratorMenu {
 
     /**
      * Displays the list of staff.
+     * 
      * @param staffList The list of staff to display
      */
     private void displayStaffList(List<User> staffList) {
@@ -156,18 +132,19 @@ public class AdministratorMenu {
     }
 
     /**
-     * Adds a new staff member.
+     * [OPTION 1.2] Adds a new staff member.
      */
     private void addNewStaff() {
         int attempts = 0;
         while (attempts < 3) {
             try {
                 ConsoleUtility.printHeader("ADD NEW STAFF");
-                
+
                 String userID = ConsoleUtility.validateInput("Enter new staff ID: ", ConsoleUtility::isValidID);
                 String name = ConsoleUtility.validateInput("Enter staff name: ", ConsoleUtility::isValidName);
                 User.UserRole role = ConsoleUtility.validateRole();
-                String contactNumber = ConsoleUtility.validateInput("Enter contact number (8 digits): ", ConsoleUtility::isValidContactNumber);
+                String contactNumber = ConsoleUtility.validateInput("Enter contact number (8 digits): ",
+                        ConsoleUtility::isValidContactNumber);
                 String email = ConsoleUtility.validateInput("Enter email address: ", ConsoleUtility::isValidEmail);
 
                 User newStaff = new User(userID, "password", role, name, "", "", contactNumber, email);
@@ -197,33 +174,34 @@ public class AdministratorMenu {
     }
 
     /**
-     * Updates the information of a staff member.
+     * [OPTION 1.3] Updates the information of a staff member.
      */
     private void updateStaffInformation() {
         try {
             ConsoleUtility.printHeader("UPDATE STAFF INFORMATION");
             String userID = ConsoleUtility.validateInput("Enter staff ID to update: ", ConsoleUtility::isValidID);
 
-            User staffToUpdate = userController.getUserByID(userID);
+            User staffToUpdate = administratorController.getUserByID(userID);
             if (staffToUpdate == null) {
                 System.out.println("Staff not found.");
                 return;
             }
 
-            String newName = ConsoleUtility.validateInput("Enter new name (or press enter to skip): ", 
-                input -> input.isEmpty() || ConsoleUtility.isValidName(input));
+            String newName = ConsoleUtility.validateInput("Enter new name (or press enter to skip): ",
+                    input -> input.isEmpty() || ConsoleUtility.isValidName(input));
             if (!newName.isEmpty()) {
                 staffToUpdate.updateName(newName);
             }
 
-            String newContactNumber = ConsoleUtility.validateInput("Enter new contact number (8 digits, or press enter to skip): ", 
-                input -> input.isEmpty() || ConsoleUtility.isValidContactNumber(input));
+            String newContactNumber = ConsoleUtility.validateInput(
+                    "Enter new contact number (8 digits, or press enter to skip): ",
+                    input -> input.isEmpty() || ConsoleUtility.isValidContactNumber(input));
             if (!newContactNumber.isEmpty()) {
                 staffToUpdate.updateContactNumber(newContactNumber);
             }
 
-            String newEmail = ConsoleUtility.validateInput("Enter new email address (or press enter to skip): ", 
-                input -> input.isEmpty() || ConsoleUtility.isValidEmail(input));
+            String newEmail = ConsoleUtility.validateInput("Enter new email address (or press enter to skip): ",
+                    input -> input.isEmpty() || ConsoleUtility.isValidEmail(input));
             if (!newEmail.isEmpty()) {
                 staffToUpdate.updateEmailAddress(newEmail);
             }
@@ -240,14 +218,14 @@ public class AdministratorMenu {
     }
 
     /**
-     * Removes a staff member.
+     * [OPTION 1.4] Removes a staff member.
      */
     private void removeStaff() {
         try {
             ConsoleUtility.printHeader("REMOVE STAFF");
             String userID = ConsoleUtility.validateInput("Enter staff ID to remove: ", ConsoleUtility::isValidID);
-            
-            User staffToRemove = userController.getUserByID(userID);
+
+            User staffToRemove = administratorController.getUserByID(userID);
             if (staffToRemove == null) {
                 System.out.println("Staff not found.");
                 return;
@@ -270,7 +248,7 @@ public class AdministratorMenu {
     }
 
     /**
-     * Views the details of all appointments.
+     * [OPTION 2] Views the details of all appointments.
      */
     private void viewAppointmentDetails() {
         while (true) {
@@ -287,14 +265,12 @@ public class AdministratorMenu {
 
             System.out.println("\n{1} View detailed appointment information");
             System.out.println("{2} Return to main menu");
-            int choice = Integer.parseInt(ConsoleUtility.validateInput("Enter your choice: ", input -> input.matches("^[12]$")));
+            int choice = Integer
+                    .parseInt(ConsoleUtility.validateInput("Enter your choice: ", input -> input.matches("^[12]$")));
 
             switch (choice) {
-                case 1:
-                    viewDetailedAppointment(appointments);
-                    break;
-                case 2:
-                    return;
+                case 1: viewDetailedAppointment(appointments); break;
+                case 2: return;
                 default:
                     System.out.println("Invalid choice. Please enter 1 or 2.");
             }
@@ -303,6 +279,7 @@ public class AdministratorMenu {
 
     /**
      * Displays the list of appointments.
+     * 
      * @param appointments The list of appointments to display
      */
     private void displayAppointmentList(List<Appointment> appointments) {
@@ -317,7 +294,9 @@ public class AdministratorMenu {
     }
 
     /**
-     * Views the details of a specific appointment, including its outcome if available.
+     * [OPTION 2.1] Views the details of a specific appointment, including its outcome if
+     * available.
+     * 
      * @param appointments The list of all appointments
      */
     private void viewDetailedAppointment(List<Appointment> appointments) {
@@ -364,7 +343,7 @@ public class AdministratorMenu {
     }
 
     /**
-     * Manages the medication inventory.
+     * [OPTION 3] Manages the medication inventory.
      */
     private void manageMedicationInventory() {
         while (true) {
@@ -381,22 +360,12 @@ public class AdministratorMenu {
                 scanner.nextLine(); // Consume newline
 
                 switch (choice) {
-                    case 1:
-                        viewMedications();
-                        break;
-                    case 2:
-                        addMedication();
-                        break;
-                    case 3:
-                        updateMedicationInformation();
-                        break;
-                    case 4:
-                        removeMedication();
-                        break;
-                    case 5:
-                        return;
-                    default:
-                        System.out.println("Invalid choice. Please enter a number between 1 and 5.");
+                    case 1: viewMedications(); break;
+                    case 2: addMedication(); break;
+                    case 3: updateMedicationInformation(); break;
+                    case 4: removeMedication(); break;
+                    case 5: return;
+                    default: System.out.println("Invalid choice. Please enter a number between 1 and 5.");
                 }
             } catch (InputMismatchException e) {
                 System.out.println("Error: Invalid input. Please enter a number.");
@@ -409,7 +378,7 @@ public class AdministratorMenu {
     }
 
     /**
-     * Displays the list of medications.
+     * [OPTION 3.1] Displays the list of medications.
      */
     private void viewMedications() {
         List<Medication> medications = administratorController.getAllMedications();
@@ -429,21 +398,23 @@ public class AdministratorMenu {
     }
 
     /**
-     * Adds a new medication to the inventory.
+     * [OPTION 3.2] Adds a new medication to the inventory.
      */
     private void addMedication() {
         try {
             ConsoleUtility.printHeader("ADD MEDICATION");
             String medicationID = ConsoleUtility.validateInput("Enter medication ID: ", ConsoleUtility::isValidID);
             String name = ConsoleUtility.validateInput("Enter medication name: ", ConsoleUtility::isValidName);
-            
-            int stockLevel = Integer.parseInt(ConsoleUtility.validateInput("Enter initial stock level: ", ConsoleUtility::isValidInteger));
+
+            int stockLevel = Integer.parseInt(
+                    ConsoleUtility.validateInput("Enter initial stock level: ", ConsoleUtility::isValidInteger));
             if (stockLevel < 0) {
                 System.out.println("Error: Stock level cannot be negative.");
                 return;
             }
 
-            int lowStockAlertLevel = Integer.parseInt(ConsoleUtility.validateInput("Enter low stock alert level: ", ConsoleUtility::isValidInteger));
+            int lowStockAlertLevel = Integer.parseInt(
+                    ConsoleUtility.validateInput("Enter low stock alert level: ", ConsoleUtility::isValidInteger));
             if (lowStockAlertLevel < 0) {
                 System.out.println("Error: Low stock alert level cannot be negative.");
                 return;
@@ -464,12 +435,13 @@ public class AdministratorMenu {
     }
 
     /**
-     * Updates the information of an existing medication.
+     * [OPTION 3.3] Updates the information of an existing medication.
      */
     private void updateMedicationInformation() {
         try {
             ConsoleUtility.printHeader("UPDATE MEDICATION INFORMATION");
-            String medicationID = ConsoleUtility.validateInput("Enter medication ID to update: ", ConsoleUtility::isValidID);
+            String medicationID = ConsoleUtility.validateInput("Enter medication ID to update: ",
+                    ConsoleUtility::isValidID);
 
             Medication medicationToUpdate = administratorController.getMedicationByID(medicationID);
             if (medicationToUpdate == null) {
@@ -477,14 +449,14 @@ public class AdministratorMenu {
                 return;
             }
 
-            String newName = ConsoleUtility.validateInput("Enter new name (or press enter to skip): ", 
-                input -> input.isEmpty() || ConsoleUtility.isValidName(input));
+            String newName = ConsoleUtility.validateInput("Enter new name (or press enter to skip): ",
+                    input -> input.isEmpty() || ConsoleUtility.isValidName(input));
             if (!newName.isEmpty()) {
                 medicationToUpdate.setName(newName);
             }
 
-            String stockLevelInput = ConsoleUtility.validateInput("Enter new stock level (or press enter to skip): ", 
-                input -> input.isEmpty() || ConsoleUtility.isValidInteger(input));
+            String stockLevelInput = ConsoleUtility.validateInput("Enter new stock level (or press enter to skip): ",
+                    input -> input.isEmpty() || ConsoleUtility.isValidInteger(input));
             if (!stockLevelInput.isEmpty()) {
                 int newStockLevel = Integer.parseInt(stockLevelInput);
                 if (newStockLevel < 0) {
@@ -494,8 +466,9 @@ public class AdministratorMenu {
                 medicationToUpdate.setStockLevel(newStockLevel);
             }
 
-            String alertLevelInput = ConsoleUtility.validateInput("Enter new low stock alert level (or press enter to skip): ", 
-                input -> input.isEmpty() || ConsoleUtility.isValidInteger(input));
+            String alertLevelInput = ConsoleUtility.validateInput(
+                    "Enter new low stock alert level (or press enter to skip): ",
+                    input -> input.isEmpty() || ConsoleUtility.isValidInteger(input));
             if (!alertLevelInput.isEmpty()) {
                 int newAlertLevel = Integer.parseInt(alertLevelInput);
                 if (newAlertLevel < 0) {
@@ -519,12 +492,13 @@ public class AdministratorMenu {
     }
 
     /**
-     * Removes a medication from the inventory.
+     * [OPTION 3.4] Removes a medication from the inventory.
      */
     private void removeMedication() {
         try {
             ConsoleUtility.printHeader("REMOVE MEDICATION");
-            String medicationID = ConsoleUtility.validateInput("Enter medication ID to remove: ", ConsoleUtility::isValidID);
+            String medicationID = ConsoleUtility.validateInput("Enter medication ID to remove: ",
+                    ConsoleUtility::isValidID);
 
             if (!ConsoleUtility.getConfirmation("Are you sure you want to remove this medication?")) {
                 System.out.println("Medication removal cancelled.");
@@ -543,7 +517,7 @@ public class AdministratorMenu {
     }
 
     /**
-     * Handles the approval of replenishment requests.
+     * [OPTION 4] Handles the approval of replenishment requests.
      */
     private void approveReplenishmentRequests() {
         while (true) {
@@ -557,7 +531,7 @@ public class AdministratorMenu {
 
             System.out.println();
             displayPendingRequests(pendingRequests);
-            
+
             System.out.println("\n{1} Select replenishment ID to approve");
             System.out.println("{2} Return to main menu");
             System.out.print("Enter your choice: ");
@@ -567,13 +541,9 @@ public class AdministratorMenu {
                 scanner.nextLine(); // Consume newline
 
                 switch (choice) {
-                    case 1:
-                        approveRequest(pendingRequests);
-                        break;
-                    case 2:
-                        return;
-                    default:
-                        System.out.println("Invalid choice. Please enter 1 or 2.");
+                    case 1: approveRequest(pendingRequests); break;
+                    case 2: return;
+                    default: System.out.println("Invalid choice. Please enter 1 or 2.");
                 }
             } catch (InputMismatchException e) {
                 System.out.println("Invalid input. Please enter a number.");
@@ -584,6 +554,7 @@ public class AdministratorMenu {
 
     /**
      * Displays the list of pending replenishment requests.
+     * 
      * @param pendingRequests The list of pending requests to display
      */
     private void displayPendingRequests(List<Request> pendingRequests) {
@@ -598,7 +569,8 @@ public class AdministratorMenu {
     }
 
     /**
-     * Approves a selected replenishment request.
+     * [OPTION 4.1] Approves a selected replenishment request.
+     * 
      * @param pendingRequests The list of pending requests
      */
     private void approveRequest(List<Request> pendingRequests) {
@@ -606,9 +578,9 @@ public class AdministratorMenu {
         String requestID = scanner.nextLine().trim();
 
         Request selectedRequest = pendingRequests.stream()
-            .filter(r -> r.getRequestID().equals(requestID))
-            .findFirst()
-            .orElse(null);
+                .filter(r -> r.getRequestID().equals(requestID))
+                .findFirst()
+                .orElse(null);
 
         if (selectedRequest == null) {
             System.out.println("Request not found.");

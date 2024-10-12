@@ -28,17 +28,23 @@ public class Main {
 		// Initialize all data managers and load user data
 		UserDataManager userDataManager = new UserDataManager();
 		MedicationDataManager medicationDataManager = new MedicationDataManager();
-		AppointmentDataManager appointmentDataManager = new AppointmentDataManager();
+		SlotDataManager slotDataManager = new SlotDataManager();
+		AppointmentDataManager appointmentDataManager = new AppointmentDataManager(slotDataManager);
 		OutcomeDataManager outcomeDataManager = new OutcomeDataManager();
 		RequestDataManager requestDataManager = new RequestDataManager();
+		PrescriptionDataManager prescriptionDataManager = new PrescriptionDataManager();
+		HistoryDataManager historyDataManager = new HistoryDataManager();
 		
 		// Load system data from CSV files
 		try {
 			userDataManager.loadUsersFromCSV();
 			medicationDataManager.loadMedicationsFromCSV();
+			slotDataManager.loadSlotsFromCSV();
 			appointmentDataManager.loadAppointmentsFromCSV();
 			outcomeDataManager.loadOutcomesFromCSV();
 			requestDataManager.loadRequestsFromCSV();
+			prescriptionDataManager.loadPrescriptionsFromCSV();
+			historyDataManager.loadHistoriesFromCSV();
 		} catch (IOException e) {
 			System.err.println("Error loading data: " + e.getMessage());
 		}
@@ -71,9 +77,12 @@ public class Main {
 		try {
 			userDataManager.saveUsersToCSV();
 			medicationDataManager.saveMedicationsToCSV();
+			slotDataManager.saveSlotsToCSV();
 			appointmentDataManager.saveAppointmentsToCSV();
 			outcomeDataManager.saveOutcomesToCSV();
 			requestDataManager.saveRequestsToCSV();
+			prescriptionDataManager.savePrescriptionsToCSV();
+			historyDataManager.saveHistoriesToCSV();
 		} catch (IOException e) {
 			System.err.println("Error saving data to CSV: " + e.getMessage());
 		}
@@ -87,7 +96,7 @@ public class Main {
 	private static void displayHomeScreen() {
 		while (true) {
 			try {
-				System.out.println("\nHospital Management System - Home Screen");
+				System.out.println("\n<======= HOSPITAL MANAGEMENT SYSTEM =======>\n");
 				System.out.println("{1} Log in");
 				System.out.println("{2} Exit");
 				System.out.print("Enter your choice: ");

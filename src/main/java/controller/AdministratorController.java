@@ -237,6 +237,15 @@ public class AdministratorController {
     }
 
     /**
+     * Retrieves appointment details including slot information.
+     * @param appointmentID The ID of the appointment to retrieve.
+     * @return A map containing appointment and slot details, or null if not found.
+     */
+    public Map<String, Object> getAppointmentDetails(String appointmentID) {
+        return appointmentDataManager.getAppointmentDetails(appointmentID);
+    }
+
+    /**
      * InventoryException extends Exception to handle exceptions related to inventory.
      */
     public class InventoryException extends Exception {

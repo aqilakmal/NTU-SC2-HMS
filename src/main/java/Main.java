@@ -15,8 +15,11 @@ public class Main {
 	private static Scanner scanner = new Scanner(System.in);
 	private static LoginMenu loginMenu;
 	private static AuthenticationController authController;
-	private static UserController userController;
 	private static AdministratorController AdministratorController;
+	private static PatientController patientController;
+	private static DoctorController doctorController;
+	private static PharmacistController pharmacistController;
+
 
 	/**
 	 * The main method that starts the Hospital Management System.
@@ -51,8 +54,7 @@ public class Main {
 
 		// Initialize all controllers
 		try {
-			userController = new UserController(userDataManager);
-			authController = new AuthenticationController(userController);
+			authController = new AuthenticationController(userDataManager);
 			AdministratorController = new AdministratorController(
 				userDataManager,
 				appointmentDataManager,
@@ -144,19 +146,19 @@ public class Main {
 				// Based on the authenticated user's role, initialize appropriate UI
 				switch (authenticatedUser.getRole()) {
 					case PATIENT:
-						PatientMenu patientUI = new PatientMenu();
+						PatientMenu patientUI = new PatientMenu(patientController);
 						patientUI.displayMenu();
 						break;
 					case DOCTOR:
-						DoctorMenu doctorUI = new DoctorMenu();
+						DoctorMenu doctorUI = new DoctorMenu(doctorController);
 						doctorUI.displayMenu();
 						break;
 					case PHARMACIST:
-						PharmacistMenu pharmacistUI = new PharmacistMenu();
+						PharmacistMenu pharmacistUI = new PharmacistMenu(pharmacistController);
 						pharmacistUI.displayMenu();
 						break;
 					case ADMINISTRATOR:
-						AdministratorMenu adminUI = new AdministratorMenu(AdministratorController, userController);
+						AdministratorMenu adminUI = new AdministratorMenu(AdministratorController);
 						adminUI.displayMenu();
 						break;
 					default:

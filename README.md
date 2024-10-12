@@ -1,4 +1,4 @@
-# Known Bugs
+# TODOs
 
 #### System
 
@@ -7,11 +7,13 @@
 #### Admin
 
 * ✅ Manage Staff
-  * ✅ View Staff List
-  * ✅ Add New Staff
-  * ✅ Update Staff Information
-  * ✅ Remove Staff
 * ✅ View Appointment Details
 * ✅ Manage Medication Inventory
 * ✅ Approve Replenistment Requests
 * ✅ Logout
+
+#### Faqih Todos:
+
+* Go through code and reorganise
+* Implement todo functions for the rest of the classes
+* Setup testing (optional)

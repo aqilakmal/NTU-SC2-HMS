@@ -7,8 +7,14 @@ import java.util.Map;
 import java.util.LinkedHashMap;
 import java.util.function.Function;
 
+/**
+ * Utility class for building and printing tables with dynamic column widths.
+ */
 public class TableBuilder {
 
+    /**
+     * Represents a mapping for a column in the table.
+     */
     public static class ColumnMapping {
         private String columnName;
         private Function<Object, String> callback;
@@ -27,6 +33,13 @@ public class TableBuilder {
         }
     }
 
+    /**
+     * Creates and prints a table with dynamic column widths.
+     * @param tableName The name of the table
+     * @param objects The list of objects to display in the table
+     * @param columnMapping The mapping of column names to their respective callbacks
+     * @param maxLenCol The maximum length for the columns
+     */
     public static void createTable(String tableName, List<?> objects, LinkedHashMap<String, ColumnMapping> columnMapping, int maxLenCol) {
         // Determine the maximum width for each column (either from data or header)
         int[] colWidths = new int[columnMapping.size()];
@@ -115,13 +128,23 @@ public class TableBuilder {
         printLine(totalWidth - 1, '└', '┘');
     }
 
-    // Helper method to print cell content with proper padding
+    /**
+     * Prints a cell with proper padding.
+     * @param content The content of the cell
+     * @param width The width of the cell
+     */
     private static void printCell(String content, int width) {
         // Calculate padding after adding ellipsis if necessary
         int padding = Math.max(0, width - content.length());  // Ensure no negative padding
         System.out.print(content + " ".repeat(padding));  // Add spaces to match width
     }
 
+    /**
+     * Prints a line with the specified characters.
+     * @param totalWidth The total width of the line
+     * @param leftCorner The character for the left corner
+     * @param rightCorner The character for the right corner
+     */
     private static void printLine(int totalWidth, char leftCorner, char rightCorner) {
         System.out.print(leftCorner);
         for (int i = 0; i < totalWidth + 2; i++) {
@@ -130,7 +153,14 @@ public class TableBuilder {
         System.out.println(rightCorner);
     }
 
-    // Helper method to get attribute value via getter method or direct field access
+    /**
+     * Gets the attribute value via getter method or direct field access.
+     * @param obj The object to get the attribute value from
+     * @param attributeName The name of the attribute
+     * @param callback The callback to apply to the attribute value
+     * @return The attribute value as a string
+     * @throws Exception If there's an error getting the attribute value
+     */
     private static String getAttributeValue(Object obj, String attributeName, Function<Object, String> callback) throws Exception {
         // Capitalize the first letter of the attribute to find getter method
         String capitalized = attributeName.substring(0, 1).toUpperCase() + attributeName.substring(1);

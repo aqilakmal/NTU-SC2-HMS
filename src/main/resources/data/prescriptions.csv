@@ -1,3 +1,3 @@
-prescriptionID,appointmentID,medicationID,status
-P01,A01,M01,PENDING
-P02,A01,M02,PENDING
+prescriptionID,appointmentID,medicationID,quantity,status,notes
+P01,A01,M01,1,PENDING,Take one tablet daily
+P02,A01,M02,1,PENDING,Take two tablets daily

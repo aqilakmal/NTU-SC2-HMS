@@ -1,2 +1,2 @@
-requestID,medicationID,quantity,requestedBy,status
-R01,M01,50,H01,PENDING
+requestID,medicationID,quantity,requestedBy,status,approvedBy
+R01,M01,50,APPROVED,H01,

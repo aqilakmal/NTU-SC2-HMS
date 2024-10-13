@@ -79,7 +79,27 @@ public class AppointmentDataManager {
     }
 
     /**
-     * Retrieves all appointments.
+     * [CREATE] Adds a new appointment to the list.
+     * @param appointment The Appointment object to add.
+     */
+    public void addAppointment(Appointment appointment) throws IllegalArgumentException {
+        if (getAppointmentByID(appointment.getAppointmentID()) != null) {
+            throw new IllegalArgumentException("Appointment with ID " + appointment.getAppointmentID() + " already exists.");
+        }
+        appointments.add(appointment);
+    }
+
+    /**
+     * [READ] Retrieves an appointment by its ID.
+     * @param appointmentID The ID of the appointment to retrieve.
+     * @return The Appointment object with the specified ID, or null if not found.
+     */
+    public Appointment getAppointmentByID(String appointmentID) {
+        return appointments.stream().filter(a -> a.getAppointmentID().equals(appointmentID)).findFirst().orElse(null);
+    }
+
+    /**
+     * [READ] Retrieves all appointments.
      * @return List of all Appointment objects.
      */
     public List<Appointment> getAllAppointments() {
@@ -87,7 +107,7 @@ public class AppointmentDataManager {
     }
 
     /**
-     * Retrieves a filtered list of appointments based on specified criteria.
+     * [READ] Retrieves a filtered list of appointments based on specified criteria.
      * @param filters Map of filter criteria (e.g., status, date range, etc.)
      * @return List of Appointment objects matching the filter criteria
      */
@@ -113,7 +133,7 @@ public class AppointmentDataManager {
     }
 
     /**
-     * Retrieves appointment details including slot information.
+     * [READ] Retrieves appointment details including slot information.
      * @param appointmentID The ID of the appointment to retrieve.
      * @return A map containing appointment and slot details, or null if not found.
      */

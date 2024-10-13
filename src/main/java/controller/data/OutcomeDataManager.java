@@ -73,7 +73,7 @@ public class OutcomeDataManager {
     }
 
     /**
-     * Retrieves all outcomes.
+     * [READ] Retrieves all outcomes.
      * @return List of all Outcome objects.
      */
     public List<Outcome> getAllOutcomes() {
@@ -81,7 +81,7 @@ public class OutcomeDataManager {
     }
 
     /**
-     * Retrieves an outcome by its ID.
+     * [READ] Retrieves an outcome by its ID.
      * @param outcomeID The ID of the outcome to retrieve
      * @return The Outcome object if found, null otherwise
      */

@@ -92,7 +92,19 @@ public class RequestDataManager {
     }
 
     /**
-     * Retrieves the list of all requests.
+     * [CREATE] Adds a new request to the system.
+     * @param newRequest The new Request object to add.
+     * @throws IllegalArgumentException If a request with the same ID already exists.
+     */
+    public void addRequest(Request newRequest) throws IllegalArgumentException {
+        if (getRequestByID(newRequest.getRequestID()) != null) {
+            throw new IllegalArgumentException("A request with ID " + newRequest.getRequestID() + " already exists.");
+        }
+        requests.add(newRequest);
+    }
+
+    /**
+     * [READ] Retrieves the list of all requests.
      * @return List of Request objects.
      */
     public List<Request> getRequests() {
@@ -100,7 +112,7 @@ public class RequestDataManager {
     }
 
     /**
-     * Retrieves a request by its ID.
+     * [READ] Retrieves a request by its ID.
      * @param requestID The ID of the request to retrieve.
      * @return The Request object if found, null otherwise.
      */
@@ -112,7 +124,7 @@ public class RequestDataManager {
     }
 
     /**
-     * Retrieves a list of pending requests.
+     * [READ] Retrieves a list of pending requests.
      * @return List of pending Request objects.
      */
     public List<Request> getPendingRequests() {
@@ -122,7 +134,7 @@ public class RequestDataManager {
     }
 
     /**
-     * Updates an existing request's information.
+     * [UPDATE] Updates an existing request's information.
      * @param updatedRequest The Request object with updated information.
      * @throws IllegalArgumentException If the request doesn't exist.
      */

@@ -15,11 +15,10 @@ public class Main {
 	private static Scanner scanner = new Scanner(System.in);
 	private static LoginMenu loginMenu;
 	private static AuthenticationController authController;
-	private static AdministratorController AdministratorController;
+	private static AdministratorController administratorController;
 	private static PatientController patientController;
 	private static DoctorController doctorController;
 	private static PharmacistController pharmacistController;
-
 
 	/**
 	 * The main method that starts the Hospital Management System.
@@ -55,13 +54,32 @@ public class Main {
 		// Initialize all controllers
 		try {
 			authController = new AuthenticationController(userDataManager);
-			AdministratorController = new AdministratorController(
-				userDataManager,
-				appointmentDataManager,
-				outcomeDataManager,
-				medicationDataManager,
-				requestDataManager
-			);
+			administratorController = new AdministratorController(
+                userDataManager,
+                appointmentDataManager,
+                outcomeDataManager,
+                medicationDataManager,
+                requestDataManager,
+                authController
+            );
+			doctorController = new DoctorController(
+                userDataManager,
+                slotDataManager,
+                appointmentDataManager,
+                historyDataManager,
+                authController
+            );
+			patientController = new PatientController(
+                appointmentDataManager,
+                slotDataManager,
+                doctorController,
+                authController
+            );
+			pharmacistController = new PharmacistController(
+                medicationDataManager,
+                requestDataManager,
+                authController
+            );
 		} catch (Exception e) {
 			System.err.println("Critical Error: Failed to initialize controllers. The system cannot start.");
 			System.err.println("Error details: " + e.getMessage());
@@ -69,11 +87,9 @@ public class Main {
 			return;
 		}
 
-		// Initialize the LoginMenu
-		loginMenu = new LoginMenu(authController);
-
-		// Display the home screen menu
-		displayHomeScreen();
+        // Initialize the LoginMenu & display the home screen
+        loginMenu = new LoginMenu(authController);
+        displayHomeScreen();
 
 		// Save all data when the program is terminated
 		try {
@@ -107,14 +123,9 @@ public class Main {
 				scanner.nextLine(); // Consume newline
 
 				switch (choice) {
-					case 1:
-						handleLogin();
-						break;
-					case 2:
-						System.out.println("Exiting the Hospital Management System. Goodbye!");
-						return;
-					default:
-						System.out.println("Invalid choice. Please enter 1 or 2.");
+					case 1: handleLogin(); break;
+					case 2: System.out.println("Exiting the Hospital Management System. Goodbye!"); return;
+					default: System.out.println("Invalid choice. Please enter 1 or 2.");
 				}
 			} catch (InputMismatchException e) {
 				System.out.println("Error: Invalid input. Please enter a number.");
@@ -134,7 +145,8 @@ public class Main {
 			User authenticatedUser = loginMenu.displayLoginScreen();
 
 			if (authenticatedUser != null) {
-				if (authenticatedUser.getPassword().equals("password")) {
+				
+                if (authenticatedUser.getPassword().equals("password")) {
 					System.out.println("This is your first login. You must change your password.");
 					boolean passwordChanged = loginMenu.changePassword(authenticatedUser);
 					if (!passwordChanged) {
@@ -158,13 +170,15 @@ public class Main {
 						pharmacistUI.displayMenu();
 						break;
 					case ADMINISTRATOR:
-						AdministratorMenu adminUI = new AdministratorMenu(AdministratorController);
+						AdministratorMenu adminUI = new AdministratorMenu(administratorController);
 						adminUI.displayMenu();
 						break;
 					default:
 						System.out.println("Error: Invalid user role. Please contact system administrator.");
 						break;
 				}
+			} else {
+				System.out.println("Login failed. Please try again.");
 			}
 		} catch (Exception e) {
 			System.err.println("An error occurred during login: " + e.getMessage());

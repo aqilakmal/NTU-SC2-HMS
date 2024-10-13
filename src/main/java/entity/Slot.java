@@ -13,6 +13,7 @@ public class Slot {
      */
     public enum SlotStatus {
         AVAILABLE,  // Slot is available for booking
+        PENDING,    // Slot is pending for a doctor to confirm
         BOOKED,     // Slot is booked by a patient
         COMPLETED,  // Slot has been used for an appointment
         REMOVED     // Slot has been removed by the doctor (soft delete)

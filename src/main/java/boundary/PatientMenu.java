@@ -6,6 +6,7 @@ import utility.*;
 import java.util.Scanner;
 import java.util.List;
 import java.util.InputMismatchException;
+import java.util.LinkedHashMap;
 
 /**
  * Interface for patient interactions in the Hospital Management System.
@@ -93,7 +94,101 @@ public class PatientMenu {
      * [OPTION 4] Schedules a new appointment.
      */
     private void scheduleAppointment() {
-        // TODO: Implement logic to schedule an appointment
+        try {
+            ConsoleUtility.printHeader("SCHEDULE AN APPOINTMENT", false);
+
+            // Step 1: Display list of doctors
+            List<Doctor> doctors = patientController.getAllDoctors();
+            if (doctors.isEmpty()) {
+                System.out.println("No doctors are currently available in the system.");
+                return;
+            }
+
+            System.out.println("");
+            displayDoctorList(doctors);
+
+            // Step 2: Prompt user to select a doctor
+            String selectedDoctorID = ConsoleUtility.validateInput("\nEnter the Doctor ID to schedule with: ",
+                    input -> doctors.stream().anyMatch(d -> d.getUserID().equals(input)));
+
+            Doctor selectedDoctor = patientController.getDoctorByID(selectedDoctorID);
+
+            if (selectedDoctor == null) {
+                System.out.println("Invalid Doctor ID. Please try again.");
+                return;
+            }
+
+            // Step 3: Display available slots for the selected doctor
+            List<Slot> availableSlots = patientController.getAvailableSlotsForDoctor(selectedDoctorID);
+            if (availableSlots.isEmpty()) {
+                System.out.println("\nNo available slots for the selected doctor.");
+                return;
+            }
+
+            displayAvailableSlots(availableSlots);
+
+            // Step 4: Prompt user to select a slot
+            String selectedSlotID = ConsoleUtility.validateInput("\nEnter the Slot ID to schedule: ",
+                    input -> availableSlots.stream().anyMatch(s -> s.getSlotID().equals(input)));
+
+            Slot selectedSlot = patientController.getSlotByID(selectedSlotID);
+
+            if (selectedSlot == null) {
+                System.out.println("Invalid Slot ID. Please try again.");
+                return;
+            }
+
+            // Step 5: Verify appointment information
+            System.out.println("\nAppointment Details:");
+            System.out.println("Doctor: " + selectedDoctor.getName());
+            System.out.println("Date: " + selectedSlot.getDate());
+            System.out.println("Time: " + selectedSlot.getStartTime() + " - " + selectedSlot.getEndTime());
+
+            if (!ConsoleUtility.getConfirmation("Do you want to confirm this appointment?")) {
+                System.out.println("Appointment scheduling cancelled.");
+                return;
+            }
+
+            // Step 6: Schedule the appointment
+            boolean success = patientController.scheduleAppointment(selectedDoctorID, selectedSlotID);
+            if (success) {
+                System.out.println("Appointment scheduled successfully. Waiting for doctor's approval.");
+            } else {
+                System.out.println("Failed to schedule the appointment. Please try again later.");
+            }
+
+        } catch (Exception e) {
+            System.err.println("An error occurred while scheduling the appointment: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Displays the list of doctors.
+     * 
+     * @param doctors The list of doctors to display
+     */
+    private void displayDoctorList(List<Doctor> doctors) {
+        LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
+        columnMapping.put("userID", new TableBuilder.ColumnMapping("Doctor ID", null));
+        columnMapping.put("name", new TableBuilder.ColumnMapping("Name", null));
+        columnMapping.put("specialization", new TableBuilder.ColumnMapping("Specialization", null));
+
+        TableBuilder.createTable("Available Doctors", doctors, columnMapping, 20);
+    }
+
+    /**
+     * Displays the list of available slots.
+     * 
+     * @param slots The list of available slots to display
+     */
+    private void displayAvailableSlots(List<Slot> slots) {
+        LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
+        columnMapping.put("slotID", new TableBuilder.ColumnMapping("Slot ID", null));
+        columnMapping.put("date", new TableBuilder.ColumnMapping("Date", null));
+        columnMapping.put("startTime", new TableBuilder.ColumnMapping("Start Time", null));
+        columnMapping.put("endTime", new TableBuilder.ColumnMapping("End Time", null));
+
+        TableBuilder.createTable("Available Slots", slots, columnMapping, 15);
     }
 
     /**

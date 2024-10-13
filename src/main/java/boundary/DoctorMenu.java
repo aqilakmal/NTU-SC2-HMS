@@ -3,9 +3,7 @@ package boundary;
 import controller.*;
 import entity.*;
 import utility.*;
-import java.util.Scanner;
-import java.util.List;
-import java.util.InputMismatchException;
+import java.util.*;
 
 /**
  * Interface for doctor functionalities in the Hospital Management System.
@@ -70,6 +68,7 @@ public class DoctorMenu {
      * [OPTION 1] Views patient medical records.
      */
     private void viewPatientMedicalRecords() {
+        ConsoleUtility.printHeader("VIEW PATIENT MEDICAL RECORDS");
         // TODO: Implement logic to view patient medical records
     }
 
@@ -77,13 +76,151 @@ public class DoctorMenu {
      * [OPTION 2] Updates patient medical records.
      */
     private void updatePatientMedicalRecords() {
-        // TODO: Implement logic to update patient medical records
+        try {
+            ConsoleUtility.printHeader("UPDATE PATIENT MEDICAL RECORDS", false);
+            List<Patient> patients = doctorController.getPatientsUnderCare();
+
+            if (patients.isEmpty()) {
+                System.out.println("\nYou currently have no patients under your care.");
+                return;
+            }
+
+            // Display the list of patients under the doctor's care
+            System.out.println();
+            displayPatientList(patients);
+
+            String patientID = ConsoleUtility.validateInput("\nEnter the Patient ID to update (or press Enter to go back): ", 
+                input -> input.isEmpty() || doctorController.isValidPatientID(input));
+
+            if (patientID.isEmpty()) {
+                return;
+            }
+
+            List<History> medicalHistory = doctorController.getPatientMedicalHistory(patientID);
+
+            if (medicalHistory.isEmpty()) {
+                System.out.println("This patient has no medical history records.");
+                if (ConsoleUtility.getConfirmation("Would you like to add a new record?")) {
+                    addNewMedicalRecord(patientID);
+                }
+                return;
+            }
+
+            displayMedicalHistory(medicalHistory);
+
+            String historyID = ConsoleUtility.validateInput("\nEnter the History ID to update (or press Enter to go back): ", 
+                input -> input.isEmpty() || doctorController.isValidHistoryID(input));
+
+            if (historyID.isEmpty()) {
+                return;
+            }
+
+            History selectedHistory = doctorController.getHistoryByID(historyID);
+            if (selectedHistory == null) {
+                System.out.println("Error: Invalid History ID. Please try again.");
+                return;
+            }
+
+            updateMedicalRecord(selectedHistory);
+        } catch (Exception e) {
+            System.err.println("An error occurred while updating medical records: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Displays the list of patients under the doctor's care.
+     * @param patients The list of patients to display
+     */
+    private void displayPatientList(List<Patient> patients) {
+        LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
+        columnMapping.put("userID", new TableBuilder.ColumnMapping("Patient ID", null));
+        columnMapping.put("name", new TableBuilder.ColumnMapping("Name", null));
+        columnMapping.put("dateOfBirth", new TableBuilder.ColumnMapping("Date of Birth", null));
+        columnMapping.put("gender", new TableBuilder.ColumnMapping("Gender", null));
+
+        TableBuilder.createTable("Patients Under Care", patients, columnMapping, 20);
+    }
+
+    /**
+     * Displays the medical history for a patient.
+     * @param medicalHistory The list of medical history records to display
+     */
+    private void displayMedicalHistory(List<History> medicalHistory) {
+        LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
+        columnMapping.put("historyID", new TableBuilder.ColumnMapping("History ID", null));
+        columnMapping.put("diagnosisDate", new TableBuilder.ColumnMapping("Date", null));
+        columnMapping.put("diagnosis", new TableBuilder.ColumnMapping("Diagnosis", null));
+        columnMapping.put("treatment", new TableBuilder.ColumnMapping("Treatment", null));
+
+        TableBuilder.createTable("Medical History", medicalHistory, columnMapping, 20);
+    }
+
+    /**
+     * Handles updating a specific medical record.
+     * @param history The History object to update
+     */
+    private void updateMedicalRecord(History history) {
+        System.out.println("\nCurrent Diagnosis: " + history.getDiagnosis());
+        String newDiagnosis = ConsoleUtility.validateInput("Enter new diagnosis (or press Enter to keep current): ", 
+            input -> input.isEmpty() || !input.trim().isEmpty());
+
+        System.out.println("Current Treatment: " + history.getTreatment());
+        String newTreatment = ConsoleUtility.validateInput("Enter new treatment (or press Enter to keep current): ", 
+            input -> input.isEmpty() || !input.trim().isEmpty());
+
+        if (newDiagnosis.isEmpty() && newTreatment.isEmpty()) {
+            System.out.println("No changes made to the medical record.");
+            return;
+        }
+
+        try {
+            boolean updated = doctorController.updateMedicalHistory(history.getHistoryID(), 
+                                                                    newDiagnosis.isEmpty() ? null : newDiagnosis, 
+                                                                    newTreatment.isEmpty() ? null : newTreatment);
+
+            if (updated) {
+                System.out.println("Medical record updated successfully.");
+            } else {
+                System.out.println("Failed to update medical record. Please try again.");
+            }
+        } catch (IllegalArgumentException e) {
+            System.err.println("Error updating medical record: " + e.getMessage());
+        } catch (Exception e) {
+            System.err.println("An unexpected error occurred while updating the medical record: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Handles adding a new medical record for a patient.
+     * @param patientID The ID of the patient
+     */
+    private void addNewMedicalRecord(String patientID) {
+        try {
+            String diagnosis = ConsoleUtility.validateInput("Enter diagnosis: ", input -> !input.trim().isEmpty());
+            String treatment = ConsoleUtility.validateInput("Enter treatment: ", input -> !input.trim().isEmpty());
+
+            boolean added = doctorController.addMedicalHistory(patientID, diagnosis, treatment);
+
+            if (added) {
+                System.out.println("New medical record added successfully.");
+            } else {
+                System.out.println("Failed to add new medical record. Please try again.");
+            }
+        } catch (IllegalArgumentException e) {
+            System.err.println("Error adding new medical record: " + e.getMessage());
+        } catch (Exception e) {
+            System.err.println("An unexpected error occurred while adding the new medical record: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     /**
      * [OPTION 3] Views the doctor's personal schedule.
      */
     private void viewPersonalSchedule() {
+        ConsoleUtility.printHeader("VIEW PERSONAL SCHEDULE");
         // TODO: Implement logic to view personal schedule
     }
 
@@ -91,6 +228,7 @@ public class DoctorMenu {
      * [OPTION 4] Sets availability for appointments.
      */
     private void setAvailabilityForAppointments() {
+        ConsoleUtility.printHeader("SET AVAILABILITY FOR APPOINTMENTS");
         // TODO: Implement logic to set availability for appointments
     }
 
@@ -98,6 +236,7 @@ public class DoctorMenu {
      * [OPTION 5] Manages appointment requests.
      */
     private void manageAppointmentRequests() {
+        ConsoleUtility.printHeader("MANAGE APPOINTMENT REQUESTS");
         // TODO: Implement logic to accept or decline appointment requests
     }
 
@@ -105,6 +244,7 @@ public class DoctorMenu {
      * [OPTION 6] Views upcoming appointments.
      */
     private void viewUpcomingAppointments() {
+        ConsoleUtility.printHeader("VIEW UPCOMING APPOINTMENTS");
         // TODO: Implement logic to view upcoming appointments
     }
 
@@ -112,6 +252,7 @@ public class DoctorMenu {
      * [OPTION 7] Records appointment outcome.
      */
     private void recordAppointmentOutcome() {
+        ConsoleUtility.printHeader("RECORD APPOINTMENT OUTCOME");
         // TODO: Implement logic to record appointment outcome
     }
 }

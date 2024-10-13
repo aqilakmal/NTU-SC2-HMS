@@ -68,8 +68,40 @@ public class DoctorMenu {
      * [OPTION 1] Views patient medical records.
      */
     private void viewPatientMedicalRecords() {
-        ConsoleUtility.printHeader("VIEW PATIENT MEDICAL RECORDS");
-        // TODO: Implement logic to view patient medical records
+        try{
+            
+            List<Patient> patients = doctorController.getPatientsUnderCare();
+            if (patients.isEmpty()) {
+                System.out.println("\nYou currently have no patients under your care.");
+                return;
+            }
+            // Display the list of patients under the doctor's care
+            ConsoleUtility.printHeader("VIEW PATIENT MEDICAL RECORDS");
+            System.out.println();
+            displayPatientList(patients);
+
+            String patientID = ConsoleUtility.validateInput("\nEnter the Patient ID to view their medical records (or press Enter to go back): ", 
+                input -> input.isEmpty() || doctorController.isValidPatientID(input));
+
+            if (patientID.isEmpty()) {
+                return;
+            }
+
+            List<History> medicalHistory = doctorController.getPatientMedicalHistory(patientID);
+
+            if (medicalHistory.isEmpty()) {
+                System.out.println("This patient has no medical history records.");
+                return;
+            }
+
+            displayMedicalHistory(medicalHistory);
+            
+
+        }catch (Exception e) {
+            System.err.println("An error occurred while viewing medical records: " + e.getMessage());
+            e.printStackTrace();
+        }
+
     }
 
     /**

@@ -9,6 +9,11 @@ import controller.data.UserDataManager;
 public class AuthenticationController {
 
     /**
+     * The currently authenticated user.
+     */
+    private User currentUser;
+
+    /**
      * UserDataManager instance to manage user data.
      */
     private UserDataManager userDataManager;
@@ -30,9 +35,18 @@ public class AuthenticationController {
     public User login(String userID, String password) {
         User user = userDataManager.getUserByID(userID);
         if (user != null && user.getPassword().equals(password)) {
+            currentUser = user;
             return user;
         }
         return null;
+    }
+
+    /**
+     * Returns the currently authenticated user.
+     * @return The currently authenticated User object, or null if no user is authenticated.
+     */
+    public User getCurrentUser() {
+        return currentUser;
     }
     
     /**

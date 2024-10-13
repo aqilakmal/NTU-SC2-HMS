@@ -18,6 +18,7 @@ public class AdministratorController {
     private OutcomeDataManager outcomeDataManager;
     private MedicationDataManager medicationDataManager;
     private RequestDataManager requestDataManager;
+    private AuthenticationController authController;
 
     /**
      * Constructor for AdministratorController.
@@ -26,15 +27,17 @@ public class AdministratorController {
      * @param outcomeDataManager The OutcomeDataManager instance to manage outcome data.
      * @param medicationDataManager The MedicationDataManager instance to manage medication data.
      * @param requestDataManager The RequestDataManager instance to manage replenishment request data.
+     * @param authController The AuthenticationController instance to manage authentication.
      */
     public AdministratorController(UserDataManager userDataManager, AppointmentDataManager appointmentDataManager, 
                                    OutcomeDataManager outcomeDataManager, MedicationDataManager medicationDataManager,
-                                   RequestDataManager requestDataManager) {
+                                   RequestDataManager requestDataManager, AuthenticationController authController) {
         this.userDataManager = userDataManager;
         this.appointmentDataManager = appointmentDataManager;
         this.outcomeDataManager = outcomeDataManager;
         this.medicationDataManager = medicationDataManager;
         this.requestDataManager = requestDataManager;
+        this.authController = authController;
     }
 
     /**
@@ -229,6 +232,9 @@ public class AdministratorController {
             updateMedication(medication);
 
             request.setStatus(Request.RequestStatus.APPROVED);
+
+            request.setApprovedBy(authController.getCurrentUser().getUserID());
+
             requestDataManager.updateRequest(request);
 
             return true;

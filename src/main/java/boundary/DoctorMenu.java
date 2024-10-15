@@ -684,13 +684,13 @@ public class DoctorMenu {
             String slotID = ConsoleUtility.validateInput("\nEnter an Slot ID (Appointment ID) to complete (or press Enter to go back)[e.g. S01]: ",
                     input -> input.isEmpty() || doctorController.isValidBookedSlotID(input));
 
-            Slot selectedSlot = doctorController.getSlotByID(slotID);
-            if (selectedSlot == null) {
-                System.out.println("Error: Invalid Slot ID. Please try again.");
+            if (slotID.isEmpty()) {
                 return;
             }
 
-            if (slotID.isEmpty()) {
+            Slot selectedSlot = doctorController.getSlotByID(slotID);
+            if (selectedSlot == null) {
+                System.out.println("Error: Invalid Slot ID. Please try again.");
                 return;
             }
 
@@ -762,7 +762,7 @@ public class DoctorMenu {
             List<Medication> medication = doctorController.getAllMedication();
             displayMedication(medication, "LIST OF MEDICATIONS");
             do {
-                String medicationID = ConsoleUtility.validateInput("\nEnter an Medication ID to prescribe to the patient(or press Enter to finish prescription)[e.g. M01]: ",
+                String medicationID = ConsoleUtility.validateInput("\nEnter an Medication ID to prescribe to the patient(press Enter to finish prescription)[e.g. M01]: ",
                         input -> input.isEmpty() || doctorController.isValidMedicationID(input));
                 //need to account for 1/2 tablets
                 if (medicationID.isEmpty()) {
@@ -774,7 +774,6 @@ public class DoctorMenu {
                     prescriptionID = prescriptionID + ";" + medicationID;
                 }
                 quantity = ConsoleUtility.validateInteger("Enter quantity: ");
-                scanner.nextLine();
                 notes = ConsoleUtility.validateInput("Enter prescription notes: ", input -> !input.trim().isEmpty());
                 success = doctorController.addPrescription(appointmentID, medicationID, quantity, notes);
 

@@ -126,6 +126,7 @@ public class ConsoleUtility {
             System.out.print(prompt);
             try {
                 int input = scanner.nextInt();  // Try to read an integer
+                scanner.next();  // Clear the invalid input from the scanner
                 return input;  // If successful, return the input
             } catch (InputMismatchException e) {
                 // If input is not an integer, catch the exception

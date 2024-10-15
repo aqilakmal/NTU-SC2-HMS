@@ -1,12 +1,17 @@
 package controller.data;
 
-import entity.*;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+
+import entity.Slot;
 
 /**
  * Manages slot data operations including loading from and saving to CSV files,
@@ -32,6 +37,7 @@ public class SlotDataManager {
 
     /**
      * Loads slot data from a CSV file.
+     *
      * @throws IOException If there's an error reading the file.
      */
     public void loadSlotsFromCSV() throws IOException {
@@ -65,6 +71,7 @@ public class SlotDataManager {
 
     /**
      * Saves slot data to a CSV file.
+     *
      * @throws IOException If there's an error writing to the file.
      */
     public void saveSlotsToCSV() throws IOException {
@@ -81,7 +88,7 @@ public class SlotDataManager {
                 sb.append(slot.getStartTime().format(TIME_FORMATTER)).append(",");
                 sb.append(slot.getEndTime().format(TIME_FORMATTER)).append(",");
                 sb.append(slot.getStatus());
-                
+
                 bw.write(sb.toString());
                 bw.newLine();
             }
@@ -90,6 +97,7 @@ public class SlotDataManager {
 
     /**
      * [CREATE] Adds a new slot to the system.
+     *
      * @param slot The Slot object to add.
      * @throws IllegalArgumentException If the slot already exists.
      */
@@ -102,6 +110,7 @@ public class SlotDataManager {
 
     /**
      * [READ] Retrieves the list of all slots.
+     *
      * @return List of Slot objects.
      */
     public List<Slot> getSlots() {
@@ -110,6 +119,7 @@ public class SlotDataManager {
 
     /**
      * [READ] Retrieves a slot by its ID.
+     *
      * @param slotID The ID of the slot to retrieve.
      * @return The Slot object if found, null otherwise.
      */
@@ -121,21 +131,39 @@ public class SlotDataManager {
     }
 
     /**
+     * [READ] Retrieves a slot by its ID.
+     *
+     * @param slotID The ID of the slot to retrieve.
+     * @param doctorID The doctor ID linked to retrieved slot.
+     * @return The Slot object if found, null otherwise.
+     */
+    public Slot getStatusByID(String slotID, String doctorID, Slot.SlotStatus status) {
+        return slots.stream()
+                .filter(slot -> slot.getSlotID().equals(slotID)
+                && slot.getStatus() == status
+                && slot.getDoctorID().equals(doctorID))
+                .findFirst()
+                .orElse(null);
+    }
+
+    /**
      * [READ] Retrieves available slots for a specific doctor on a given date.
+     *
      * @param doctorID The ID of the doctor.
      * @param date The date to check for available slots.
      * @return List of available Slot objects.
      */
     public List<Slot> getAvailableSlots(String doctorID, LocalDate date) {
         return slots.stream()
-                .filter(slot -> slot.getDoctorID().equals(doctorID) &&
-                                slot.getDate().equals(date) &&
-                                slot.getStatus() == Slot.SlotStatus.AVAILABLE)
+                .filter(slot -> slot.getDoctorID().equals(doctorID)
+                && slot.getDate().equals(date)
+                && slot.getStatus() == Slot.SlotStatus.AVAILABLE)
                 .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
     }
 
     /**
      * [UPDATE] Updates an existing slot's information.
+     *
      * @param updatedSlot The Slot object with updated information.
      * @throws IllegalArgumentException If the slot doesn't exist.
      */
@@ -151,6 +179,7 @@ public class SlotDataManager {
 
     /**
      * [DELETE] Removes a slot from the system.
+     *
      * @param slotID The ID of the slot to remove.
      * @throws IllegalArgumentException If the slot doesn't exist.
      */

@@ -1,2 +1,4 @@
 outcomeID,appointmentID,serviceProvided,prescriptionID,consultationNotes
 R01,A02,Consultation,M01;M02,Patient showing signs of improvement
+R02,A01,Consultation,M01;M02,Patient showing signs of great recovery
+R03,A03,Consultation,NIL,Require further checkup

@@ -356,7 +356,11 @@ public class DoctorMenu {
 
             switch (choice) {
                 case 1:
-                    updateSlot();
+                    if (availableSlotsBoolean) {
+                        updateSlot();
+                    } else {
+                        System.out.println("\nYou have no available slots to update");
+                    }
                     break;
                 case 2:
                     addNewSlot();
@@ -365,7 +369,7 @@ public class DoctorMenu {
                     if (availableSlotsBoolean) {
                         removeSlot();
                     } else {
-                        System.out.println("\nYou have no available slots to remove");
+                        System.out.println("\nYou have no available slots to remove.");
                     }
                     break;
                 case 4:
@@ -544,14 +548,12 @@ public class DoctorMenu {
 
             String slotID = ConsoleUtility.validateInput("\nEnter an Slot ID (Appointment ID) to accept (or press Enter to go back)[e.g. S01]: ",
                     input -> input.isEmpty() || doctorController.isValidPendingSlotID(input));
-
+            if (slotID.isEmpty()) {
+                return;
+            }
             Slot selectedSlot = doctorController.getSlotByID(slotID);
             if (selectedSlot == null) {
                 System.out.println("Error: Invalid Slot ID. Please try again.");
-                return;
-            }
-
-            if (slotID.isEmpty()) {
                 return;
             }
 
@@ -627,7 +629,19 @@ public class DoctorMenu {
     private void manageAppointment(Appointment appointment, Slot slot) {
 
         try {
-            Boolean accept = ConsoleUtility.getConfirmation("\nWould you like to accept this appointment?");
+            Boolean accept;
+            String acceptString = ConsoleUtility.validateInput("\nWould you like to accept this appointment?(press Enter to go back) [y/n]: ",
+                    input -> input.isEmpty() || ConsoleUtility.getConfirmation(""));
+
+            if (acceptString.isEmpty()) {
+                return;
+            } else if (acceptString.equals("y")) {
+                accept = true;
+            } else if (acceptString.equals("n")) {
+                accept = false;
+            } else {
+                return;
+            }
 
             Boolean success = doctorController.manageAppointment(accept, appointment, slot);
 
@@ -735,7 +749,7 @@ public class DoctorMenu {
             } else {
                 prescriptionID = "NIL";
             }
-            String consultationNotes = ConsoleUtility.validateInput("Enter consultation notes: ", input -> !input.trim().isEmpty());
+            String consultationNotes = ConsoleUtility.validateInput("\nEnter consultation notes: ", input -> !input.trim().isEmpty());
             Boolean success = doctorController.completeAppointment(appointment, slot, serviceProvided, prescriptionID, consultationNotes);
             if (success) {
                 System.out.println("Appointment Sucessfully Completed.");
@@ -765,7 +779,10 @@ public class DoctorMenu {
                 String medicationID = ConsoleUtility.validateInput("\nEnter an Medication ID to prescribe to the patient(press Enter to finish prescription)[e.g. M01]: ",
                         input -> input.isEmpty() || doctorController.isValidMedicationID(input));
                 //need to account for 1/2 tablets
-                if (medicationID.isEmpty()) {
+                if (medicationID.isEmpty() && count == 1) {
+                    prescriptionID = "NIL";
+                    break;
+                } else if (medicationID.isEmpty()) {
                     break;
                 }
                 if (count == 1) {

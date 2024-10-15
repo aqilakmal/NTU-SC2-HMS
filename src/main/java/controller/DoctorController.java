@@ -280,7 +280,7 @@ public class DoctorController {
         // This is a simple example and might need to be more robust in a real system
         int count = 1;
         String uniqueID = "H" + String.format("%02d", historyDataManager.getHistories().size() + 1);
-        while (historyDataManager.getHistoryByID(uniqueID) == null) {
+        while (historyDataManager.getHistoryByID(uniqueID) != null) {
             uniqueID = "H" + String.format("%02d", count);
             count++;
         }
@@ -340,7 +340,7 @@ public class DoctorController {
         // This is a simple example and might need to be more robust in a real system
         int count = 1;
         String uniqueID = "P" + String.format("%02d", prescriptionDataManager.getPrescriptions().size() + 1);
-        while (historyDataManager.getHistoryByID(uniqueID) == null) {
+        while (prescriptionDataManager.getPrescriptionByID(uniqueID) != null) {
             uniqueID = "P" + String.format("%02d", count);
             count++;
         }
@@ -445,16 +445,16 @@ public class DoctorController {
     }
 
     /**
-     * Generates a new unique history ID.
+     * Generates a new unique Outcome ID.
      *
-     * @return A new unique history ID
+     * @return A new unique Outcome ID
      */
     private String generateOutcomeID() {
         // Implementation depends on your ID generation strategy
         // This is a simple example and might need to be more robust in a real system
         int count = 1;
         String uniqueID = "R" + String.format("%02d", outcomeDataManager.getAllOutcomes().size() + 1);
-        while (historyDataManager.getHistoryByID(uniqueID) == null) {
+        while (outcomeDataManager.getOutcomeByID(uniqueID) != null) {
             uniqueID = "R" + String.format("%02d", count);
             count++;
         }
@@ -471,7 +471,7 @@ public class DoctorController {
         // This is a simple example and might need to be more robust in a real system
         int count = 1;
         String uniqueID = "S" + String.format("%02d", slotDataManager.getSlots().size() + 1);
-        while (historyDataManager.getHistoryByID(uniqueID) == null) {
+        while (slotDataManager.getSlotByID(uniqueID) != null) {
             uniqueID = "S" + String.format("%02d", count);
             count++;
         }

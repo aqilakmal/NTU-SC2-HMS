@@ -329,6 +329,7 @@ public class DoctorMenu {
             ConsoleUtility.printHeader("MANAGE AVAILABILITY FOR APPOINTMENTS");
             List<Slot> slots = doctorController.getAllSlotsForDoctor();
             List<Slot> availableSlots = doctorController.getAvailableSlotsForDoctor();
+            Boolean availableSlotsBoolean = true;
 
             //Display all slots and then available slots
             if (slots.isEmpty()) {
@@ -336,6 +337,7 @@ public class DoctorMenu {
             } else {
                 displaySlots(slots, "CURRENT SLOTS");
                 if (availableSlots.isEmpty()) {
+                    availableSlotsBoolean = false;
                     System.out.println("\nYou currently have no available slots.");
                 } else {
                     displaySlots(availableSlots, "AVAILABLE SLOTS");
@@ -360,7 +362,11 @@ public class DoctorMenu {
                     addNewSlot();
                     break;
                 case 3:
-                    removeSlot();
+                    if (availableSlotsBoolean) {
+                        removeSlot();
+                    } else {
+                        System.out.println("\nYou have no available slots to remove");
+                    }
                     break;
                 case 4:
                     System.out.println("Returning to Main Menu...");

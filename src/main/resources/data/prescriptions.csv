@@ -3,3 +3,5 @@ P01,A01,M01,10,PENDING,Take one tablet daily
 P02,A01,M02,10,PENDING,Take two tablets daily
 P03,A01,M01,20,PENDING,Take two tablets daily
 P04,A01,M02,10,PENDING,Take one tablet daily
+P05,A02,M01,20,PENDING,take 1 pill per day
+P06,A02,M02,10,PENDING,take 2 per day

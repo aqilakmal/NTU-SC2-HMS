@@ -535,6 +535,18 @@ public class DoctorController {
     }
 
     /**
+     * Checks if the given slot ID is valid.
+     *
+     * @param slotID The ID to validate
+     * @return true if the ID is valid, by the current doctor, false otherwise
+     */
+    public boolean isValidDoctorSlotID(String slotID) {
+        Doctor currentDoctor = (Doctor) authController.getCurrentUser();
+        String doctorID = currentDoctor.getUserID();
+        return slotDataManager.getStatusByID(slotID, doctorID) != null;
+    }
+
+    /**
      * Checks if the given slot ID is valid & pending.
      *
      * @param slotID The ID to validate

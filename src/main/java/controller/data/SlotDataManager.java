@@ -147,6 +147,21 @@ public class SlotDataManager {
     }
 
     /**
+     * [READ] Retrieves a slot by its ID.
+     *
+     * @param slotID The ID of the slot to retrieve.
+     * @param doctorID The doctor ID linked to retrieved slot.
+     * @return The Slot object if found, null otherwise.
+     */
+    public Slot getStatusByID(String slotID, String doctorID) {
+        return slots.stream()
+                .filter(slot -> slot.getSlotID().equals(slotID)
+                && slot.getDoctorID().equals(doctorID))
+                .findFirst()
+                .orElse(null);
+    }
+
+    /**
      * [READ] Retrieves available slots for a specific doctor on a given date.
      *
      * @param doctorID The ID of the doctor.

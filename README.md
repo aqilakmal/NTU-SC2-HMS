@@ -23,6 +23,6 @@
 * Fix Accept/Decline at (y/n) prompt
 * Print Slots then prompt user
 * When complete action, dont go back to main menu but the action menu
+* In upcoming appointments, choose which appointment to view the details of appointment
 * Order by date, slots
-* in upcoming appointments, choose which appointment to view the details of appointment
 * view and update appointment outcomes

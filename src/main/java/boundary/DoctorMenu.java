@@ -80,7 +80,7 @@ public class DoctorMenu {
                         recordAppointmentOutcome();
                         break;
                     case 8:
-                        System.out.println("{8} View and Update Outcomes [not done yet]");
+                        System.out.println("Viewing and Updating Outcomes not implemented yet...");
                         break;
                     case 9:
                         System.out.println("Logging out and returning to home screen...");
@@ -307,7 +307,14 @@ public class DoctorMenu {
             List<History> medicalHistory;
 
             while (true) {
+
                 ConsoleUtility.printHeader("VIEW PERSONAL SCHEDULE");
+
+                if (slots.isEmpty()) {
+                    System.out.println("\nYou currently have no slots.");
+                    System.out.println("\nReturning to Main Menu...");
+                    return;
+                }
 
                 displaySlots(slots, "CURRENT SLOTS");
                 System.out.println();

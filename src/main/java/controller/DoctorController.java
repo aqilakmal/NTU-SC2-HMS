@@ -434,6 +434,7 @@ public class DoctorController {
             outcomeDataManager.addOutcome(newOutcome);
             slot.setStatus(Slot.SlotStatus.COMPLETED);
             appointment.setStatus(Appointment.AppointmentStatus.COMPLETED);
+            appointment.setOutcomeID(outcomeID);
             slotDataManager.updateSlot(slot);
             appointmentDataManager.updateAppointment(appointment);
             return true;

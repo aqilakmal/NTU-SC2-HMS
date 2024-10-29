@@ -1,15 +1,21 @@
 package controller.data;
 
-import entity.*;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import entity.Prescription;
+
 /**
- * Manages prescription data operations including loading from and saving to CSV files,
- * as well as basic CRUD operations for prescriptions in the Hospital Management System.
+ * Manages prescription data operations including loading from and saving to CSV
+ * files, as well as basic CRUD operations for prescriptions in the Hospital
+ * Management System.
  */
 public class PrescriptionDataManager {
 
@@ -21,7 +27,8 @@ public class PrescriptionDataManager {
     private static List<Prescription> prescriptions;
 
     /**
-     * Constructs a new PrescriptionDataManager with an empty list of prescriptions.
+     * Constructs a new PrescriptionDataManager with an empty list of
+     * prescriptions.
      */
     public PrescriptionDataManager() {
         prescriptions = new ArrayList<>();
@@ -29,6 +36,7 @@ public class PrescriptionDataManager {
 
     /**
      * Loads prescription data from a CSV file.
+     *
      * @throws IOException If there's an error reading the file.
      */
     public void loadPrescriptionsFromCSV() throws IOException {
@@ -62,6 +70,7 @@ public class PrescriptionDataManager {
 
     /**
      * Saves prescription data to a CSV file.
+     *
      * @throws IOException If there's an error writing to the file.
      */
     public void savePrescriptionsToCSV() throws IOException {
@@ -71,13 +80,14 @@ public class PrescriptionDataManager {
             bw.newLine();
 
             for (Prescription prescription : prescriptions) {
-                bw.write(String.format("%s,%s,%s,%d,%s,%s",
-                    prescription.getPrescriptionID(),
-                    prescription.getAppointmentID(),
-                    prescription.getMedicationID(),
-                    prescription.getQuantity(),
-                    prescription.getStatus(),
-                    prescription.getNotes()
+                // Use %.2f to format quantity as a double with 2 decimal places
+                bw.write(String.format("%s,%s,%s,%.2f,%s,%s",
+                        prescription.getPrescriptionID(),
+                        prescription.getAppointmentID(),
+                        prescription.getMedicationID(),
+                        prescription.getQuantity(), // This is now a double
+                        prescription.getStatus(),
+                        prescription.getNotes()
                 ));
                 bw.newLine();
             }
@@ -86,6 +96,7 @@ public class PrescriptionDataManager {
 
     /**
      * [CREATE] Adds a new prescription to the system.
+     *
      * @param prescription The Prescription object to add.
      * @throws IllegalArgumentException If the prescription already exists.
      */
@@ -98,6 +109,7 @@ public class PrescriptionDataManager {
 
     /**
      * [READ] Retrieves the list of all prescriptions.
+     *
      * @return List of Prescription objects.
      */
     public List<Prescription> getPrescriptions() {
@@ -106,6 +118,7 @@ public class PrescriptionDataManager {
 
     /**
      * [READ] Retrieves a prescription by its ID.
+     *
      * @param prescriptionID The ID of the prescription to retrieve.
      * @return The Prescription object if found, null otherwise.
      */
@@ -117,13 +130,15 @@ public class PrescriptionDataManager {
     }
 
     /**
-     * [READ] Retrieves a filtered list of prescriptions based on specified criteria.
+     * [READ] Retrieves a filtered list of prescriptions based on specified
+     * criteria.
+     *
      * @param filters Map of filter criteria (e.g., status, appointmentID, etc.)
      * @return List of Prescription objects matching the filter criteria
      */
     public List<Prescription> getFilteredPrescriptions(Map<String, String> filters) {
         return prescriptions.stream()
-            .filter(prescription -> filters.entrySet().stream()
+                .filter(prescription -> filters.entrySet().stream()
                 .allMatch(entry -> {
                     String key = entry.getKey().toLowerCase();
                     String value = entry.getValue().toLowerCase();
@@ -139,12 +154,14 @@ public class PrescriptionDataManager {
                             return true;
                     }
                 }))
-            .collect(Collectors.toList());
+                .collect(Collectors.toList());
     }
 
     /**
      * [UPDATE] Updates an existing prescription's information.
-     * @param updatedPrescription The Prescription object with updated information.
+     *
+     * @param updatedPrescription The Prescription object with updated
+     * information.
      * @throws IllegalArgumentException If the prescription doesn't exist.
      */
     public void updatePrescription(Prescription updatedPrescription) throws IllegalArgumentException {
@@ -159,6 +176,7 @@ public class PrescriptionDataManager {
 
     /**
      * [DELETE] Removes a prescription from the system.
+     *
      * @param prescriptionID The ID of the prescription to remove.
      * @throws IllegalArgumentException If the prescription doesn't exist.
      */

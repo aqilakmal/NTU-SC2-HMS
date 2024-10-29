@@ -1,4 +1,1 @@
 prescriptionID,appointmentID,medicationID,quantity,status,notes
-P01,A01,M02,20,PENDING,Take 1 pill in the morning
-P02,A01,M01,2,PENDING,take 2 pill at night
-P03,A02,M03,50,PENDING,take 1 daily

@@ -108,4 +108,21 @@ public class OutcomeDataManager {
         }
         outcomes.add(outcome);
     }
+
+    /**
+     * [UPDATE] Updates an existing outcome's information.
+     *
+     * @param updatedOutcome The Outcome object with updated information.
+     * @throws IllegalArgumentException If the outcome doesn't exist.
+     */
+    public void updateOutcome(Outcome updatedOutcome) throws IllegalArgumentException {
+        for (int i = 0; i < outcomes.size(); i++) {
+            if (outcomes.get(i).getOutcomeID().equals(updatedOutcome.getOutcomeID())) {
+                // Use the list `outcomes` to update the specific Outcome object at index `i`
+                outcomes.set(i, updatedOutcome);
+                return; // Exit the method once the outcome has been updated
+            }
+        }
+        throw new IllegalArgumentException("Outcome with ID " + updatedOutcome.getOutcomeID() + " not found.");
+    }
 }

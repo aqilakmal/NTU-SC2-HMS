@@ -2,6 +2,9 @@ package controller;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -139,6 +142,48 @@ public class DoctorController {
     }
 
     /**
+     * Retrieves a list of completed appointments for the current doctor.
+     *
+     * @return List of completed Appointment objects for the specified doctor.
+     */
+    public List<Appointment> getCompletedAppointmentsForDoctor() {
+        Doctor currentDoctor = (Doctor) authController.getCurrentUser();
+
+        // Get appointments that match COMPLETED status for the current doctor
+        return appointmentDataManager.getFilteredAppointments(Map.of(
+                "doctorID", currentDoctor.getUserID()
+        )).stream()
+                .filter(appointment -> appointment.getStatus() == Appointment.AppointmentStatus.COMPLETED)
+                .collect(Collectors.toList());
+    }
+
+    public Patient getPatientFromAppointment(Appointment appointment) {
+        String patientID = appointment.getPatientID();
+        Patient patient = getPatientByID(patientID);
+        return patient;
+    }
+
+    /**
+     * Retrieves a list of outcomes for completed appointments of the current
+     * doctor.
+     *
+     * @return List of Outcome objects linked to completed appointments for the
+     * current doctor.
+     */
+    public List<Outcome> getOutcomesForCompletedAppointmentsForDoctor() {
+        // Get the list of completed appointments for the current doctor
+        List<Appointment> completedAppointments = getCompletedAppointmentsForDoctor();
+
+        // Use the outcome IDs to fetch the corresponding Outcome objects
+        return completedAppointments.stream()
+                .map(Appointment::getOutcomeID) // Get outcome ID from each completed appointment
+                .filter(outcomeID -> outcomeID != null && !outcomeID.isEmpty()) // Filter out null or empty outcome IDs
+                .map(outcomeDataManager::getOutcomeByID) // Get Outcome object by outcome ID
+                .filter(outcome -> outcome != null) // Filter out any null outcomes
+                .collect(Collectors.toList());
+    }
+
+    /**
      * Retrieves pending slots for current doctor.
      *
      * @return List of available Slot objects for the specified doctor
@@ -192,17 +237,47 @@ public class DoctorController {
     }
 
     /**
+     * Retrieves the patient associated with a given appointment.
+     *
+     * @param appointment The appointment to retrieve the patient from.
+     * @return The Patient object if the patient is found and valid, otherwise
+     * null.
+     */
+    public Patient getPatientByAppointment(Appointment appointment) {
+        if (appointment == null) {
+            return null; // Ensure the appointment is valid
+        }
+
+        String patientID = appointment.getPatientID();
+        User user = userDataManager.getUserByID(patientID);
+
+        if (user != null && user instanceof Patient) {
+            return (Patient) user; // Explicitly cast to Patient
+        } else {
+            return null; // Return null if user is not a Patient or if user does not exist
+        }
+    }
+
+    /**
      * Retrieves a list of patients under the current doctor's care.
      *
      * @return List of Patient objects under the doctor's care
      */
     public List<Patient> getPatientsUnderCare() {
         Doctor currentDoctor = (Doctor) authController.getCurrentUser();
-        List<String> patientIDs = appointmentDataManager.getFilteredAppointments(Map.of(
-                "doctorID", currentDoctor.getUserID(),
-                "status", Appointment.AppointmentStatus.CONFIRMED.toString()
-        )).stream().map(Appointment::getPatientID).distinct().collect(Collectors.toList());
 
+        // Get appointments that match either CONFIRMED or COMPLETED statuses
+        List<String> patientIDs = appointmentDataManager.getFilteredAppointments(Map.of(
+                "doctorID", currentDoctor.getUserID()
+        )).stream()
+                .filter(appointment
+                        -> Arrays.asList(Appointment.AppointmentStatus.CONFIRMED, Appointment.AppointmentStatus.COMPLETED)
+                        .contains(appointment.getStatus()))
+                .map(Appointment::getPatientID)
+                .distinct()
+                .collect(Collectors.toList());
+
+        // Convert patientIDs to Patient objects and filter only valid Patient users
         return patientIDs.stream()
                 .map(userDataManager::getUserByID)
                 .filter(user -> user instanceof Patient)
@@ -312,20 +387,43 @@ public class DoctorController {
     /**
      * Adds new prescription.
      *
-     * @param date The date of available slot
-     * @param startTime The start time of available slot
-     * @param endTime The end time of available slot
+     * @param appointmentID appointment ID
+     * @param medicationID medication ID
+     * @param notes prescription notes
      * @return true if the addition was successful, false otherwise
      */
     //String prescriptionID, String appointmentID, String medicationID, int quantity, PrescriptionStatus status, String notes
-    public Boolean addPrescription(String appointmentID, String medicationID, int quantity, String notes) {
+    public Boolean addPrescription(String appointmentID, String medicationID, double quantity, String notes) {
         try {
             String prescriptionID = generatePrescriptionID();
             Prescription newPrescription = new Prescription(prescriptionID, appointmentID, medicationID, quantity, Prescription.PrescriptionStatus.PENDING, notes);
             prescriptionDataManager.addPrescription(newPrescription);
             return true;
         } catch (IllegalArgumentException e) {
-            System.err.println("Error adding adding prescription: " + e.getMessage());
+            System.err.println("Error adding prescription: " + e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * updates prescription.
+     *
+     * @param ds
+     * @param appointmentID appointment ID
+     * @param medicationID medication ID
+     * @param notes prescription notes
+     * @return true if the update was successful, false otherwise
+     */
+    //String prescriptionID, String appointmentID, String medicationID, int quantity, PrescriptionStatus status, String notes
+    public Boolean updatePrescription(Prescription prescription, String medicationID, double quantity, String notes) {
+        try {
+            prescription.setMedicationID(medicationID);
+            prescription.setQuantity(quantity);
+            prescription.setNotes(notes);
+            prescriptionDataManager.updatePrescription(prescription);
+            return true;
+        } catch (IllegalArgumentException e) {
+            System.err.println("Error updating prescription: " + e.getMessage());
             return false;
         }
     }
@@ -370,12 +468,10 @@ public class DoctorController {
     }
 
     /**
-     * Updates a specific medical history record.
+     * Removes a specific Slot
      *
-     * @param historyID The ID of the history record to update
-     * @param newDiagnosis The new diagnosis (or null if unchanged)
-     * @param newTreatment The new treatment (or null if unchanged)
-     * @return true if the update was successful, false otherwise
+     * @param SlotID The ID of the slot to remove
+     * @return true if the removal was successful, false otherwise
      */
     public boolean removeSlot(String slotID) {
         try {
@@ -383,6 +479,22 @@ public class DoctorController {
             return true;
         } catch (IllegalArgumentException e) {
             System.err.println("Error updating avaialble slot: " + e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Removes a specific Prescription
+     *
+     * @param prescriptionID The ID of the prescription to remove
+     * @return true if the removal was successful, false otherwise
+     */
+    public boolean removePrescription(String prescriptionID) {
+        try {
+            prescriptionDataManager.removePrescription(prescriptionID);
+            return true;
+        } catch (IllegalArgumentException e) {
+            System.err.println("Error removing prescription: " + e.getMessage());
             return false;
         }
     }
@@ -420,10 +532,12 @@ public class DoctorController {
      *
      * @param appointment Appointment object to complete
      * @param slot Slot object to complete
-     * @param serviceProvided
-     * @param prescriptionID
-     * @param consultationNotes
-     * @return true if the update was successful, false otherwise
+     * @param serviceProvided string of service provided to attach to outcome
+     * @param prescriptionID string of medications provided to attach to outcome
+     * @param consultationNotes string of consultation notes to attach to
+     * outcome
+     * @return true if the completion of appointment was successful, false
+     * otherwise
      */
     public boolean completeAppointment(Appointment appointment, Slot slot, String serviceProvided, String prescriptionID, String consultationNotes) {
         try {
@@ -435,6 +549,7 @@ public class DoctorController {
             slot.setStatus(Slot.SlotStatus.COMPLETED);
             appointment.setStatus(Appointment.AppointmentStatus.COMPLETED);
             appointment.setOutcomeID(outcomeID);
+
             slotDataManager.updateSlot(slot);
             appointmentDataManager.updateAppointment(appointment);
             return true;
@@ -443,6 +558,45 @@ public class DoctorController {
             System.err.println("Error completing appointment: " + e.getMessage());
             return false;
         }
+    }
+
+    /**
+     * updates an existing outcome record.
+     *
+     * @param outcome Outcome object to update
+     * @param serviceProvided string of service provided to attach to outcome
+     * @param prescriptionID string of medications provided to attach to outcome
+     * @param consultationNotes string of consultation notes to attach to
+     * outcome
+     * @return true if the update was successful, false otherwise
+     */
+    public boolean updateOutcome(Outcome outcome, String serviceProvided, String prescriptionID, String consultationNotes) {
+        try {
+            // Update fields only if they are new or updated
+            outcome.setServiceProvided(serviceProvided);
+            outcome.setPrescriptionID(prescriptionID);
+            outcome.setConsultationNotes(consultationNotes);
+            outcomeDataManager.updateOutcome(outcome); // Persist changes in the data manager
+            return true;
+
+        } catch (IllegalArgumentException e) {
+            System.err.println("Error updating outcomes: " + e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Takes in the whole string of prescription ID, seperates them by semicolon
+     * and count amount of medications
+     *
+     * @return A count of medications
+     */
+    public int countMedication(String prescriptionString) {
+        if (prescriptionString == null || prescriptionString.trim().isEmpty()) {
+            return 0;
+        }
+        String[] medications = prescriptionString.split(";");
+        return medications.length;
     }
 
     /**
@@ -460,6 +614,39 @@ public class DoctorController {
             count++;
         }
         return uniqueID;
+    }
+
+    /**
+     * Sort Slots list
+     *
+     * @return A sorted slots list
+     */
+    // Function to sort slots by Date, Status, and Start Time
+    public static List<Slot> sortSlots(List<Slot> slots) {
+        slots.sort(
+                Comparator.comparing((Slot slot) -> {
+                    // Set custom priority for each status to achieve desired grouping
+                    switch (slot.getStatus()) {
+                        case BOOKED:
+                            return 1;     // BOOKED has the highest priority for sorting
+                        case PENDING:
+                            return 2;    // PENDING follows BOOKED
+                        case AVAILABLE:
+                            return 3;  // AVAILABLE is after BOOKED and PENDING
+                        case COMPLETED:
+                            return 4;  // COMPLETED follows AVAILABLE
+                        case REMOVED:
+                            return 5;    // REMOVED has the lowest priority
+                        default:
+                            return Integer.MAX_VALUE;
+                    }
+                })
+                        // Then sort by date (oldest first) for each status group
+                        .thenComparing(Slot::getDate)
+                        // Then sort by start time (earliest first) for each date group
+                        .thenComparing(Slot::getStartTime)
+        );
+        return slots; // Return the sorted list
     }
 
     /**
@@ -573,6 +760,46 @@ public class DoctorController {
         return slotDataManager.getStatusByID(slotID, doctorID, Slot.SlotStatus.BOOKED) != null;
     }
 
+    /**
+     * Checks if the given slot ID is valid & booked.
+     *
+     * @param slotID The ID to validate
+     * @return true if the ID is valid, by the current doctor and, pending,
+     * false otherwise
+     */
+    public boolean isValidCompletedSlotID(String slotID) {
+        Doctor currentDoctor = (Doctor) authController.getCurrentUser();
+        String doctorID = currentDoctor.getUserID();
+        return slotDataManager.getStatusByID(slotID, doctorID, Slot.SlotStatus.COMPLETED) != null;
+    }
+
+    /**
+     * Checks if the given appointment ID is valid & completed for the current
+     * doctor.
+     *
+     * @param appointmentID The ID to validate
+     * @return true if the appointment is valid, belongs to the current doctor,
+     * and is completed, false otherwise
+     */
+    public boolean isValidCompletedAppointmentID(String appointmentID) {
+        Doctor currentDoctor = (Doctor) authController.getCurrentUser();
+        String doctorID = currentDoctor.getUserID();
+
+        // Retrieve the appointment by ID
+        Appointment appointment = appointmentDataManager.getAppointmentByID(appointmentID);
+
+        // Check if the appointment is not null, belongs to the current doctor, and has COMPLETED status
+        return appointment != null
+                && appointment.getDoctorID().equals(doctorID)
+                && appointment.getStatus() == Appointment.AppointmentStatus.COMPLETED;
+    }
+
+    /**
+     * Checks if the given Medication ID is valid.
+     *
+     * @param medicationID The ID to validate
+     * @return true if the ID is valid
+     */
     public boolean isValidMedicationID(String medicationID) {
         return medicationDataManager.getMedicationByID(medicationID) != null;
     }
@@ -598,6 +825,28 @@ public class DoctorController {
     }
 
     /**
+     * Retrieves an appointment record by its ID.
+     *
+     * @param appointmentID The ID of the appointment record to retrieve
+     * @return The Appointment object with the specified ID, or null if not
+     * found
+     */
+    public Appointment getAppointmentByID(String appointmentID) {
+        return appointmentDataManager.getAppointmentByID(appointmentID);
+    }
+
+    /**
+     * Retrieves an appointment record by its ID.
+     *
+     * @param appointmentID The ID of the appointment record to retrieve
+     * @return The Appointment object with the specified ID, or null if not
+     * found
+     */
+    public Outcome getOutcomeByID(String OutcomeID) {
+        return outcomeDataManager.getOutcomeByID(OutcomeID);
+    }
+
+    /**
      * Retrieves a slot record by its ID.
      *
      * @param slotID The ID of the slot record to retrieve
@@ -608,14 +857,112 @@ public class DoctorController {
     }
 
     /**
-     * Retrieves a slot record by its ID.
+     * Retrieves the outcome ID for a given appointment.
      *
-     * @param slotID The ID of the slot record to retrieve
-     * @return The Slot object with the specified ID, or null if not found
+     * @param appointment The appointment object to get the outcome ID from.
+     * @return The outcome ID if it exists, otherwise null.
      */
-    public Patient getPatientByAppointment(Appointment a) {
-        String patientID = a.getPatientID();
-        User user = userDataManager.getUserByID(patientID);
-        return (user instanceof Patient) ? (Patient) user : null;
+    public String getOutcomeIDFromAppointment(Appointment appointment) {
+        if (appointment == null) {
+            return null;
+        }
+        return appointment.getOutcomeID();
     }
+
+    /**
+     * Retrieves the prescriptions for a given appointment ID.
+     *
+     * @param appointmentID The appointment ID to filter the prescription
+     * database.
+     * @return The list of prescriptions if they exist, otherwise an empty list.
+     */
+    public List<Prescription> getPrescriptionsByAppointmentID(String appointmentID) {
+        return prescriptionDataManager.getPrescriptions().stream()
+                .filter(prescription -> prescription.getAppointmentID().equals(appointmentID))
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Checks if the given prescription ID is valid and associated with an
+     * appointment that belongs to the current doctor.
+     *
+     * @param prescriptionID The ID of the prescription to validate.
+     * @return true if the prescription is valid, exists, and the associated
+     * appointment belongs to the current doctor; false otherwise.
+     */
+    public boolean isValidPrescriptionID(String prescriptionID) {
+        // Retrieve the current doctor
+        Doctor currentDoctor = (Doctor) authController.getCurrentUser();
+        String doctorID = currentDoctor.getUserID();
+
+        // Retrieve the prescription using prescriptionID
+        Prescription prescription = prescriptionDataManager.getPrescriptionByID(prescriptionID);
+        if (prescription == null) {
+            System.out.println("Prescription does not exist");
+            return false; // Prescription does not exist
+        }
+
+        // Retrieve the appointment associated with the prescription
+        String appointmentID = prescription.getAppointmentID();
+        Appointment appointment = appointmentDataManager.getAppointmentByID(appointmentID);
+
+        // Check if the appointment exists and is associated with the current doctor
+        if (appointment == null || !appointment.getDoctorID().equals(doctorID)) {
+            System.out.println("Appointment not associated with current doctor");
+            return false; // Appointment does not exist or does not belong to the current doctor
+        }
+
+        // The prescription is valid and the appointment belongs to the current doctor
+        return true;
+    }
+
+    /**
+     * Retrieves a prescription by its ID.
+     *
+     * @param prescriptionID The ID of the prescription to retrieve.
+     * @return The Prescription object if it exists, otherwise null.
+     */
+    public Prescription getPrescriptionByID(String prescriptionID) {
+        if (prescriptionID == null || prescriptionID.isEmpty()) {
+            System.out.println("Invalid prescription ID provided.");
+            return null;
+        }
+
+        // Retrieve the prescription from prescriptionDataManager
+        Prescription prescription = prescriptionDataManager.getPrescriptionByID(prescriptionID);
+
+        if (prescription == null) {
+            System.out.println("Prescription not found with ID: " + prescriptionID);
+        }
+
+        return prescription;
+    }
+
+    /**
+     * Edits a specific medication in the prescription string.
+     *
+     * @param prescriptionString The original prescription string with
+     * medications separated by semicolons.
+     * @param index The index of the medication to be edited.
+     * @param newMedication The new medication to replace the existing one at
+     * the specified index.
+     * @return The updated prescription string.
+     * @throws IllegalArgumentException If the index is out of bounds.
+     */
+    public static String editMedicationInPrescriptionString(String prescriptionString, int index, String newMedication) {
+        // Convert the prescription string to a list
+        List<String> medications = new ArrayList<>(Arrays.asList(prescriptionString.split(";")));
+
+        // Check if the provided index is valid
+        if (index < 0 || index >= medications.size()) {
+            throw new IllegalArgumentException("Index out of bounds for the medications list.");
+        }
+
+        // Update the medication at the specified index
+        medications.set(index, newMedication);
+
+        // Convert the list back to a semicolon-separated string
+        return String.join(";", medications);
+    }
+
 }

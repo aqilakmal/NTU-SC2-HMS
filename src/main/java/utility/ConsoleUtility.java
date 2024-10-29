@@ -37,6 +37,47 @@ public class ConsoleUtility {
     }
 
     /**
+     * Prompts the user to enter a valid double value, continuously until a
+     * valid double is entered.
+     *
+     * @param prompt The prompt to display to the user.
+     * @return The validated double value.
+     */
+    public static double validateDoubleInput(String prompt) {
+        while (true) {
+            System.out.print(prompt);
+            String input = scanner.nextLine().trim();
+
+            // Check if the input can be parsed as a double
+            if (isValidDouble(input)) {
+                return Double.parseDouble(input);
+            }
+            System.out.println("Invalid input. Please enter a valid number.");
+        }
+    }
+
+    /**
+     * Checks if the input string is a valid double.
+     *
+     * @param input The input string to check.
+     * @return True if the input can be parsed as a double, false otherwise.
+     */
+    /**
+     * Checks if the input string is a valid double.
+     *
+     * @param input The input string to check.
+     * @return True if the input can be parsed as a double, false otherwise.
+     */
+    public static boolean isValidDouble(String input) {
+        try {
+            Double.parseDouble(input);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+
+    /**
      * Validates any ID (user, medication, appointment, etc.).
      *
      * @param id The ID to validate

@@ -26,8 +26,9 @@ Completed
 * After completing appointment, provide Outcome ID
 * When complete action, dont go back to main menu but the action menu
 * In upcoming appointments, choose which appointment to view the details of appointment
+* Order by date, slots
+* Edit History such that doctor can access past patients as well
+* view and update appointment outcomes
 
 Not Completed
-* Order by date, slots
-* view and update appointment outcomes
-* Edit History such that doctor can access past patients as well?
+

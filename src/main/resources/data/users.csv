@@ -1,7 +1,5 @@
 userID,password,role,name,dateOfBirth,gender,contactNumber,emailAddress,bloodType,specialization
 P01,p,PATIENT,John Doe,1985-05-15,MALE,55512344,johndoe@example.com,O+,
-P02,p2,PATIENT,Jeremy Wade,1983-05-15,MALE,55511144,jeremywade@example.com,O+,
-D01,password1,DOCTOR,Dr. Jane Smith,1970-08-20,FEMALE,55556738,drsmith@example.com,,Cardiology
-D02,password2,DOCTOR,Dr. Howard Light,1973-04-20,MALE,55446738,drbrown@example.com,,Cardiology
+D01,d,DOCTOR,Dr. Jane Smith,1970-08-20,FEMALE,55556738,drsmith@example.com,,Cardiology
 H01,p,PHARMACIST,Mary Johnson,1990-07-10,FEMALE,55572890,mjohnson@example.com,,
 A,1,ADMINISTRATOR,Paul Brown,1965-03-05,MALE,55565143,paulbrown@example.com,,

@@ -393,7 +393,7 @@ public class DoctorController {
      * @return true if the addition was successful, false otherwise
      */
     //String prescriptionID, String appointmentID, String medicationID, int quantity, PrescriptionStatus status, String notes
-    public Boolean addPrescription(String appointmentID, String medicationID, double quantity, String notes) {
+    public Boolean addPrescription(String appointmentID, String medicationID, int quantity, String notes) {
         try {
             String prescriptionID = generatePrescriptionID();
             Prescription newPrescription = new Prescription(prescriptionID, appointmentID, medicationID, quantity, Prescription.PrescriptionStatus.PENDING, notes);
@@ -415,7 +415,7 @@ public class DoctorController {
      * @return true if the update was successful, false otherwise
      */
     //String prescriptionID, String appointmentID, String medicationID, int quantity, PrescriptionStatus status, String notes
-    public Boolean updatePrescription(Prescription prescription, String medicationID, double quantity, String notes) {
+    public Boolean updatePrescription(Prescription prescription, String medicationID, int quantity, String notes) {
         try {
             prescription.setMedicationID(medicationID);
             prescription.setQuantity(quantity);
@@ -478,7 +478,23 @@ public class DoctorController {
             slotDataManager.removeSlot(slotID);
             return true;
         } catch (IllegalArgumentException e) {
-            System.err.println("Error updating avaialble slot: " + e.getMessage());
+            System.err.println("Error removing avaialble slot: " + e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Removes a specific Slot
+     *
+     * @param historyID The ID of the slot to remove
+     * @return true if the removal was successful, false otherwise
+     */
+    public boolean removeHistory(String historyID) {
+        try {
+            historyDataManager.removeHistory(historyID);
+            return true;
+        } catch (IllegalArgumentException e) {
+            System.err.println("Error removing history: " + e.getMessage());
             return false;
         }
     }

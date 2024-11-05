@@ -43,16 +43,17 @@ public class ConsoleUtility {
      * @param prompt The prompt to display to the user.
      * @return The validated double value.
      */
-    public static double validateDoubleInput(String prompt) {
+    public static int validateIntegerInput(String prompt) {
         while (true) {
             System.out.print(prompt);
             String input = scanner.nextLine().trim();
 
-            // Check if the input can be parsed as a double
-            if (isValidDouble(input)) {
-                return Double.parseDouble(input);
+            // Check if the input can be parsed as an integer
+            try {
+                return Integer.parseInt(input);
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid input. Please enter a valid integer.");
             }
-            System.out.println("Invalid input. Please enter a valid number.");
         }
     }
 

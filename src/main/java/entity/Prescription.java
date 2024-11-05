@@ -31,7 +31,7 @@ public class Prescription {
     /**
      * Quantity of the medication prescribed.
      */
-    private double quantity;
+    private int quantity;
 
     /**
      * The current status of the prescription.
@@ -53,7 +53,7 @@ public class Prescription {
      * @param status The current status of the prescription
      * @param notes The notes for the prescription
      */
-    public Prescription(String prescriptionID, String appointmentID, String medicationID, double quantity, PrescriptionStatus status, String notes) {
+    public Prescription(String prescriptionID, String appointmentID, String medicationID, int quantity, PrescriptionStatus status, String notes) {
         this.prescriptionID = prescriptionID;
         this.appointmentID = appointmentID;
         this.medicationID = medicationID;
@@ -94,7 +94,7 @@ public class Prescription {
      *
      * @return The quantity
      */
-    public double getQuantity() {
+    public int getQuantity() {
         return quantity;
     }
 
@@ -148,7 +148,7 @@ public class Prescription {
      *
      * @param quantity The quantity to set
      */
-    public void setQuantity(double quantity) {
+    public void setQuantity(int quantity) {
         this.quantity = quantity;
     }
 

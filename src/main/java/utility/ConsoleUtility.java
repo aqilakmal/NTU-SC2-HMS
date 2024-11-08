@@ -37,8 +37,8 @@ public class ConsoleUtility {
     }
 
     /**
-     * Prompts the user to enter a valid double value, continuously until a
-     * valid double is entered.
+     * Prompts the user to enter a valid integer value continuously until a
+     * valid integer is entered.
      *
      * @param prompt The prompt to display to the user.
      * @return The validated double value.
@@ -54,27 +54,6 @@ public class ConsoleUtility {
             } catch (NumberFormatException e) {
                 System.out.println("Invalid input. Please enter a valid integer.");
             }
-        }
-    }
-
-    /**
-     * Checks if the input string is a valid double.
-     *
-     * @param input The input string to check.
-     * @return True if the input can be parsed as a double, false otherwise.
-     */
-    /**
-     * Checks if the input string is a valid double.
-     *
-     * @param input The input string to check.
-     * @return True if the input can be parsed as a double, false otherwise.
-     */
-    public static boolean isValidDouble(String input) {
-        try {
-            Double.parseDouble(input);
-            return true;
-        } catch (NumberFormatException e) {
-            return false;
         }
     }
 

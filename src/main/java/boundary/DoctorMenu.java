@@ -115,7 +115,7 @@ public class DoctorMenu {
                     System.out.println("\nYou currently have no patients under your care.");
                     return;
                 }
-                displayPatientList(patients);
+                displayPatients(patients, "Patients Under Your Care");
 
                 String patientID = ConsoleUtility.validateInput("\nEnter the Patient ID to view their medical records (or press Enter to go back): ",
                         input -> input.isEmpty() || doctorController.isValidPatientID(input));
@@ -161,7 +161,7 @@ public class DoctorMenu {
                     return;
                 }
                 System.out.println();
-                displayPatientList(patients);
+                displayPatients(patients, "Patients Under Your Care");
 
                 String patientID = ConsoleUtility.validateInput("\nEnter the Patient ID to update (or press Enter to go back): ",
                         input -> input.isEmpty() || doctorController.isValidPatientID(input));
@@ -221,77 +221,28 @@ public class DoctorMenu {
     }
 
     /**
-     * Displays the list of patients under the doctor's care.
+     * Handles adding a new medical record for a patient.
      *
-     * @param patients The list of patients to display
+     * @param patientID The ID of the patient
      */
-    //contactNumber,emailAddress,bloodType
-    private void displayPatientList(List<Patient> patients) {
-        LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
-        columnMapping.put("userID", new TableBuilder.ColumnMapping("Patient ID", null));
-        columnMapping.put("name", new TableBuilder.ColumnMapping("Name", null));
-        columnMapping.put("dateOfBirth", new TableBuilder.ColumnMapping("Date of Birth", null));
-        columnMapping.put("gender", new TableBuilder.ColumnMapping("Gender", null));
-        columnMapping.put("contactNumber", new TableBuilder.ColumnMapping("Contact Number", null));
-        columnMapping.put("emailAddress", new TableBuilder.ColumnMapping("Email Address", null));
-        columnMapping.put("bloodType", new TableBuilder.ColumnMapping("Blood Type", null));
+    private void addNewMedicalRecord(String patientID) {
+        try {
+            String diagnosis = ConsoleUtility.validateInput("Enter diagnosis: ", input -> !input.trim().isEmpty());
+            String treatment = ConsoleUtility.validateInput("Enter treatment: ", input -> !input.trim().isEmpty());
 
-        TableBuilder.createTable("Patients Under Your Care", patients, columnMapping, 20);
-    }
+            boolean added = doctorController.addMedicalHistory(patientID, diagnosis, treatment);
 
-    /**
-     * Displays the list of patients under the doctor's care.
-     *
-     * @param patients The list of patients to display
-     */
-    //contactNumber,emailAddress,bloodType
-    private void displayPatients(List<Patient> patients, String name) {
-        LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
-        columnMapping.put("userID", new TableBuilder.ColumnMapping("Patient ID", null));
-        columnMapping.put("name", new TableBuilder.ColumnMapping("Name", null));
-        columnMapping.put("dateOfBirth", new TableBuilder.ColumnMapping("Date of Birth", null));
-        columnMapping.put("gender", new TableBuilder.ColumnMapping("Gender", null));
-        columnMapping.put("contactNumber", new TableBuilder.ColumnMapping("Contact Number", null));
-        columnMapping.put("emailAddress", new TableBuilder.ColumnMapping("Email Address", null));
-        columnMapping.put("bloodType", new TableBuilder.ColumnMapping("Blood Type", null));
-
-        TableBuilder.createTable(name, patients, columnMapping, 20);
-    }
-
-    /**
-     * Displays the list of patients under the doctor's care.
-     *
-     * @param patients The list of patients to display
-     */
-    //contactNumber,emailAddress,bloodType
-    private void displayPatients(Patient patient, String name) {
-        LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
-        columnMapping.put("userID", new TableBuilder.ColumnMapping("Patient ID", null));
-        columnMapping.put("name", new TableBuilder.ColumnMapping("Name", null));
-        columnMapping.put("dateOfBirth", new TableBuilder.ColumnMapping("Date of Birth", null));
-        columnMapping.put("gender", new TableBuilder.ColumnMapping("Gender", null));
-        columnMapping.put("contactNumber", new TableBuilder.ColumnMapping("Contact Number", null));
-        columnMapping.put("emailAddress", new TableBuilder.ColumnMapping("Email Address", null));
-        columnMapping.put("bloodType", new TableBuilder.ColumnMapping("Blood Type", null));
-
-        List<Patient> patientList = Collections.singletonList(patient);
-
-        TableBuilder.createTable(name, patientList, columnMapping, 20);
-    }
-
-    /**
-     * Displays the medical history for a patient.
-     *
-     * @param medicalHistory The list of medical history records to display
-     */
-    private void displayMedicalHistory(List<History> medicalHistory, String name) {
-        LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
-        columnMapping.put("historyID", new TableBuilder.ColumnMapping("History ID", null));
-        columnMapping.put("diagnosisDate", new TableBuilder.ColumnMapping("Date", null));
-        columnMapping.put("diagnosis", new TableBuilder.ColumnMapping("Diagnosis", null));
-        columnMapping.put("treatment", new TableBuilder.ColumnMapping("Treatment", null));
-
-        TableBuilder.createTable(name, medicalHistory, columnMapping, 20);
+            if (added) {
+                System.out.println("New medical record added successfully.");
+            } else {
+                System.out.println("Failed to add new medical record. Please try again.");
+            }
+        } catch (IllegalArgumentException e) {
+            System.err.println("Error adding new medical record: " + e.getMessage());
+        } catch (Exception e) {
+            System.err.println("An unexpected error occurred while adding the new medical record: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -302,17 +253,18 @@ public class DoctorMenu {
     private void updateMedicalRecord(List<History> medicalHistory, Patient patient) {
         String name = patient.getName();
         String patientID = patient.getUserID();
+        History selectedHistory;
         while (true) {
             medicalHistory = doctorController.getPatientMedicalHistory(patientID);
             displayMedicalHistory(medicalHistory, name + "'s Medical History");
             String historyID = ConsoleUtility.validateInput("\nEnter the History ID to update (or press Enter to go back): ",
-                    input -> input.isEmpty() || doctorController.isValidHistoryID(input));
+                    input -> input.isEmpty() || doctorController.isPatientsHistory(patient.getUserID(), input));
 
             if (historyID.isEmpty()) {
                 return;
             }
 
-            History selectedHistory = doctorController.getHistoryByID(historyID);
+            selectedHistory = doctorController.getHistoryByID(historyID);
             if (selectedHistory == null) {
                 System.out.println("Error: Invalid History ID. Please try again.");
                 continue;
@@ -351,31 +303,6 @@ public class DoctorMenu {
     }
 
     /**
-     * Handles adding a new medical record for a patient.
-     *
-     * @param patientID The ID of the patient
-     */
-    private void addNewMedicalRecord(String patientID) {
-        try {
-            String diagnosis = ConsoleUtility.validateInput("Enter diagnosis: ", input -> !input.trim().isEmpty());
-            String treatment = ConsoleUtility.validateInput("Enter treatment: ", input -> !input.trim().isEmpty());
-
-            boolean added = doctorController.addMedicalHistory(patientID, diagnosis, treatment);
-
-            if (added) {
-                System.out.println("New medical record added successfully.");
-            } else {
-                System.out.println("Failed to add new medical record. Please try again.");
-            }
-        } catch (IllegalArgumentException e) {
-            System.err.println("Error adding new medical record: " + e.getMessage());
-        } catch (Exception e) {
-            System.err.println("An unexpected error occurred while adding the new medical record: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
-
-    /**
      * Handles removing prescriptions for a doctor.
      *
      * @param medication List of available medications.
@@ -392,7 +319,7 @@ public class DoctorMenu {
             // Display the list of medications and prescriptions
             displayMedicalHistory(medicalHistory, name + "'s Medical History");
             String historyID = ConsoleUtility.validateInput("\nEnter the History ID to remove (or press Enter to go back): ",
-                    input -> input.isEmpty() || doctorController.isValidHistoryID(input));
+                    input -> input.isEmpty() || doctorController.isPatientsHistory(patientID, input));
 
             if (historyID.isEmpty()) {
                 return;
@@ -422,7 +349,8 @@ public class DoctorMenu {
     }
 
     /**
-     * [OPTION 3] Views the doctor's personal schedule.
+     * [OPTION 3] Views the doctor's personal slot schedule and view the details
+     * of a selected slot.
      */
     private void viewPersonalSchedule() {
         try {
@@ -470,7 +398,7 @@ public class DoctorMenu {
                     patientID = selectedPatient.getUserID();
                     medicalHistory = doctorController.getPatientMedicalHistory(patientID);
                     displayAppointments(selectedAppointment, "Appointment Details");
-                    displayPatientList(selectedPatient, "PATIENT'S DETAILS");
+                    displayPatients(selectedPatient, "PATIENT'S DETAILS");
 
                     if (medicalHistory.isEmpty()) {
                         System.out.println("This patient has no medical history records.");
@@ -490,28 +418,7 @@ public class DoctorMenu {
     }
 
     /**
-     * Displays the list of slots for the current doctor.
-     *
-     * @param slots The list of slots to display
-     */
-    // Function to sort and display slots
-    public static void displaySlots(List<Slot> slots, String name) {
-        // Sort the slots by Date, Start Time, and Status
-        List<Slot> sortedSlots = DoctorController.sortSlots(slots);
-
-        // Display the sorted slots
-        LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
-        columnMapping.put("slotID", new TableBuilder.ColumnMapping("Slot ID", null));
-        columnMapping.put("date", new TableBuilder.ColumnMapping("Date", null));
-        columnMapping.put("startTime", new TableBuilder.ColumnMapping("Start Time", null));
-        columnMapping.put("endTime", new TableBuilder.ColumnMapping("End Time", null));
-        columnMapping.put("status", new TableBuilder.ColumnMapping("Status", null));
-
-        TableBuilder.createTable(name, sortedSlots, columnMapping, 20);
-    }
-
-    /**
-     * [OPTION 4] Sets availability for appointments.
+     * [OPTION 4] Add, remove or update available slots for appointments.
      */
     private void manageAvailabilityForAppointments() {
 
@@ -523,6 +430,7 @@ public class DoctorMenu {
             //Display all slots and then available slots
             while (true) {
                 ConsoleUtility.printHeader("MANAGE AVAILABILITY FOR APPOINTMENTS");
+                //refresh slots after every run to keep the slots updated
                 slots = doctorController.getAllSlotsForDoctor();
                 if (slots.isEmpty()) {
                     System.out.println("\nYou currently have no slots.");
@@ -549,8 +457,7 @@ public class DoctorMenu {
                 switch (choice) {
                     case 1:
                         if (availableSlotsBoolean) {
-                            displaySlots(availableSlots, "AVAILABLE SLOTS");
-                            updateSlot();
+                            updateSlot(availableSlots);
                         } else {
                             System.out.println("\nYou have no available slots to update");
                         }
@@ -560,8 +467,7 @@ public class DoctorMenu {
                         break;
                     case 3:
                         if (availableSlotsBoolean) {
-                            displaySlots(availableSlots, "AVAILABLE SLOTS");
-                            removeSlot();
+                            removeSlot(availableSlots);
                         } else {
                             System.out.println("\nYou have no available slots to remove.");
                         }
@@ -583,72 +489,76 @@ public class DoctorMenu {
     /**
      * Handles update slots for doctor.
      */
-    private void updateSlot() {
-        try {
-            String slotID = ConsoleUtility.validateInput("\nEnter an available Slot ID to update (or press Enter to go back): ",
-                    input -> input.isEmpty() || doctorController.isValidAvailableSlotID(input));
+    private void updateSlot(List<Slot> availableSlots) {
+        while (true) {
+            try {
+                displaySlots(availableSlots, "AVAILABLE SLOTS");
+                String slotID = ConsoleUtility.validateInput("\nEnter an available Slot ID to update (or press Enter to go back): ",
+                        input -> input.isEmpty() || doctorController.isValidAvailableSlotID(input));
 
-            if (slotID.isEmpty()) {
-                return;
-            }
+                if (slotID.isEmpty()) {
+                    return;
+                }
 
-            Slot selectedSlot = doctorController.getSlotByID(slotID);
-            if (selectedSlot == null) {
-                System.out.println("Error: Invalid Slot ID. Please try again.");
-                return;
-            }
+                Slot selectedSlot = doctorController.getSlotByID(slotID);
+                if (selectedSlot == null) {
+                    System.out.println("Error: Invalid Slot ID. Please try again.");
+                    return;
+                }
 
-            System.out.println("\nCurrent Date: " + selectedSlot.getDate());
-            String dateInput = ConsoleUtility.validateInput(
-                    "Enter date (YYYY-MM-DD) or press Enter to use the current value (" + selectedSlot.getDate() + "): ",
-                    input -> {
-                        if (input.isEmpty()) {
-                            return true; // Accept empty input to use the default value
+                System.out.println("\nCurrent Date: " + selectedSlot.getDate());
+                String dateInput = ConsoleUtility.validateInput(
+                        "Enter date (YYYY-MM-DD) or press Enter to use the current value (" + selectedSlot.getDate() + "): ",
+                        input -> {
+                            if (input.isEmpty()) {
+                                return true; // Accept empty input to use the default value
+                            }
+                            try {
+                                LocalDate.parse(input); // Try to parse the date
+                                return true;
+                            } catch (DateTimeParseException e) {
+                                System.out.println("Invalid date format. Please use YYYY-MM-DD.");
+                                return false;
+                            }
                         }
-                        try {
-                            LocalDate.parse(input); // Try to parse the date
-                            return true;
-                        } catch (DateTimeParseException e) {
-                            System.out.println("Invalid date format. Please use YYYY-MM-DD.");
-                            return false;
-                        }
-                    }
-            );
+                );
 
-            LocalDate date = dateInput.isEmpty() ? selectedSlot.getDate() : LocalDate.parse(dateInput);
+                LocalDate date = dateInput.isEmpty() ? selectedSlot.getDate() : LocalDate.parse(dateInput);
 
-            System.out.println("\nCurrent Start Time: " + selectedSlot.getStartTime());
-            String startTimeInput = ConsoleUtility.validateInput(
-                    "Enter start time (HH:MM) or press Enter to use the current value (" + selectedSlot.getStartTime() + "): ",
-                    input -> input.isEmpty() || ConsoleUtility.isValidTime(input)
-            );
+                System.out.println("\nCurrent Start Time: " + selectedSlot.getStartTime());
+                String startTimeInput = ConsoleUtility.validateInput(
+                        "Enter start time (HH:MM) or press Enter to use the current value (" + selectedSlot.getStartTime() + "): ",
+                        input -> input.isEmpty() || ConsoleUtility.isValidTime(input)
+                );
 
-            LocalTime startTime = startTimeInput.isEmpty() ? selectedSlot.getStartTime() : LocalTime.parse(startTimeInput);
+                LocalTime startTime = startTimeInput.isEmpty() ? selectedSlot.getStartTime() : LocalTime.parse(startTimeInput);
 
-            System.out.println("\nCurrent End Time: " + selectedSlot.getEndTime());
-            String endTimeInput = ConsoleUtility.validateInput(
-                    "Enter end time (HH:MM) or press Enter to use the current value (" + selectedSlot.getEndTime() + "): ",
-                    input -> input.isEmpty() || ConsoleUtility.isValidTime(input)
-            );
+                System.out.println("\nCurrent End Time: " + selectedSlot.getEndTime());
+                String endTimeInput = ConsoleUtility.validateInput(
+                        "Enter end time (HH:MM) or press Enter to use the current value (" + selectedSlot.getEndTime() + "): ",
+                        input -> input.isEmpty() || ConsoleUtility.isValidTime(input)
+                );
 
-            LocalTime endTime = endTimeInput.isEmpty() ? selectedSlot.getEndTime() : LocalTime.parse(endTimeInput);
+                LocalTime endTime = endTimeInput.isEmpty() ? selectedSlot.getEndTime() : LocalTime.parse(endTimeInput);
 
-            if (!startTime.isBefore(endTime)) {
-                throw new IllegalArgumentException("Start time must be before End time.");
+                if (!startTime.isBefore(endTime)) {
+                    throw new IllegalArgumentException("Start time must be before End time.");
+                }
+
+                boolean updated = doctorController.updateSlot(selectedSlot, date, startTime, endTime);
+
+                if (updated) {
+                    System.out.println("Available slot updated successfully.");
+                    return;
+                } else {
+                    System.out.println("Failed to update available slot. Please try again.");
+                }
+            } catch (IllegalArgumentException e) {
+                System.err.println("Error updating available slot: " + e.getMessage());
+            } catch (Exception e) {
+                System.err.println("An unexpected error occurred while updating available slot: " + e.getMessage());
+                e.printStackTrace();
             }
-
-            boolean updated = doctorController.updateSlot(selectedSlot, date, startTime, endTime);
-
-            if (updated) {
-                System.out.println("Available slot updated successfully.");
-            } else {
-                System.out.println("Failed to update available slot. Please try again.");
-            }
-        } catch (IllegalArgumentException e) {
-            System.err.println("Error updating available slot: " + e.getMessage());
-        } catch (Exception e) {
-            System.err.println("An unexpected error occurred while updating available slot: " + e.getMessage());
-            e.printStackTrace();
         }
     }
 
@@ -656,49 +566,53 @@ public class DoctorMenu {
      * Handles adding a new slot for a doctor.
      */
     private void addNewSlot() {
-        try {
-            // Prompt and validate the date and time inputs
-            LocalDate date = LocalDate.parse(ConsoleUtility.validateInput(
-                    "Enter date (YYYY-MM-DD): ", input -> {
-                        try {
-                            LocalDate.parse(input);
-                            return true;
-                        } catch (DateTimeParseException e) {
-                            System.out.println("Invalid date format. Please enter a valid date (YYYY-MM-DD).");
-                            return false;
+        while (true) {
+            try {
+                // Prompt and validate the date and time inputs
+                LocalDate date = LocalDate.parse(ConsoleUtility.validateInput(
+                        "Enter date (YYYY-MM-DD): ", input -> {
+                            try {
+                                LocalDate.parse(input);
+                                return true;
+                            } catch (DateTimeParseException e) {
+                                System.out.println("Invalid date format. Please enter a valid date (YYYY-MM-DD).");
+                                return false;
+                            }
                         }
-                    }
-            ));
+                ));
 
-            LocalTime startTime = LocalTime.parse(ConsoleUtility.validateInput(
-                    "Enter start time (HH:MM): ", ConsoleUtility::isValidTime
-            ));
+                LocalTime startTime = LocalTime.parse(ConsoleUtility.validateInput(
+                        "Enter start time (HH:MM): ", ConsoleUtility::isValidTime
+                ));
 
-            LocalTime endTime = LocalTime.parse(ConsoleUtility.validateInput(
-                    "Enter end time (HH:MM): ", ConsoleUtility::isValidTime
-            ));
+                LocalTime endTime = LocalTime.parse(ConsoleUtility.validateInput(
+                        "Enter end time (HH:MM): ", ConsoleUtility::isValidTime
+                ));
 
-            if (!startTime.isBefore(endTime)) {
-                throw new IllegalArgumentException("Start time must be before End time.");
+                if (!startTime.isBefore(endTime)) {
+                    throw new IllegalArgumentException("Start time must be before End time.");
+                }
+
+                boolean added = doctorController.addAvailableSlot(date, startTime, endTime);
+
+                if (added) {
+                    System.out.println("Available slot added successfully.");
+                    return;
+                } else {
+                    System.out.println("Failed to add available slot. Please try again.");
+                }
+            } catch (IllegalArgumentException e) {
+                System.err.println("Error adding available slot: " + e.getMessage());
+            } catch (Exception e) {
+                System.err.println("An unexpected error occurred while adding available slot: " + e.getMessage());
+                e.printStackTrace();
             }
-
-            boolean added = doctorController.addAvailableSlot(date, startTime, endTime);
-
-            if (added) {
-                System.out.println("Available slot added successfully.");
-            } else {
-                System.out.println("Failed to add available slot. Please try again.");
-            }
-        } catch (IllegalArgumentException e) {
-            System.err.println("Error adding available slot: " + e.getMessage());
-        } catch (Exception e) {
-            System.err.println("An unexpected error occurred while adding available slot: " + e.getMessage());
-            e.printStackTrace();
         }
     }
 
-    private void removeSlot() {
+    private void removeSlot(List<Slot> availableSlots) {
         try {
+            displaySlots(availableSlots, "AVAILABLE SLOTS");
             String slotID = ConsoleUtility.validateInput("\nEnter an available Slot ID to remove (or press Enter to go back): ",
                     input -> input.isEmpty() || doctorController.isValidAvailableSlotID(input));
 
@@ -728,7 +642,8 @@ public class DoctorMenu {
     }
 
     /**
-     * [OPTION 5] Manages appointment requests.
+     * [OPTION 5] Accept or Decline appointments/slots with REQUESTED/PENDING
+     * status.
      */
     private void manageAppointmentRequests() {
         try {
@@ -746,7 +661,7 @@ public class DoctorMenu {
 
                 displaySlots(pendingSlots, "PENDING APPOINTMENTS");
 
-                String slotID = ConsoleUtility.validateInput("\nEnter an Slot ID (Appointment ID) to manage (or press Enter to go back)[e.g. S01]: ",
+                String slotID = ConsoleUtility.validateInput("\nEnter an pending Slot ID to accept or decline (or press Enter to go back)[e.g. S01]: ",
                         input -> input.isEmpty() || doctorController.isValidPendingSlotID(input));
                 if (slotID.isEmpty()) {
                     System.out.println("\nReturning to Main Menu...");
@@ -762,7 +677,7 @@ public class DoctorMenu {
                 Patient selectedPatient = doctorController.getPatientByAppointment(selectedAppointment);
                 String patientID = selectedPatient.getUserID();
                 System.out.println();
-                displayPatientList(selectedPatient, "REQUESTING PATIENT'S DETAILS");
+                displayPatients(selectedPatient, "REQUESTING PATIENT'S DETAILS");
 
                 List<History> medicalHistory = doctorController.getPatientMedicalHistory(patientID);
 
@@ -784,86 +699,10 @@ public class DoctorMenu {
     }
 
     /**
-     * Displays the a selected slot for the current doctor.
+     * Accept or Decline a selected appointment/slot
      *
-     * @param slot The slot to display
-     * @param name The name of the table
-     */
-    private void displaySlots(Slot slot, String name) {
-        LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
-        columnMapping.put("slotID", new TableBuilder.ColumnMapping("Slot ID", null));
-        columnMapping.put("date", new TableBuilder.ColumnMapping("Date", null));
-        columnMapping.put("startTime", new TableBuilder.ColumnMapping("Start Time", null));
-        columnMapping.put("endTime", new TableBuilder.ColumnMapping("End Time", null));
-        columnMapping.put("status", new TableBuilder.ColumnMapping("Status", null));
-
-        List<Slot> slotList = Collections.singletonList(slot);
-
-        TableBuilder.createTable(name, slotList, columnMapping, 20);
-    }
-
-    /**
-     * Displays the a selected slot for the current doctor.
-     *
-     * @param slot The slot to display
-     * @param name The name of the table
-     */
-    private void displayAppointments(Appointment appointment, String name) {
-        LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
-        columnMapping.put("appointmentID", new TableBuilder.ColumnMapping("Appointment ID", null));
-        columnMapping.put("patientID", new TableBuilder.ColumnMapping("Patient ID", null));
-        columnMapping.put("doctorID", new TableBuilder.ColumnMapping("Doctor ID", null));
-        columnMapping.put("slotID", new TableBuilder.ColumnMapping("Slot ID", null));
-        columnMapping.put("status", new TableBuilder.ColumnMapping("Status", null));
-        columnMapping.put("outcomeID", new TableBuilder.ColumnMapping("Outcome ID", null));
-
-        List<Appointment> appointmentList = Collections.singletonList(appointment);
-
-        TableBuilder.createTable(name, appointmentList, columnMapping, 20);
-    }
-
-    /**
-     * Displays the a list of appointment
-     *
-     * @param slot The slot to display
-     * @param name The name of the table
-     */
-    private void displayAppointments(List<Appointment> appointment, String name) {
-        LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
-        columnMapping.put("appointmentID", new TableBuilder.ColumnMapping("Appointment ID", null));
-        columnMapping.put("patientID", new TableBuilder.ColumnMapping("Patient ID", null));
-        columnMapping.put("doctorID", new TableBuilder.ColumnMapping("Start Time", null));
-        columnMapping.put("slotID", new TableBuilder.ColumnMapping("End Time", null));
-        columnMapping.put("status", new TableBuilder.ColumnMapping("Status", null));
-        columnMapping.put("outcomeID", new TableBuilder.ColumnMapping("Outcome ID", null));
-
-        TableBuilder.createTable(name, appointment, columnMapping, 20);
-    }
-
-    /**
-     * Display the details of the patient requesting the appointment
-     *
-     * @param patients The patient requesting the appointment
-     */
-    private void displayPatientList(Patient patients, String name) {
-        LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
-        columnMapping.put("userID", new TableBuilder.ColumnMapping("Patient ID", null));
-        columnMapping.put("name", new TableBuilder.ColumnMapping("Name", null));
-        columnMapping.put("dateOfBirth", new TableBuilder.ColumnMapping("Date of Birth", null));
-        columnMapping.put("gender", new TableBuilder.ColumnMapping("Gender", null));
-        columnMapping.put("contactNumber", new TableBuilder.ColumnMapping("Contact Number", null));
-        columnMapping.put("emailAddress", new TableBuilder.ColumnMapping("Email Address", null));
-        columnMapping.put("bloodType", new TableBuilder.ColumnMapping("Blood Type", null));
-
-        List<Patient> patientList = Collections.singletonList(patients);
-        TableBuilder.createTable(name, patientList, columnMapping, 20);
-    }
-
-    /**
-     * Managages a selected appointment fo rthe current doctor
-     *
-     * @param appointment The accompanying appointment
-     * @param slot The selected slot
+     * @param appointment The appointment to reject or accept
+     * @param slot The slot to reject or accept
      */
     private void manageAppointment(Appointment appointment, Slot slot) {
 
@@ -871,7 +710,7 @@ public class DoctorMenu {
             Boolean accept;
             String acceptString = ConsoleUtility.validateInput("\nWould you like to accept this appointment?(press Enter to go back) [y/n]: ",
                     input -> input.isEmpty() || input.equalsIgnoreCase("y") || input.equalsIgnoreCase("n"));
-
+            acceptString = acceptString.toLowerCase();
             if (acceptString.isEmpty()) {
                 return;
             } else if (acceptString.equals("y")) {
@@ -901,7 +740,8 @@ public class DoctorMenu {
     }
 
     /**
-     * [OPTION 6] Views upcoming appointments.
+     * [OPTION 6] Views upcoming appointments. Similar to [OPTION 3] View
+     * Personal Schedule, but only slots with BOOKED status
      */
     private void viewUpcomingAppointments() {
         try {
@@ -938,7 +778,7 @@ public class DoctorMenu {
 
                 displaySlots(selectedSlot, "Slot Details");
                 displayAppointments(selectedAppointment, "Appointment Details");
-                displayPatientList(selectedPatient, "PATIENT'S DETAILS");
+                displayPatients(selectedPatient, "PATIENT'S DETAILS");
 
                 if (medicalHistory.isEmpty()) {
                     System.out.println("This patient has no medical history records.");
@@ -992,7 +832,7 @@ public class DoctorMenu {
                 Patient selectedPatient = doctorController.getPatientByAppointment(selectedAppointment);
                 String patientID = selectedPatient.getUserID();
                 System.out.println();
-                displayPatientList(selectedPatient, "PATIENT'S DETAILS");
+                displayPatients(selectedPatient, "PATIENT'S DETAILS");
 
                 List<History> medicalHistory = doctorController.getPatientMedicalHistory(patientID);
 
@@ -1047,6 +887,17 @@ public class DoctorMenu {
         }
     }
 
+    /**
+     * Creates a Prescription object and returns a string of prescriptionID. For
+     * example, "M01;M02;M02"
+     *
+     * @param appointment The accompanying appointment
+     * @param prescriptionID The prescription ID to manage (perhaps using
+     * prescription ID instead of medication ID might be clearer)
+     * @param count number of medications in current prescription ID, 0 if it is
+     * a new appointment record
+     * @return the updated prescription ID
+     */
     private String addPrescription(Appointment appointment, String prescriptionID, int count) {
         try {
             String appointmentID = appointment.getAppointmentID();
@@ -1054,6 +905,7 @@ public class DoctorMenu {
             String notes;
             String medicationID;
             Boolean success;
+            //we use an array list to split and store the medications
             List<String> prescriptionList = new ArrayList<>();
 
             List<Medication> medication = doctorController.getAllMedication();
@@ -1124,22 +976,6 @@ public class DoctorMenu {
     }
 
     /**
-     * Displays a list of medication.
-     *
-     * @param prescription The slot to display
-     * @param name The name of the table
-     */
-    //medicationID,medicationName,stockLevel,lowStockAlertLevel
-    private void displayMedication(List<Medication> medication, String name) {
-        LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
-        columnMapping.put("medicationID", new TableBuilder.ColumnMapping("Medication ID", null));
-        columnMapping.put("name", new TableBuilder.ColumnMapping("Medication Name", null));
-        columnMapping.put("stockLevel", new TableBuilder.ColumnMapping("Quantity Remaining", null));
-
-        TableBuilder.createTable(name, medication, columnMapping, 20);
-    }
-
-    /**
      * [OPTION 8] View and Update Appointment Outcome.
      */
     private void updateAppointmentOutcome() {
@@ -1162,7 +998,7 @@ public class DoctorMenu {
                     return;
                 }
 
-                displayPatientList(patients);
+                displayPatients(patients, "Patients Under Care");
                 displayMedication(medication, "LIST OF MEDICATIONS");
                 displayOutcome(outcomes, "OUTCOMES");
                 displayAppointments(completedAppointment, "SELECT A COMPLETED APPOINTMENT OUTCOME TO UPDATE");
@@ -1185,47 +1021,16 @@ public class DoctorMenu {
     }
 
     /**
-     * Displays the outcome for a appointment
+     * Updates an Outcome object.
      *
-     * @param outcome the list of outcomes to display
+     * @param appointmentID The appointmentID linked to the outcome to update
      */
-    private void displayOutcome(List<Outcome> outcome, String name) {
-        LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
-        columnMapping.put("outcomeID", new TableBuilder.ColumnMapping("Outcome ID", null));
-        columnMapping.put("appointmentID", new TableBuilder.ColumnMapping("Appointment ID", null));
-        columnMapping.put("serviceProvided", new TableBuilder.ColumnMapping("Service Provided", null));
-        columnMapping.put("prescriptionID", new TableBuilder.ColumnMapping("Medication(s)", null));
-        columnMapping.put("consultationNotes", new TableBuilder.ColumnMapping("Consulatation Notes", null));
-
-        TableBuilder.createTable(name, outcome, columnMapping, 20);
-    }
-
-    /**
-     * Displays the outcome for a appointment
-     *
-     * @param outcome, the list of outcomes to display
-     */
-    //outcomeID,appointmentID,serviceProvided,prescriptionID,consultationNotes
-    private void displayOutcome(Outcome outcome, String name) {
-        LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
-        columnMapping.put("outcomeID", new TableBuilder.ColumnMapping("Outcome ID", null));
-        columnMapping.put("appointmentID", new TableBuilder.ColumnMapping("Appointment ID", null));
-        columnMapping.put("serviceProvided", new TableBuilder.ColumnMapping("Service Provided", null));
-        columnMapping.put("prescriptionID", new TableBuilder.ColumnMapping("Medication(s)", null));
-        columnMapping.put("consultationNotes", new TableBuilder.ColumnMapping("Consulatation Notes", null));
-
-        List<Outcome> outcomeList = Collections.singletonList(outcome);
-
-        TableBuilder.createTable(name, outcomeList, columnMapping, 20);
-    }
-
     private void updateOutcome(String appointmentID) {
         // Retrieve the selected appointment, outcome, and prescriptions
         Appointment selectedAppointment = doctorController.getAppointmentByID(appointmentID);
         String outcomeID = doctorController.getOutcomeIDFromAppointment(selectedAppointment);
         Outcome selectedOutcome = doctorController.getOutcomeByID(outcomeID);
         List<Prescription> prescriptions = doctorController.getPrescriptionsByAppointmentID(appointmentID);
-        List<Medication> medication = doctorController.getAllMedication();
         Patient patient = doctorController.getPatientFromAppointment(selectedAppointment);
 
         if (selectedOutcome == null) {
@@ -1284,6 +1089,15 @@ public class DoctorMenu {
         }
     }
 
+    /**
+     * Manages a Prescription object linked to an appointment ID
+     *
+     * @param appointmentID The ID of the appointment linked to the Prescription
+     * object
+     * @param prescriptionString The current string of medication. For example,
+     * "M01;M02;M02"
+     * @return the updated prescription ID used to update outcome
+     */
     private String managePrescriptions(String appointmentID, String prescriptionString) {
         List<Prescription> prescriptions;
         List<Medication> medication = doctorController.getAllMedication();
@@ -1338,34 +1152,6 @@ public class DoctorMenu {
         }
     }
 
-    private void displayPrescriptions(List<Prescription> prescriptions, String name) {
-        LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
-        //prescriptionID,appointmentID,medicationID,quantity,status,notes
-        columnMapping.put("prescriptionID", new TableBuilder.ColumnMapping("Prescription ID", null));
-        columnMapping.put("appointmentID", new TableBuilder.ColumnMapping("Appointment ID", null));
-        columnMapping.put("medicationID", new TableBuilder.ColumnMapping("Medication ID", null));
-        columnMapping.put("quantity", new TableBuilder.ColumnMapping("Quantity Provided", null));
-        columnMapping.put("status", new TableBuilder.ColumnMapping("Prescription Status", null));
-        columnMapping.put("notes", new TableBuilder.ColumnMapping("Prescription Notes", null));
-
-        TableBuilder.createTable(name, prescriptions, columnMapping, 20);
-    }
-
-    private void displayPrescriptions(Prescription prescriptions, String name) {
-        LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
-        //prescriptionID,appointmentID,medicationID,quantity,status,notes
-        columnMapping.put("prescriptionID", new TableBuilder.ColumnMapping("Prescription ID", null));
-        columnMapping.put("appointmentID", new TableBuilder.ColumnMapping("Appointment ID", null));
-        columnMapping.put("medicationID", new TableBuilder.ColumnMapping("Medication ID", null));
-        columnMapping.put("quantity", new TableBuilder.ColumnMapping("Quantity Provided", null));
-        columnMapping.put("status", new TableBuilder.ColumnMapping("Prescription Status", null));
-        columnMapping.put("notes", new TableBuilder.ColumnMapping("Prescription Notes", null));
-
-        List<Prescription> prescriptionList = Collections.singletonList(prescriptions);
-
-        TableBuilder.createTable(name, prescriptionList, columnMapping, 20);
-    }
-
     /**
      * Handles updating prescriptions for a doctor.
      *
@@ -1373,7 +1159,7 @@ public class DoctorMenu {
      * @param prescriptions List of existing prescriptions.
      * @param prescriptionString String containing medication IDs separated by
      * semicolons.
-     * @return Updated prescriptionString.
+     * @return updated prescriptionString.
      */
     private String updatePrescription(List<Medication> medication, List<Prescription> prescriptions, String prescriptionString) {
         try {
@@ -1419,7 +1205,7 @@ public class DoctorMenu {
             System.out.println("\nCurrent Quantity: " + currentQuantity);
             String quantityInput = ConsoleUtility.validateInput(
                     "Enter new quantity (or press Enter to keep current): ",
-                    input -> input.isEmpty() || ConsoleUtility.isValidDouble(input));
+                    input -> input.isEmpty() || ConsoleUtility.isValidInteger(input));
 
             int newQuantity;
             if (quantityInput.isEmpty()) {
@@ -1428,7 +1214,6 @@ public class DoctorMenu {
                 try {
                     newQuantity = Integer.parseInt(quantityInput); // Parse to int
                 } catch (NumberFormatException e) {
-                    // Handle the exception, e.g., set newQuantity to a default value or show an error message
                     System.out.println("Invalid input. Please enter a valid integer.");
                     newQuantity = currentQuantity; // or some default value
                 }
@@ -1457,11 +1242,11 @@ public class DoctorMenu {
                 }
             }
 
-            // Update the prescriptionString with the new values from the list
+            // Update the prescriptionString with the new values from the list and recreates it in the form of medication ID seperated by semicolons ("M01;M02;M02")
             prescriptionString = String.join(";", prescriptionList);
 
             // Update the prescription in the system
-            boolean updated = doctorController.updatePrescription(selectedPrescription, newMedicationID.isEmpty() ? currentMedicationID : newMedicationID, newQuantity, newNotes);
+            boolean updated = doctorController.updatePrescription(selectedPrescription, newMedicationID.isEmpty() ? currentMedicationID : newMedicationID, newQuantity, newNotes.isEmpty() ? currentNotes : newNotes);
 
             if (updated) {
                 System.out.println("Prescription updated successfully.");
@@ -1481,13 +1266,13 @@ public class DoctorMenu {
     }
 
     /**
-     * Handles removing prescriptions for a doctor.
+     * Removes prescriptions and returns the updated prescription string
      *
      * @param medication List of available medications.
      * @param prescriptions List of existing prescriptions.
      * @param prescriptionString String containing medication IDs separated by
      * semicolons.
-     * @return Updated prescriptionString after removal.
+     * @return updated prescriptionString after removal.
      */
     private String removePrescription(List<Medication> medication, List<Prescription> prescriptions, String prescriptionString) {
         try {
@@ -1519,6 +1304,8 @@ public class DoctorMenu {
 
                 // Remove the medication ID from prescriptionString
                 String medicationIDToRemove = selectedPrescription.getMedicationID();
+
+                //creates an array to store IDs and manage medication IDs
                 List<String> prescriptionList = new ArrayList<>(Arrays.asList(prescriptionString.split(";")));
 
                 // Remove the medication ID from the list
@@ -1541,4 +1328,259 @@ public class DoctorMenu {
         // Return the updated prescription string
         return prescriptionString;
     }
+
+    //-------------------Display Functions--------------------
+    /**
+     * 1) Creates a table with the details to display: Patient ID, Name, Date of
+     * Birth, Gender,Contact Number, Email Adress, Blood Type.<p>
+     * 2) Displays a list of patients and their details.
+     *
+     * @param patients List of Patients Objects to display
+     * @param name Name of table to be displayed
+     */
+    private void displayPatients(List<Patient> patients, String name) {
+        LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
+        columnMapping.put("userID", new TableBuilder.ColumnMapping("Patient ID", null));
+        columnMapping.put("name", new TableBuilder.ColumnMapping("Name", null));
+        columnMapping.put("dateOfBirth", new TableBuilder.ColumnMapping("Date of Birth", null));
+        columnMapping.put("gender", new TableBuilder.ColumnMapping("Gender", null));
+        columnMapping.put("contactNumber", new TableBuilder.ColumnMapping("Contact Number", null));
+        columnMapping.put("emailAddress", new TableBuilder.ColumnMapping("Email Address", null));
+        columnMapping.put("bloodType", new TableBuilder.ColumnMapping("Blood Type", null));
+
+        TableBuilder.createTable(name, patients, columnMapping, 20);
+    }
+
+    /**
+     * 1) Creates a table with the details to display: Patient ID, Name, Date of
+     * Birth, Gender,Contact Number, Email Adress, Blood Type.<p>
+     * 2) Displays a selected patient's details.
+     *
+     * @param patients Patient Object to display
+     * @param name Name of table to be displayed
+     */
+    private void displayPatients(Patient patient, String name) {
+        LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
+        columnMapping.put("userID", new TableBuilder.ColumnMapping("Patient ID", null));
+        columnMapping.put("name", new TableBuilder.ColumnMapping("Name", null));
+        columnMapping.put("dateOfBirth", new TableBuilder.ColumnMapping("Date of Birth", null));
+        columnMapping.put("gender", new TableBuilder.ColumnMapping("Gender", null));
+        columnMapping.put("contactNumber", new TableBuilder.ColumnMapping("Contact Number", null));
+        columnMapping.put("emailAddress", new TableBuilder.ColumnMapping("Email Address", null));
+        columnMapping.put("bloodType", new TableBuilder.ColumnMapping("Blood Type", null));
+
+        List<Patient> patientList = Collections.singletonList(patient);
+
+        TableBuilder.createTable(name, patientList, columnMapping, 20);
+    }
+
+    /**
+     * 1) Creates a table with the details to display: History ID, Date,
+     * Diagnosis, Treatment.<p>
+     * 2) Displays a list of medical histories and their details.
+     *
+     * @param medicalHistory List of History Objects to display
+     * @param name Name of table to be displayed
+     */
+    private void displayMedicalHistory(List<History> medicalHistory, String name) {
+        LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
+        columnMapping.put("historyID", new TableBuilder.ColumnMapping("History ID", null));
+        columnMapping.put("diagnosisDate", new TableBuilder.ColumnMapping("Date", null));
+        columnMapping.put("diagnosis", new TableBuilder.ColumnMapping("Diagnosis", null));
+        columnMapping.put("treatment", new TableBuilder.ColumnMapping("Treatment", null));
+
+        TableBuilder.createTable(name, medicalHistory, columnMapping, 20);
+    }
+
+    /**
+     * 1) Creates a table with the details to display: Slot ID, Date, Start
+     * Time, End Time, Status.<p>
+     * 2) Sort the slots by Date, Start Time, and Status.<p>
+     * 3) Displays a list of sorted slots and their details.
+     *
+     * @param slots List of Slot Objects to display
+     * @param name Name of table to be displayed
+     */
+    public static void displaySlots(List<Slot> slots, String name) {
+        // Sort the slots by Date, Start Time, and Status
+        List<Slot> sortedSlots = DoctorController.sortSlots(slots);
+
+        // Display the sorted slots
+        LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
+        columnMapping.put("slotID", new TableBuilder.ColumnMapping("Slot ID", null));
+        columnMapping.put("date", new TableBuilder.ColumnMapping("Date", null));
+        columnMapping.put("startTime", new TableBuilder.ColumnMapping("Start Time", null));
+        columnMapping.put("endTime", new TableBuilder.ColumnMapping("End Time", null));
+        columnMapping.put("status", new TableBuilder.ColumnMapping("Status", null));
+
+        TableBuilder.createTable(name, sortedSlots, columnMapping, 20);
+    }
+
+    /**
+     * 1) Creates a table with the details to display: Slot ID, Date, Start
+     * Time, End Time, Status.<p>
+     * 2) Displays a selected slot's details.
+     *
+     * @param slots Slot Object to display
+     * @param name Name of table to be displayed
+     */
+    private void displaySlots(Slot slot, String name) {
+        LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
+        columnMapping.put("slotID", new TableBuilder.ColumnMapping("Slot ID", null));
+        columnMapping.put("date", new TableBuilder.ColumnMapping("Date", null));
+        columnMapping.put("startTime", new TableBuilder.ColumnMapping("Start Time", null));
+        columnMapping.put("endTime", new TableBuilder.ColumnMapping("End Time", null));
+        columnMapping.put("status", new TableBuilder.ColumnMapping("Status", null));
+
+        List<Slot> slotList = Collections.singletonList(slot);
+
+        TableBuilder.createTable(name, slotList, columnMapping, 20);
+    }
+
+    /**
+     * 1) Creates a table with the details to display: Appointment ID, Patient
+     * ID, Doctor ID, Slot ID, Status, Outcome ID.<p>
+     * 2) Displays a list of appointments and their details.
+     *
+     * @param appointments List of Appointment Objects to display
+     * @param name Name of table to be displayed
+     */
+    private void displayAppointments(List<Appointment> appointments, String name) {
+        LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
+        columnMapping.put("appointmentID", new TableBuilder.ColumnMapping("Appointment ID", null));
+        columnMapping.put("patientID", new TableBuilder.ColumnMapping("Patient ID", null));
+        columnMapping.put("doctorID", new TableBuilder.ColumnMapping("Doctor ID", null));
+        columnMapping.put("slotID", new TableBuilder.ColumnMapping("Slot ID", null));
+        columnMapping.put("status", new TableBuilder.ColumnMapping("Status", null));
+        columnMapping.put("outcomeID", new TableBuilder.ColumnMapping("Outcome ID", null));
+
+        TableBuilder.createTable(name, appointments, columnMapping, 20);
+    }
+
+    /**
+     * 1) Creates a table with the details to display: Appointment ID, Patient
+     * ID, Doctor ID, Slot ID, Status, Outcome ID.<p>
+     * 2) Displays a selected appointment's details.
+     *
+     * @param appointments List of Appointment Objects to display
+     * @param name Name of table to be displayed
+     */
+    private void displayAppointments(Appointment appointment, String name) {
+        LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
+        columnMapping.put("appointmentID", new TableBuilder.ColumnMapping("Appointment ID", null));
+        columnMapping.put("patientID", new TableBuilder.ColumnMapping("Patient ID", null));
+        columnMapping.put("doctorID", new TableBuilder.ColumnMapping("Doctor ID", null));
+        columnMapping.put("slotID", new TableBuilder.ColumnMapping("Slot ID", null));
+        columnMapping.put("status", new TableBuilder.ColumnMapping("Status", null));
+        columnMapping.put("outcomeID", new TableBuilder.ColumnMapping("Outcome ID", null));
+
+        List<Appointment> appointmentList = Collections.singletonList(appointment);
+
+        TableBuilder.createTable(name, appointmentList, columnMapping, 20);
+    }
+
+    /**
+     * 1) Creates a table with the details to display: Outcome ID, Appointment
+     * ID, Service Provided, Medication(s), Consulatation Notes.<p>
+     * 2) Displays a list of outcomes and their details.
+     *
+     * @param outcomes List of Outcome Objects to display
+     * @param name Name of table to be displayed
+     */
+    private void displayOutcome(List<Outcome> outcomes, String name) {
+        LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
+        columnMapping.put("outcomeID", new TableBuilder.ColumnMapping("Outcome ID", null));
+        columnMapping.put("appointmentID", new TableBuilder.ColumnMapping("Appointment ID", null));
+        columnMapping.put("serviceProvided", new TableBuilder.ColumnMapping("Service Provided", null));
+        columnMapping.put("prescriptionID", new TableBuilder.ColumnMapping("Medication(s)", null));
+        columnMapping.put("consultationNotes", new TableBuilder.ColumnMapping("Consulatation Notes", null));
+
+        TableBuilder.createTable(name, outcomes, columnMapping, 20);
+    }
+
+    /**
+     * 1) Creates a table with the details to display: Outcome ID, Appointment
+     * ID, Service Provided, Medication(s), Consulatation Notes.<p>
+     * 2) Displays a selected outcome's details.
+     *
+     * @param outcome Outcome Object to display
+     * @param name Name of table to be displayed
+     */
+    private void displayOutcome(Outcome outcome, String name) {
+        LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
+        columnMapping.put("outcomeID", new TableBuilder.ColumnMapping("Outcome ID", null));
+        columnMapping.put("appointmentID", new TableBuilder.ColumnMapping("Appointment ID", null));
+        columnMapping.put("serviceProvided", new TableBuilder.ColumnMapping("Service Provided", null));
+        columnMapping.put("prescriptionID", new TableBuilder.ColumnMapping("Medication(s)", null));
+        columnMapping.put("consultationNotes", new TableBuilder.ColumnMapping("Consulatation Notes", null));
+
+        List<Outcome> outcomeList = Collections.singletonList(outcome);
+
+        TableBuilder.createTable(name, outcomeList, columnMapping, 20);
+    }
+
+    /**
+     * /**
+     * 1) Creates a table with the details to display: Prescription ID,
+     * Appointment ID, Medication ID, Quantity Provided, Prescription Status,
+     * Prescription Notes.<p>
+     * 2) Displays a list of medications and their details.
+     *
+     * @param prescriptions List of Prescription Objects to display
+     * @param name Name of table to be displayed
+     */
+    private void displayPrescriptions(List<Prescription> prescriptions, String name) {
+        LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
+        //prescriptionID,appointmentID,medicationID,quantity,status,notes
+        columnMapping.put("prescriptionID", new TableBuilder.ColumnMapping("Prescription ID", null));
+        columnMapping.put("appointmentID", new TableBuilder.ColumnMapping("Appointment ID", null));
+        columnMapping.put("medicationID", new TableBuilder.ColumnMapping("Medication ID", null));
+        columnMapping.put("quantity", new TableBuilder.ColumnMapping("Quantity Provided", null));
+        columnMapping.put("status", new TableBuilder.ColumnMapping("Prescription Status", null));
+        columnMapping.put("notes", new TableBuilder.ColumnMapping("Prescription Notes", null));
+
+        TableBuilder.createTable(name, prescriptions, columnMapping, 20);
+    }
+
+    /**
+     * 1) Creates a table with the details to display: Prescription ID,
+     * Appointment ID, Medication ID, Quantity Provided, Prescription Status,
+     * Prescription Notes.<p>
+     * 2) Displays a selected prescription's details.
+     *
+     * @param prescription Prescription Object to display
+     * @param name Name of table to be displayed
+     */
+    private void displayPrescriptions(Prescription prescription, String name) {
+        LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
+        //prescriptionID,appointmentID,medicationID,quantity,status,notes
+        columnMapping.put("prescriptionID", new TableBuilder.ColumnMapping("Prescription ID", null));
+        columnMapping.put("appointmentID", new TableBuilder.ColumnMapping("Appointment ID", null));
+        columnMapping.put("medicationID", new TableBuilder.ColumnMapping("Medication ID", null));
+        columnMapping.put("quantity", new TableBuilder.ColumnMapping("Quantity Provided", null));
+        columnMapping.put("status", new TableBuilder.ColumnMapping("Prescription Status", null));
+        columnMapping.put("notes", new TableBuilder.ColumnMapping("Prescription Notes", null));
+
+        List<Prescription> prescriptionList = Collections.singletonList(prescription);
+
+        TableBuilder.createTable(name, prescriptionList, columnMapping, 20);
+    }
+
+    /**
+     * 1) Creates a table with the details to display: Medication ID, Medication
+     * Name, Quantity Remaining.<p>
+     * 2) Displays a list of medications and their details.
+     *
+     * @param medication List of Medication Objects to display
+     * @param name Name of table to be displayed
+     */
+    private void displayMedication(List<Medication> medication, String name) {
+        LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
+        columnMapping.put("medicationID", new TableBuilder.ColumnMapping("Medication ID", null));
+        columnMapping.put("name", new TableBuilder.ColumnMapping("Medication Name", null));
+        columnMapping.put("stockLevel", new TableBuilder.ColumnMapping("Quantity Remaining", null));
+
+        TableBuilder.createTable(name, medication, columnMapping, 20);
+    }
+
 }

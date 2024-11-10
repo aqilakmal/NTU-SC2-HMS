@@ -17,3 +17,8 @@
 * Go through code and reorganise
 * Implement todo functions for the rest of the classes
 * Setup testing (optional)
+
+
+#### Arun Todos:
+
+* Remove "COMPLETED" and "CANCELED" from view appoinments(7)

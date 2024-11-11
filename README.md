@@ -33,7 +33,6 @@ Completed
 
 Not Completed
 
-
 Doctor Actions 
 Test Case 9: View Patient Medical Records 
 ● Doctor views medical records of patients under their care. 
@@ -98,3 +97,7 @@ Tested:
 >Tried inputing invalid Appointment IDs and it prompts to input a valid ID
 >Tried inputing invalid Medication IDs and it prompts to input a valid ID
 >Tried inputing non-integer quantity and it prompts to input an integer
+
+#### Arun Todos:
+
+* Remove "COMPLETED" and "CANCELED" from view appoinments(7)

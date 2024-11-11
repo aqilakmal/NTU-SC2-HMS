@@ -1,4 +1,3 @@
-
 import java.io.IOException;
 import java.util.InputMismatchException;
 import java.util.Scanner;
@@ -36,26 +35,50 @@ public class Main {
     private static PatientController patientController;
     private static DoctorController doctorController;
     private static PharmacistController pharmacistController;
+    private static AppointmentDataManager appointmentDataManager;
+    private static UserDataManager userDataManager;
+    private static MedicationDataManager medicationDataManager;
+    private static PrescriptionDataManager prescriptionDataManager;
+    private static OutcomeDataManager outcomeDataManager;
+    private static SlotDataManager slotDataManager;
+    private static HistoryDataManager historyDataManager;
 
     /**
      * The main method that starts the Hospital Management System.
-     *
      * @param args Command line arguments (not used in this application)
      */
     public static void main(String[] args) {
         System.out.println("Welcome to the Hospital Management System");
 
         // Initialize all data managers and load user data
-        UserDataManager userDataManager = new UserDataManager();
-        MedicationDataManager medicationDataManager = new MedicationDataManager();
-        SlotDataManager slotDataManager = new SlotDataManager();
-        AppointmentDataManager appointmentDataManager = new AppointmentDataManager(slotDataManager);
-        OutcomeDataManager outcomeDataManager = new OutcomeDataManager();
-        RequestDataManager requestDataManager = new RequestDataManager();
-        PrescriptionDataManager prescriptionDataManager = new PrescriptionDataManager();
-        HistoryDataManager historyDataManager = new HistoryDataManager();
+        initializeDataManagers();
+        
+        // Initialize all controllers
+        initializeControllers();
 
-        // Load system data from CSV files
+        // Initialize the LoginMenu & display the home screen
+        loginMenu = new LoginMenu(authController);
+        displayHomeScreen();
+
+        // Save all data when the program is terminated
+        saveDataOnExit();
+
+        System.out.println("Thank you for using the Hospital Management System");
+    }
+
+    /**
+     * Initialize all data managers and load data from CSV.
+     */
+    private static void initializeDataManagers() {
+        userDataManager = new UserDataManager();
+        medicationDataManager = new MedicationDataManager();
+        slotDataManager = new SlotDataManager();
+        appointmentDataManager = new AppointmentDataManager(slotDataManager);
+        outcomeDataManager = new OutcomeDataManager();
+        RequestDataManager requestDataManager = new RequestDataManager();
+        prescriptionDataManager = new PrescriptionDataManager();
+        historyDataManager = new HistoryDataManager();
+
         try {
             userDataManager.loadUsersFromCSV();
             medicationDataManager.loadMedicationsFromCSV();
@@ -68,64 +91,50 @@ public class Main {
         } catch (IOException e) {
             System.err.println("Error loading data: " + e.getMessage());
         }
+    }
 
-        // Initialize all controllers
+    /**
+     * Initialize all controllers with the loaded data managers.
+     */
+    private static void initializeControllers() {
         try {
             authController = new AuthenticationController(userDataManager);
             administratorController = new AdministratorController(
-                    userDataManager,
-                    appointmentDataManager,
-                    outcomeDataManager,
-                    medicationDataManager,
-                    requestDataManager,
-                    authController
+                userDataManager,
+                appointmentDataManager,
+                outcomeDataManager,
+                medicationDataManager,
+                new RequestDataManager(),
+                authController
             );
             doctorController = new DoctorController(
-                    userDataManager,
-                    slotDataManager,
-                    appointmentDataManager,
-                    historyDataManager, outcomeDataManager,
-                    medicationDataManager,
-                    prescriptionDataManager,
-                    authController
+                userDataManager,
+                slotDataManager,
+                appointmentDataManager,
+                historyDataManager,
+                outcomeDataManager,
+                medicationDataManager,
+                prescriptionDataManager,
+                authController
             );
             patientController = new PatientController(
-                    appointmentDataManager,
-                    slotDataManager,
-                    doctorController,
-                    authController
+                appointmentDataManager,
+                historyDataManager,
+                slotDataManager,
+                doctorController,
+                authController
             );
             pharmacistController = new PharmacistController(
-                    medicationDataManager,
-                    requestDataManager,
-                    authController
+                medicationDataManager,
+                new RequestDataManager(),
+                authController
             );
         } catch (Exception e) {
             System.err.println("Critical Error: Failed to initialize controllers. The system cannot start.");
             System.err.println("Error details: " + e.getMessage());
             e.printStackTrace();
-            return;
+            System.exit(1);
         }
-
-        // Initialize the LoginMenu & display the home screen
-        loginMenu = new LoginMenu(authController);
-        displayHomeScreen();
-
-        // Save all data when the program is terminated
-        try {
-            userDataManager.saveUsersToCSV();
-            medicationDataManager.saveMedicationsToCSV();
-            slotDataManager.saveSlotsToCSV();
-            appointmentDataManager.saveAppointmentsToCSV();
-            outcomeDataManager.saveOutcomesToCSV();
-            requestDataManager.saveRequestsToCSV();
-            prescriptionDataManager.savePrescriptionsToCSV();
-            historyDataManager.saveHistoriesToCSV();
-        } catch (IOException e) {
-            System.err.println("Error saving data to CSV: " + e.getMessage());
-        }
-
-        System.out.println("Thank you for using the Hospital Management System");
     }
 
     /**
@@ -163,8 +172,7 @@ public class Main {
     }
 
     /**
-     * Handles the login process and redirects to appropriate menu based on user
-     * role.
+     * Handles the login process and redirects to appropriate menu based on user role.
      */
     private static void handleLogin() {
         try {
@@ -184,20 +192,16 @@ public class Main {
                 // Based on the authenticated user's role, initialize appropriate UI
                 switch (authenticatedUser.getRole()) {
                     case PATIENT:
-                        PatientMenu patientUI = new PatientMenu(patientController);
-                        patientUI.displayMenu();
+                        new PatientMenu(patientController).displayMenu();
                         break;
                     case DOCTOR:
-                        DoctorMenu doctorUI = new DoctorMenu(doctorController);
-                        doctorUI.displayMenu();
+                        new DoctorMenu(doctorController).displayMenu();
                         break;
                     case PHARMACIST:
-                        PharmacistMenu pharmacistUI = new PharmacistMenu(pharmacistController);
-                        pharmacistUI.displayMenu();
+                        new PharmacistMenu(pharmacistController).displayMenu();
                         break;
                     case ADMINISTRATOR:
-                        AdministratorMenu adminUI = new AdministratorMenu(administratorController);
-                        adminUI.displayMenu();
+                        new AdministratorMenu(administratorController).displayMenu();
                         break;
                     default:
                         System.out.println("Error: Invalid user role. Please contact system administrator.");
@@ -209,6 +213,24 @@ public class Main {
         } catch (Exception e) {
             System.err.println("An error occurred during login: " + e.getMessage());
             e.printStackTrace();
+        }
+    }
+
+    /**
+     * Saves all data to CSV on exit.
+     */
+    private static void saveDataOnExit() {
+        try {
+            userDataManager.saveUsersToCSV();
+            medicationDataManager.saveMedicationsToCSV();
+            slotDataManager.saveSlotsToCSV();
+            appointmentDataManager.saveAppointmentsToCSV();
+            outcomeDataManager.saveOutcomesToCSV();
+            new RequestDataManager().saveRequestsToCSV();
+            prescriptionDataManager.savePrescriptionsToCSV();
+            historyDataManager.saveHistoriesToCSV();
+        } catch (IOException e) {
+            System.err.println("Error saving data to CSV: " + e.getMessage());
         }
     }
 }

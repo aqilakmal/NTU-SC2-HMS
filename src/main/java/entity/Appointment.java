@@ -1,5 +1,8 @@
 package entity;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Represents an appointment between a patient and a doctor in the Hospital Management System.
  */
@@ -9,7 +12,7 @@ public class Appointment {
      * Enum representing the possible statuses of an appointment.
      */
     public enum AppointmentStatus {
-        REQUESTED, CONFIRMED, CANCELED, COMPLETED
+        REQUESTED, CONFIRMED, CANCELLED, COMPLETED,
     }
     
     /**
@@ -59,7 +62,7 @@ public class Appointment {
         this.status = status;
         this.outcomeID = outcomeID;
     }
-    
+
     /**
      * Get the unique identifier for the appointment.
      * @return The appointment ID
@@ -90,6 +93,10 @@ public class Appointment {
      */
     public String getSlotID() {
         return slotID;
+    }
+
+    public void setSlotID(String slotID) {
+        this.slotID = slotID;
     }
     
     /**
@@ -129,3 +136,4 @@ public class Appointment {
         return "Appointment{" + appointmentID + "," + patientID + "," + doctorID + "," + slotID + "," + status + "," + outcomeID + "}";
     }
 }
+

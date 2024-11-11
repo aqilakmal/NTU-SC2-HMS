@@ -1,10 +1,26 @@
-import boundary.*;
-import controller.*;
-import controller.data.*;
-import entity.*;
-import java.util.Scanner;
-import java.util.InputMismatchException;
 import java.io.IOException;
+import java.util.InputMismatchException;
+import java.util.Scanner;
+
+import boundary.AdministratorMenu;
+import boundary.DoctorMenu;
+import boundary.LoginMenu;
+import boundary.PatientMenu;
+import boundary.PharmacistMenu;
+import controller.AdministratorController;
+import controller.AuthenticationController;
+import controller.DoctorController;
+import controller.PatientController;
+import controller.PharmacistController;
+import controller.data.AppointmentDataManager;
+import controller.data.HistoryDataManager;
+import controller.data.MedicationDataManager;
+import controller.data.OutcomeDataManager;
+import controller.data.PrescriptionDataManager;
+import controller.data.RequestDataManager;
+import controller.data.SlotDataManager;
+import controller.data.UserDataManager;
+import entity.User;
 
 /**
  * Main class for the Hospital Management System.
@@ -19,6 +35,11 @@ public class Main {
 	private static PatientController patientController;
 	private static DoctorController doctorController;
 	private static PharmacistController pharmacistController;
+	private static AppointmentDataManager appointmentDataManager;
+	private static UserDataManager userDataManager;
+	private static MedicationDataManager medicationDataManager;
+	private static PrescriptionDataManager prescriptionDataManager;
+	private static OutcomeDataManager outcomeDataManager;
 
 	/**
 	 * The main method that starts the Hospital Management System.
@@ -28,13 +49,13 @@ public class Main {
 		System.out.println("Welcome to the Hospital Management System");
 
 		// Initialize all data managers and load user data
-		UserDataManager userDataManager = new UserDataManager();
-		MedicationDataManager medicationDataManager = new MedicationDataManager();
+		userDataManager = new UserDataManager();
+		medicationDataManager = new MedicationDataManager();
 		SlotDataManager slotDataManager = new SlotDataManager();
-		AppointmentDataManager appointmentDataManager = new AppointmentDataManager(slotDataManager);
-		OutcomeDataManager outcomeDataManager = new OutcomeDataManager();
+		appointmentDataManager = new AppointmentDataManager(slotDataManager);
+		outcomeDataManager = new OutcomeDataManager();
 		RequestDataManager requestDataManager = new RequestDataManager();
-		PrescriptionDataManager prescriptionDataManager = new PrescriptionDataManager();
+		prescriptionDataManager = new PrescriptionDataManager();
 		HistoryDataManager historyDataManager = new HistoryDataManager();
 		
 		// Load system data from CSV files
@@ -166,7 +187,7 @@ public class Main {
 						doctorUI.displayMenu();
 						break;
 					case PHARMACIST:
-						PharmacistMenu pharmacistUI = new PharmacistMenu(pharmacistController);
+						PharmacistMenu pharmacistUI = new PharmacistMenu(pharmacistController, appointmentDataManager, userDataManager, medicationDataManager, prescriptionDataManager, outcomeDataManager );
 						pharmacistUI.displayMenu();
 						break;
 					case ADMINISTRATOR:

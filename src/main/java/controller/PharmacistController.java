@@ -1,8 +1,14 @@
 package controller;
 
-import entity.*;
-import controller.data.*;
 import java.util.List;
+
+import controller.data.AppointmentDataManager;
+import controller.data.MedicationDataManager;
+import controller.data.PrescriptionDataManager;
+import controller.data.RequestDataManager;
+import entity.Medication;
+import entity.Pharmacist;
+import entity.Request;
 
 /**
  * Controller class for managing pharmacist-related operations in the Hospital Management System.
@@ -12,6 +18,8 @@ public class PharmacistController {
     private MedicationDataManager medicationDataManager;
     private RequestDataManager requestDataManager;
     private AuthenticationController authController;
+    private PrescriptionDataManager prescriptionDataManager;
+    private AppointmentDataManager appointmentDataManager;
 
     /**
      * Constructor for PharmacistController.
@@ -75,4 +83,33 @@ public class PharmacistController {
         // This is a simple example and might need to be more robust in a real system
         return "R" + String.format("%02d", requestDataManager.getRequests().size() + 1);
     }
+    /**
+ * Retrieves all appointment records.
+ *
+ * @return A list of all appointment records in the system
+ */
+// public List<Appointment> getAllAppointments() {
+//     return appointmentDataManager.getAppointments();
+// }
+
+// /**
+//  * Retrieves a specific appointment record by its ID.
+//  *
+//  * @param appointmentID The ID of the appointment to retrieve
+//  * @return The Appointment object with the specified ID, or null if not found
+//  */
+// public Appointment getAppointmentByID(String appointmentID) {
+//     return appointmentDataManager.getAppointmentByID(appointmentID);
+// }
+
+// /**
+//  * Retrieves a list of appointment records for a specific patient.
+//  *
+//  * @param patientID The ID of the patient whose appointments are to be retrieved
+//  * @return A list of Appointment objects for the specified patient
+//  */
+// public List<Appointment> getAppointmentsByPatientID(String patientID) {
+//     return appointmentDataManager.getAppointmentsByPatientID(patientID);
+// }
+
 }

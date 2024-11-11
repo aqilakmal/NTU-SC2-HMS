@@ -157,4 +157,9 @@ public class AppointmentDataManager {
         details.put("slot", slot);
         return details;
     }
+
+    public List<Appointment> getAppointmentsByPatientID(String patientID) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getAppointmentsByPatientID'");
+    }
 }

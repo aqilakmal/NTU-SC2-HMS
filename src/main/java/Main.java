@@ -92,6 +92,7 @@ public class Main {
             );
 			patientController = new PatientController(
                 appointmentDataManager,
+				historyDataManager,
                 slotDataManager,
                 doctorController,
                 authController

@@ -1,2 +1,2 @@
 outcomeID,appointmentID,serviceProvided,prescriptionID,consultationNotes
-R01,A02,Consultation,M01;M02,Patient showing signs of improvement
+R01,A01,Consultation,M01,Drink more water

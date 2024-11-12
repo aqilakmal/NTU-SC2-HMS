@@ -1,17 +1,23 @@
+// Utility
 import java.io.IOException;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
+// Boundary
 import boundary.AdministratorMenu;
 import boundary.DoctorMenu;
 import boundary.LoginMenu;
 import boundary.PatientMenu;
 import boundary.PharmacistMenu;
+
+// Controller
 import controller.AdministratorController;
 import controller.AuthenticationController;
 import controller.DoctorController;
 import controller.PatientController;
 import controller.PharmacistController;
+
+// Controller Data
 import controller.data.AppointmentDataManager;
 import controller.data.HistoryDataManager;
 import controller.data.MedicationDataManager;
@@ -20,8 +26,9 @@ import controller.data.PrescriptionDataManager;
 import controller.data.RequestDataManager;
 import controller.data.SlotDataManager;
 import controller.data.UserDataManager;
-import entity.User;
 
+// Entity
+import entity.User;
 /**
  * Main class for the Hospital Management System. This class serves as the entry
  * point for the application.
@@ -42,6 +49,7 @@ public class Main {
     private static OutcomeDataManager outcomeDataManager;
     private static SlotDataManager slotDataManager;
     private static HistoryDataManager historyDataManager;
+    private static RequestDataManager requestDataManager;
 
     /**
      * The main method that starts the Hospital Management System.
@@ -75,7 +83,7 @@ public class Main {
         slotDataManager = new SlotDataManager();
         appointmentDataManager = new AppointmentDataManager(slotDataManager);
         outcomeDataManager = new OutcomeDataManager();
-        RequestDataManager requestDataManager = new RequestDataManager();
+        requestDataManager = new RequestDataManager();
         prescriptionDataManager = new PrescriptionDataManager();
         historyDataManager = new HistoryDataManager();
 
@@ -104,7 +112,7 @@ public class Main {
                 appointmentDataManager,
                 outcomeDataManager,
                 medicationDataManager,
-                new RequestDataManager(),
+                requestDataManager,
                 authController
             );
             doctorController = new DoctorController(
@@ -126,7 +134,7 @@ public class Main {
             );
             pharmacistController = new PharmacistController(
                 medicationDataManager,
-                new RequestDataManager(),
+                requestDataManager,
                 authController
             );
         } catch (Exception e) {
@@ -226,7 +234,7 @@ public class Main {
             slotDataManager.saveSlotsToCSV();
             appointmentDataManager.saveAppointmentsToCSV();
             outcomeDataManager.saveOutcomesToCSV();
-            new RequestDataManager().saveRequestsToCSV();
+            requestDataManager.saveRequestsToCSV();
             prescriptionDataManager.savePrescriptionsToCSV();
             historyDataManager.saveHistoriesToCSV();
         } catch (IOException e) {

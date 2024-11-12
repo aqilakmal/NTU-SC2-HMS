@@ -9,6 +9,23 @@ import java.util.function.Function;
 
 /**
  * Utility class for building and printing tables with dynamic column widths.
+ * 
+ * @example
+ * List<Person> people = Arrays.asList(
+ *     new Person("John", "Smith", 28, LocalDateTime.now()),
+ *     new Person("Alexander", "Williams", 33, LocalDateTime.now().minusDays(1)),
+ *     new Person("Emily", "Johnson", 25, LocalDateTime.now().plusDays(1))
+ * );
+ *
+ * // Define column mappings with optional value transformations
+ * LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
+ * columnMapping.put("firstName", new TableBuilder.ColumnMapping("First Name", null));
+ * columnMapping.put("lastName", new TableBuilder.ColumnMapping("Last Name", null));
+ * columnMapping.put("dateTime", new TableBuilder.ColumnMapping("Date/Time", (val) -> ((LocalDateTime) val).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))));
+ * columnMapping.put("age", new TableBuilder.ColumnMapping("Age", null));
+ *
+ * // Generate and print table
+ * TableBuilder.createTable("Person Table", people, columnMapping, 20);
  */
 public class TableBuilder {
 
@@ -186,37 +203,3 @@ public class TableBuilder {
         }
     }
 }
-
-/*
-
-Example usage:
-
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-
-public class Main {
-    public static void main(String[] args) {
-        List<Person> people = Arrays.asList(
-            new Person("John", "Smith", 28, LocalDateTime.now()),
-            new Person("Alexander", "Williams", 33, LocalDateTime.now().minusDays(1)),
-            new Person("Emily", "Johnson", 25, LocalDateTime.now().plusDays(1))
-        );
-
-        // Specify which attributes to show in the table and their headers with optional callbacks
-        LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
-        columnMapping.put("firstName", new TableBuilder.ColumnMapping("First Name", null)); // No transformation
-        columnMapping.put("lastName", new TableBuilder.ColumnMapping("Last Name", null)); // No transformation
-        columnMapping.put("dateTime", new TableBuilder.ColumnMapping("Date/Time", 
-            (val) -> ((LocalDateTime) val).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")))); // Callback to format date
-        columnMapping.put("age", new TableBuilder.ColumnMapping("Age", null)); // No transformation
-
-        // Max column width for the table
-        int maxLenCol = 20;
-
-        // Generate and print the table with a title
-        TableBuilder.createTable("Person Table", people, columnMapping, maxLenCol);
-    }
-}
-
-*/

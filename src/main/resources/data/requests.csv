@@ -1,4 +1,4 @@
-requestID,medicationID,quantity,requestedBy,status,approvedBy
-R01,M01,50,APPROVED,H01,A
-R02,M02,10,APPROVED,H01,A
-R03,M02,10,APPROVED,H01,A
+requestID,medicationID,quantity,status,requestedBy,approvedBy
+R01,M01,50,APPROVED,H01,A01
+R02,M02,30,APPROVED,H01,A01
+R03,M03,25,PENDING,H01,

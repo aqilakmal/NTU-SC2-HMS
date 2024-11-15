@@ -1,2 +1,2 @@
 outcomeID,appointmentID,serviceProvided,prescriptionID,consultationNotes
-R01,A01,Consultation,M01,Drink more water
+O01,A01,Consultation,P01,Patient has flu symptoms. Prescribed antibiotics and pain relievers.

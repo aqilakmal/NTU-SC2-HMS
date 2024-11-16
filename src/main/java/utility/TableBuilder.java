@@ -101,7 +101,6 @@ public class TableBuilder {
         totalWidth += colWidths.length - 1; // Add space between columns
 
         // Print the table name with a line above and below
-        System.out.println();
         printLine(totalWidth - 1, '┌', '┐');
         System.out.println("│ " + tableName + " ".repeat(Math.max(0, totalWidth - tableName.length())) + "│");
         printLine(totalWidth - 1, '├', '┤');

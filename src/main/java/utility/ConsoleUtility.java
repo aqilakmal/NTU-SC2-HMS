@@ -4,7 +4,6 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.InputMismatchException;
 import java.util.Scanner;
 import java.util.function.Predicate;
 
@@ -32,7 +31,7 @@ public class ConsoleUtility {
             if (validationFunction.test(input)) {
                 return input;
             }
-            System.out.println("Invalid input. Please try again.");
+            System.out.println("Please try again.\n");
         }
     }
 
@@ -52,107 +51,7 @@ public class ConsoleUtility {
             try {
                 return Integer.parseInt(input);
             } catch (NumberFormatException e) {
-                System.out.println("Invalid input. Please enter a valid integer.");
-            }
-        }
-    }
-
-    /**
-     * Validates any ID (user, medication, appointment, etc.).
-     *
-     * @param id The ID to validate
-     * @return true if the ID is valid, false otherwise
-     */
-    public static boolean isValidID(String id) {
-        return !id.isEmpty() && id.matches("^[a-zA-Z0-9]+$");
-    }
-
-    /**
-     * Validates the name.
-     *
-     * @param name The name to validate
-     * @return true if the name is valid, false otherwise
-     */
-    public static boolean isValidName(String name) {
-        return !name.isEmpty() && name.matches("^[a-zA-Z\\s]+$");
-    }
-
-    /**
-     * Validates the contact number.
-     *
-     * @param contactNumber The contact number to validate
-     * @return true if the contact number is valid, false otherwise
-     */
-    public static boolean isValidContactNumber(String contactNumber) {
-        return contactNumber.matches("^\\d{8}$");
-    }
-
-    /**
-     * Validates the email address.
-     *
-     * @param email The email address to validate
-     * @return true if the email address is valid, false otherwise
-     */
-    public static boolean isValidEmail(String email) {
-        return email.matches("^[A-Za-z0-9+_.-]+@(.+)$");
-    }
-
-    /**
-     * Validates a date string.
-     *
-     * @param dateStr The date string to validate
-     * @return true if the date is valid, false otherwise
-     */
-    public static boolean isValidDate(String dateStr) {
-        try {
-            LocalDate.parse(dateStr, DateTimeFormatter.ISO_LOCAL_DATE);
-            return true;
-        } catch (DateTimeParseException e) {
-            return false;
-        }
-    }
-
-    /**
-     * Validates a time string.
-     *
-     * @param timeStr The time string to validate
-     * @return true if the time is valid, false otherwise
-     */
-    public static boolean isValidTime(String timeStr) {
-        try {
-            LocalTime.parse(timeStr, DateTimeFormatter.ISO_LOCAL_TIME);
-            return true;
-        } catch (DateTimeParseException e) {
-            return false;
-        }
-    }
-
-    /**
-     * Validates an integer input.
-     *
-     * @param input The input to validate
-     * @return true if the input is a valid integer, false otherwise
-     */
-    public static boolean isValidInteger(String input) {
-        try {
-            Integer.parseInt(input);
-            return true;
-        } catch (NumberFormatException e) {
-            return false;
-        }
-    }
-
-    public static int validateInteger(String prompt) {
-        while (true) {
-            System.out.print(prompt);
-            try {
-                int input = scanner.nextInt();  // Try to read an integer
-                scanner.nextLine();
-                return input;  // If successful, return the input
-            } catch (InputMismatchException e) {
-                // If input is not an integer, catch the exception
-                System.out.println("Invalid input. Please enter a valid integer.");
-                scanner.next();  // Clear the invalid input from the scanner
+                System.out.println("Invalid Input: Input must be a valid integer number.");
             }
         }
     }
@@ -176,8 +75,134 @@ public class ConsoleUtility {
                         throw new IllegalArgumentException();
                 }
             } catch (IllegalArgumentException e) {
-                System.out.println("Error: Invalid role. Please enter either 1 for DOCTOR or 2 for PHARMACIST.");
+                System.out.println("Invalid Input: Please enter either 1 for DOCTOR or 2 for PHARMACIST.");
             }
+        }
+    }
+
+    /**
+     * Basic Input (No greater than 32 characters)
+     * 
+     * @param input The input to validate
+     * @return true if the input is valid, false otherwise
+     */
+    public static boolean isValidBasicInput(String input) {
+        if (input.length() > 32) {
+            System.out.println("Invalid Input: Input must not exceed 32 characters.");
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Validates any ID (user, medication, appointment, etc.).
+     *
+     * @param id The ID to validate
+     * @return true if the ID is valid, false otherwise
+     */
+    public static boolean isValidID(String id) {
+        if (id.isEmpty()) {
+            System.out.println("Invalid Input: ID cannot be empty.");
+            return false;
+        }
+        if (!id.matches("^[a-zA-Z0-9]+$")) {
+            System.out.println("Invalid Input: ID must contain only letters and numbers.");
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Validates the name.
+     *
+     * @param name The name to validate
+     * @return true if the name is valid, false otherwise
+     */
+    public static boolean isValidName(String name) {
+        if (name.isEmpty()) {
+            System.out.println("Invalid Input: Name cannot be empty.");
+            return false;
+        }
+        if (!name.matches("^[a-zA-Z\\s]+$")) {
+            System.out.println("Invalid Input: Name must contain only letters and spaces.");
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Validates the contact number.
+     *
+     * @param contactNumber The contact number to validate
+     * @return true if the contact number is valid, false otherwise
+     */
+    public static boolean isValidContactNumber(String contactNumber) {
+        if (!contactNumber.matches("^\\d{8}$")) {
+            System.out.println("Invalid Input: Contact number must be exactly 8 digits.");
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Validates the email address.
+     *
+     * @param email The email address to validate
+     * @return true if the email address is valid, false otherwise
+     */
+    public static boolean isValidEmail(String email) {
+        if (!email.matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
+            System.out.println("Invalid Input: Invalid email format.");
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Validates a date string.
+     *
+     * @param dateStr The date string to validate
+     * @return true if the date is valid, false otherwise
+     */
+    public static boolean isValidDate(String dateStr) {
+        try {
+            LocalDate.parse(dateStr, DateTimeFormatter.ISO_LOCAL_DATE);
+            return true;
+        } catch (DateTimeParseException e) {
+            System.out.println("Invalid Input: Invalid date format. Use YYYY-MM-DD format.");
+            return false;
+        }
+    }
+
+    /**
+     * Validates a time string.
+     *
+     * @param timeStr The time string to validate
+     * @return true if the time is valid, false otherwise
+     */
+    public static boolean isValidTime(String timeStr) {
+        try {
+            LocalTime.parse(timeStr, DateTimeFormatter.ISO_LOCAL_TIME);
+            return true;
+        } catch (DateTimeParseException e) {
+            System.out.println("Invalid Input: Invalid time format. Use HH:MM:SS format.");
+            return false;
+        }
+    }
+
+    /**
+     * Validates an integer input.
+     *
+     * @param input The input to validate
+     * @return true if the input is a valid integer, false otherwise
+     */
+    public static boolean isValidInteger(String input) {
+        try {
+            Integer.parseInt(input);
+            return true;
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid Input: Input must be a valid integer number.");
+            return false;
         }
     }
 
@@ -220,7 +245,7 @@ public class ConsoleUtility {
             } else if (input.equals("n")) {
                 return false;
             }
-            System.out.println("Invalid input. Please enter 'y' for yes or 'n' for no.");
+            System.out.println("Invalid Input: Please enter 'y' for yes or 'n' for no.");
         }
     }
 }

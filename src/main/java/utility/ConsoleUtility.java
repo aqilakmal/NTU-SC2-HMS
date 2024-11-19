@@ -248,4 +248,36 @@ public class ConsoleUtility {
             System.out.println("Invalid Input: Please enter 'y' for yes or 'n' for no.");
         }
     }
+
+    /**
+     * Validates the gender input.
+     * @param gender The gender to validate
+     * @return true if the gender is valid (MALE or FEMALE), false otherwise
+     */
+    public static boolean isValidGender(String gender) {
+        if (!gender.matches("^[12]$")) {
+            System.out.println("Invalid Input: Please enter 1 for MALE or 2 for FEMALE.");
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Validates the date format (YYYY-MM-DD).
+     * @param date The date string to validate
+     * @return true if the date is valid, false otherwise
+     */
+    public static boolean isValidDateFormat(String date) {
+        if (!date.matches("^\\d{4}-\\d{2}-\\d{2}$")) {
+            System.out.println("Invalid Input: Date must be in YYYY-MM-DD format.");
+            return false;
+        }
+        try {
+            LocalDate.parse(date);
+            return true;
+        } catch (DateTimeParseException e) {
+            System.out.println("Invalid Input: Please enter a valid date.");
+            return false;
+        }
+    }
 }

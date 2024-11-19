@@ -202,9 +202,9 @@ public class AppointmentDataManager {
             }
         }
         throw new IllegalArgumentException("Slot with ID " + updatedAppointment.getAppointmentID() + " not found.");
+    }
 
     public List<Appointment> getAppointmentsByPatientID(String patientID) {
-        // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'getAppointmentsByPatientID'");
     }
 }

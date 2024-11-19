@@ -102,6 +102,25 @@ public class OutcomeDataManager {
                 .orElse(null);
     }
 
+    /**
+     * [READ] Retrieves an outcome by its appointment ID.
+     * 
+     * @param appointmentID The ID of the appointment
+     * @return The Outcome object if found, null otherwise
+     */
+    public Outcome getOutcomeByAppointmentID(String appointmentID) {
+        return outcomes.stream()
+                .filter(outcome -> outcome.getAppointmentID().equals(appointmentID))
+                .findFirst()
+                .orElse(null);
+    }
+
+    /**
+     * [CREATE] Adds a new outcome.
+     * 
+     * @param outcome The Outcome object to add
+     * @throws IllegalArgumentException If the outcome already exists
+     */
     public void addOutcome(Outcome outcome) throws IllegalArgumentException {
         if (getOutcomeByID(outcome.getOutcomeID()) != null) {
             throw new IllegalArgumentException("Outcome record with ID " + outcome.getOutcomeID() + " already exists.");

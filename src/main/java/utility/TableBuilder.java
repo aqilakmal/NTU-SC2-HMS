@@ -16,23 +16,6 @@ import java.util.function.Function;
  * and border characters to create professional-looking tables in the console output.
  * It supports accessing object properties through both getter methods and direct field access.
  * 
- * Example usage:
- * List<Person> people = Arrays.asList(
- *     new Person("John", "Smith", 28, LocalDateTime.now()),
- *     new Person("Alexander", "Williams", 33, LocalDateTime.now().minusDays(1)),
- *     new Person("Emily", "Johnson", 25, LocalDateTime.now().plusDays(1))
- * );
- *
- * // Define column mappings with optional value transformations
- * LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
- * columnMapping.put("firstName", new TableBuilder.ColumnMapping("First Name", null));
- * columnMapping.put("lastName", new TableBuilder.ColumnMapping("Last Name", null));
- * columnMapping.put("dateTime", new TableBuilder.ColumnMapping("Date/Time", (val) -> ((LocalDateTime) val).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))));
- * columnMapping.put("age", new TableBuilder.ColumnMapping("Age", null));
- *
- * // Generate and print table
- * TableBuilder.createTable("Person Table", people, columnMapping, 20);
- * 
  * @author Group 7
  * @version 1.0
  */

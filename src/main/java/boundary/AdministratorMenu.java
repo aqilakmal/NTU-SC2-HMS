@@ -13,6 +13,11 @@ import java.util.Collections;
 
 /**
  * Interface for administrator tasks in the Hospital Management System.
+ * This class provides menu-driven functionality for administrators to manage staff,
+ * view appointments, manage medication inventory and handle replenishment requests.
+ * 
+ * @author Group 7
+ * @version 1.0
  */
 public class AdministratorMenu {
 
@@ -21,8 +26,10 @@ public class AdministratorMenu {
 
     /**
      * Constructor for AdministratorMenu.
+     * Initializes the administrator menu with a controller and scanner for input.
+     * Sets up the interface for administrator operations.
      * 
-     * @param AdministratorController The AdministratorController instance
+     * @param administratorController The AdministratorController instance to handle business logic
      */
     public AdministratorMenu(AdministratorController administratorController) {
         this.administratorController = administratorController;
@@ -30,7 +37,10 @@ public class AdministratorMenu {
     }
 
     /**
-     * [MAIN MENU] Displays the menu options available to the administrator.
+     * [MAIN MENU] Displays the main menu options available to the administrator.
+     * Provides options for managing staff, viewing appointments, managing medications,
+     * and handling replenishment requests.
+     * Handles user input validation and error cases.
      */
     public void displayMenu() {
         while (true) {
@@ -76,7 +86,9 @@ public class AdministratorMenu {
     }
 
     /**
-     * [OPTION 1] Displays the staff management menu.
+     * [OPTION 1] Displays the staff management submenu with options for managing staff members.
+     * Provides functionality to view, add, update and remove staff members.
+     * Handles input validation and error cases for staff management operations.
      */
     private void manageStaffMenu() {
         while (true) {
@@ -121,7 +133,9 @@ public class AdministratorMenu {
     }
 
     /**
-     * [OPTION 1.1] Views the list of staff.
+     * [OPTION 1.1] Displays a list of all staff members in the system.
+     * Retrieves staff information from the controller and formats it in a table.
+     * Shows an appropriate message if no staff members are found.
      */
     private void viewStaffList() {
         try {
@@ -141,9 +155,12 @@ public class AdministratorMenu {
     }
 
     /**
-     * Displays the list of staff.
-     * 
-     * @param staffList The list of staff to display
+     * Creates and displays a formatted table of staff information.
+     * Uses TableBuilder to create a structured view of staff details.
+     * Includes columns for ID, name, role, DOB, gender, contact, and email.
+     *
+     * @param staffList The list of staff members to display
+     * @param title The title to display above the staff list table
      */
     private void displayStaffList(List<User> staffList, String title) {
         LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
@@ -159,7 +176,9 @@ public class AdministratorMenu {
     }
 
     /**
-     * [OPTION 1.2] Adds a new staff member.
+     * [OPTION 1.2] Handles the process of adding a new staff member to the system.
+     * Collects and validates all required information for the new staff member.
+     * Creates appropriate user object based on role and adds to the system.
      */
     private void addNewStaff() {
         try {
@@ -277,7 +296,9 @@ public class AdministratorMenu {
     }
 
     /**
-     * [OPTION 1.3] Updates the information of a staff member.
+     * [OPTION 1.3] Handles the process of updating existing staff member information.
+     * Allows modification of name, DOB, gender, contact number, and email.
+     * Displays current and updated information after successful modification.
      */
     private void updateStaffInformation() {
         try {
@@ -372,7 +393,9 @@ public class AdministratorMenu {
     }
 
     /**
-     * [OPTION 1.4] Removes a staff member.
+     * [OPTION 1.4] Handles the process of removing a staff member from the system.
+     * Displays current staff list, confirms removal action, and updates the system.
+     * Shows updated staff list after successful removal.
      */
     private void removeStaff() {
         try {
@@ -434,7 +457,9 @@ public class AdministratorMenu {
     }
 
     /**
-     * [OPTION 2] Views the details of all appointments.
+     * [OPTION 2] Displays and manages appointment details in the system.
+     * Shows a list of all appointments and provides options for viewing detailed information.
+     * Includes appointment status, patient details, doctor details, and outcome information.
      */
     private void viewAppointmentDetails() {
         while (true) {
@@ -466,8 +491,10 @@ public class AdministratorMenu {
     }
 
     /**
-     * Displays the list of appointments.
-     * 
+     * Creates and displays a formatted table of appointment information.
+     * Shows appointment ID, patient details, doctor details, schedule, and status.
+     * Uses TableBuilder for consistent formatting.
+     *
      * @param appointments The list of appointments to display
      */
     private void displayAppointmentList(List<Appointment> appointments) {
@@ -509,10 +536,11 @@ public class AdministratorMenu {
     }
 
     /**
-     * [OPTION 2.1] Views the details of a specific appointment, including its
-     * outcome if available.
-     * 
-     * @param appointments The list of all appointments
+     * [OPTION 2.1] Displays detailed information for a specific appointment.
+     * Shows comprehensive details including patient info, doctor info, schedule,
+     * outcome details, and prescription information if available.
+     *
+     * @param appointments The list of all appointments to choose from
      */
     private void viewDetailedAppointment(List<Appointment> appointments) {
         System.out.print("Enter the Appointment ID to view details: ");
@@ -592,7 +620,15 @@ public class AdministratorMenu {
     }
 
     /**
-     * [OPTION 3] Manages the medication inventory.
+     * [OPTION 3] Manages the medication inventory in the hospital system.
+     * 
+     * Provides a menu-driven interface for administrators to:
+     * - View all medications in inventory
+     * - Add new medications to inventory
+     * - Update existing medication information
+     * - Remove medications from inventory
+     * 
+     * Implements comprehensive input validation and error handling for all operations.
      */
     private void manageMedicationInventory() {
         while (true) {
@@ -637,7 +673,15 @@ public class AdministratorMenu {
     }
 
     /**
-     * [OPTION 3.1] Displays the list of medications.
+     * [OPTION 3.1] Displays a comprehensive list of all medications in the inventory.
+     * 
+     * Retrieves and displays all medications with their details including:
+     * - Medication ID
+     * - Name
+     * - Current stock level
+     * - Low stock alert threshold
+     * 
+     * If no medications exist, displays an appropriate message.
      */
     private void viewMedications() {
         List<Medication> medications = administratorController.getAllMedications();
@@ -651,7 +695,13 @@ public class AdministratorMenu {
     }
 
     /**
-     * Displays the list of medications.
+     * Displays a formatted table of medications with their details.
+     * 
+     * Creates a structured table view of medication information using TableBuilder,
+     * with columns for ID, name, stock level, and low stock alert level.
+     * 
+     * @param medications The list of medications to display
+     * @param title The title to display above the medication list
      */
     private void displayMedicationList(List<Medication> medications, String title) {
         LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
@@ -664,7 +714,16 @@ public class AdministratorMenu {
     }
 
     /**
-     * [OPTION 3.2] Adds a new medication to the inventory.
+     * [OPTION 3.2] Adds a new medication to the hospital inventory system.
+     * 
+     * Guides the administrator through the process of adding a new medication by:
+     * - Displaying current medication list for reference
+     * - Collecting and validating medication details (ID, name, stock levels)
+     * - Adding the medication to the system
+     * - Displaying updated medication list upon successful addition
+     * 
+     * Implements comprehensive input validation for all fields and handles
+     * potential errors during the addition process.
      */
     private void addMedication() {
         try {
@@ -734,7 +793,15 @@ public class AdministratorMenu {
     }
 
     /**
-     * [OPTION 3.3] Updates the information of an existing medication.
+     * [OPTION 3.3] Updates information for an existing medication in the inventory.
+     * 
+     * Allows administrators to modify:
+     * - Medication name
+     * - Current stock level
+     * - Low stock alert threshold
+     * 
+     * Displays current medication information before update and shows
+     * updated information after successful modification.
      */
     private void updateMedicationInformation() {
         try {
@@ -810,7 +877,11 @@ public class AdministratorMenu {
     }
 
     /**
-     * [OPTION 3.4] Removes a medication from the inventory.
+     * [OPTION 3.4] Removes a medication from the hospital inventory system.
+     * 
+     * Displays current medication list, prompts for medication ID to remove,
+     * confirms the removal with the administrator, and updates the inventory.
+     * Implements validation to ensure the medication exists before attempting removal.
      */
     private void removeMedication() {
         try {
@@ -871,7 +942,14 @@ public class AdministratorMenu {
     }
 
     /**
-     * [OPTION 4] Handles the approval of replenishment requests.
+     * [OPTION 4] Manages the approval process for medication replenishment requests.
+     * 
+     * Provides functionality to:
+     * - View all pending replenishment requests
+     * - Select and approve specific requests
+     * - Update medication stock levels automatically upon approval
+     * 
+     * Implements validation to ensure only valid requests can be approved.
      */
     private void approveReplenishmentRequests() {
         while (true) {
@@ -910,9 +988,16 @@ public class AdministratorMenu {
     }
 
     /**
-     * Displays the list of pending replenishment requests.
+     * Displays a formatted table of pending replenishment requests.
      * 
-     * @param pendingRequests The list of pending requests to display
+     * Creates a structured view of request information including:
+     * - Request ID
+     * - Medication ID
+     * - Requested quantity
+     * - Requesting pharmacist
+     * - Current status
+     * 
+     * @param pendingRequests The list of pending replenishment requests to display
      */
     private void displayPendingRequests(List<Request> pendingRequests) {
         LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
@@ -926,9 +1011,12 @@ public class AdministratorMenu {
     }
 
     /**
-     * [OPTION 4.1] Approves a selected replenishment request.
+     * [OPTION 4.1] Processes the approval of a selected replenishment request.
      * 
-     * @param pendingRequests The list of pending requests
+     * Validates the request ID, confirms its existence, and processes the approval.
+     * Upon successful approval, updates the medication stock levels automatically.
+     * 
+     * @param pendingRequests The list of pending requests available for approval
      */
     private void approveRequest(List<Request> pendingRequests) {
         String requestID = ConsoleUtility.validateInput("Enter the Request ID to approve: ",

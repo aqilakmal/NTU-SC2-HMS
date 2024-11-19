@@ -14,8 +14,17 @@ import java.util.List;
 import entity.Slot;
 
 /**
- * Manages slot data operations including loading from and saving to CSV files,
- * as well as basic CRUD operations for slots in the Hospital Management System.
+ * Manages slot data operations in the Hospital Management System (HMS).
+ * This class handles all appointment slot-related data persistence and CRUD operations,
+ * including loading from and saving to CSV files, filtering slots, and managing slot availability.
+ * 
+ * The class provides functionality for doctors to set their availability slots,
+ * patients to view and book available slots, and administrators to manage the
+ * appointment scheduling system. It maintains a comprehensive record of all appointment
+ * slots in the system.
+ *
+ * @author Group 7
+ * @version 1.0
  */
 public class SlotDataManager {
 
@@ -25,20 +34,26 @@ public class SlotDataManager {
 
     /**
      * List of slots in the system.
+     * Contains all appointment slots loaded from CSV storage.
      */
     private static List<Slot> slots;
 
     /**
      * Constructs a new SlotDataManager with an empty list of slots.
+     * Initializes the slots list to store appointment slot data loaded from CSV storage.
+     * This constructor is called during system initialization to prepare for slot management.
      */
     public SlotDataManager() {
         slots = new ArrayList<>();
     }
 
     /**
-     * Loads slot data from a CSV file.
+     * Loads slot data from the CSV file into memory.
+     * Clears any existing slots before loading new data.
+     * Each line in the CSV file represents one appointment slot with its complete details.
+     * Prints debug information during the loading process.
      *
-     * @throws IOException If there's an error reading the file.
+     * @throws IOException If there's an error reading the slots CSV file
      */
     public void loadSlotsFromCSV() throws IOException {
         slots.clear(); // Clear existing slots before loading
@@ -70,9 +85,11 @@ public class SlotDataManager {
     }
 
     /**
-     * Saves slot data to a CSV file.
+     * Saves all slot data from memory to the CSV file.
+     * Writes the complete list of slots with their current states.
+     * Creates a new file if it doesn't exist, or overwrites the existing file.
      *
-     * @throws IOException If there's an error writing to the file.
+     * @throws IOException If there's an error writing to the slots CSV file
      */
     public void saveSlotsToCSV() throws IOException {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(SLOT_FILE))) {
@@ -96,10 +113,12 @@ public class SlotDataManager {
     }
 
     /**
-     * [CREATE] Adds a new slot to the system.
+     * Adds a new appointment slot to the system.
+     * Validates that no duplicate slot ID exists before adding.
+     * Used by doctors to create new availability slots.
      *
-     * @param slot The Slot object to add.
-     * @throws IllegalArgumentException If the slot already exists.
+     * @param slot The Slot object to add to the system
+     * @throws IllegalArgumentException If a slot with the same ID already exists
      */
     public void addSlot(Slot slot) throws IllegalArgumentException {
         if (getSlotByID(slot.getSlotID()) != null) {
@@ -109,19 +128,23 @@ public class SlotDataManager {
     }
 
     /**
-     * [READ] Retrieves the list of all slots.
+     * Retrieves a copy of all slots in the system.
+     * Returns a new list to preserve encapsulation of the internal slots list.
+     * Used for displaying complete slot schedule to authorized users.
      *
-     * @return List of Slot objects.
+     * @return A new List containing all Slot objects in the system
      */
     public List<Slot> getSlots() {
         return new ArrayList<>(slots); // Return a copy to preserve encapsulation
     }
 
     /**
-     * [READ] Retrieves a slot by its ID.
+     * Retrieves a specific slot by its unique identifier.
+     * Searches through all slots to find an exact ID match.
+     * Used when accessing or updating a specific slot entry.
      *
-     * @param slotID The ID of the slot to retrieve.
-     * @return The Slot object if found, null otherwise.
+     * @param slotID The unique identifier of the slot to retrieve
+     * @return The Slot object if found, null if no match exists
      */
     public Slot getSlotByID(String slotID) {
         return slots.stream()
@@ -131,11 +154,13 @@ public class SlotDataManager {
     }
 
     /**
-     * [READ] Retrieves a slot by its ID.
+     * Retrieves a slot by matching both slot ID and doctor ID.
+     * Ensures that the slot belongs to the specified doctor.
+     * Used for doctor-specific slot management operations.
      *
-     * @param slotID The ID of the slot to retrieve.
-     * @param doctorID The doctor ID linked to retrieved slot.
-     * @return The Slot object if found, null otherwise.
+     * @param slotID The unique identifier of the slot to retrieve
+     * @param doctorID The doctor ID linked to retrieved slot
+     * @return The Slot object if found, null if no match exists
      */
     public Slot getStatusByID(String slotID, String doctorID) {
         return slots.stream()
@@ -146,12 +171,14 @@ public class SlotDataManager {
     }
 
     /**
-     * [READ] Retrieve slot by Slot ID, Doctor ID and Status
+     * Retrieves a slot by matching slot ID, doctor ID, and slot status.
+     * Provides fine-grained filtering for specific slot states.
+     * Used for managing slot availability and booking status.
      *
-     * @param slotID The ID of the slot to retrieve.
-     * @param doctorID The doctor ID linked to retrieved slot.
-     * @param status Slot Status to filter by
-     * @return The Slot object if found, null otherwise.
+     * @param slotID The unique identifier of the slot to retrieve
+     * @param doctorID The doctor ID linked to retrieved slot
+     * @param status The slot status to filter by
+     * @return The Slot object if found, null if no match exists
      */
     public Slot getStatusByID(String slotID, String doctorID, Slot.SlotStatus status) {
         return slots.stream()
@@ -163,11 +190,13 @@ public class SlotDataManager {
     }
 
     /**
-     * [READ] Retrieves available slots for a specific doctor on a given date.
+     * Retrieves all available slots for a specific doctor on a given date.
+     * Filters slots by doctor ID, date, and availability status.
+     * Used by patients to view booking options for appointments.
      *
-     * @param doctorID The ID of the doctor.
-     * @param date The date to check for available slots.
-     * @return List of available Slot objects.
+     * @param doctorID The ID of the doctor to find slots for
+     * @param date The date to check for available slots
+     * @return List of available Slot objects matching the criteria
      */
     public List<Slot> getAvailableSlots(String doctorID, LocalDate date) {
         return slots.stream()
@@ -178,10 +207,12 @@ public class SlotDataManager {
     }
 
     /**
-     * [UPDATE] Updates an existing slot's information.
+     * Updates the information of an existing slot in the system.
+     * Replaces the old slot data with the updated information.
+     * Used for modifying slot details such as time or status.
      *
-     * @param updatedSlot The Slot object with updated information.
-     * @throws IllegalArgumentException If the slot doesn't exist.
+     * @param updatedSlot The Slot object containing the updated information
+     * @throws IllegalArgumentException If the slot to update doesn't exist
      */
     public void updateSlot(Slot updatedSlot) throws IllegalArgumentException {
         for (int i = 0; i < slots.size(); i++) {
@@ -194,10 +225,12 @@ public class SlotDataManager {
     }
 
     /**
-     * [DELETE] Removes a slot from the system.
+     * Removes a slot from the system permanently.
+     * Deletes the slot with the specified ID if it exists.
+     * Used for cleaning up cancelled or obsolete slots.
      *
-     * @param slotID The ID of the slot to remove.
-     * @throws IllegalArgumentException If the slot doesn't exist.
+     * @param slotID The ID of the slot to remove
+     * @throws IllegalArgumentException If the slot to remove doesn't exist
      */
     public void removeSlot(String slotID) throws IllegalArgumentException {
         if (!slots.removeIf(slot -> slot.getSlotID().equals(slotID))) {

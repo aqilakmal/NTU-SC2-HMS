@@ -10,8 +10,17 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * Manages medical history data operations including loading from and saving to CSV files,
- * as well as basic CRUD operations for medical history records in the Hospital Management System.
+ * Manages medical history data operations in the Hospital Management System (HMS).
+ * This class handles all medical history-related data persistence and CRUD operations,
+ * including loading from and saving to CSV files, filtering histories, and managing
+ * history details.
+ * 
+ * The class provides functionality for doctors to record and update patient medical
+ * histories, and for patients to view their own medical records. It maintains a
+ * comprehensive record of diagnoses, treatments, and medical history details.
+ *
+ * @author Group 7
+ * @version 1.0
  */
 public class HistoryDataManager {
 
@@ -20,19 +29,26 @@ public class HistoryDataManager {
 
     /**
      * List of medical history records in the system.
+     * Contains all patient medical histories loaded from CSV storage.
      */
     private static List<History> histories;
 
     /**
      * Constructs a new HistoryDataManager with an empty list of medical history records.
+     * Initializes the histories list to store medical history data loaded from CSV storage.
+     * This constructor is called during system initialization to prepare for history management.
      */
     public HistoryDataManager() {
         histories = new ArrayList<>();
     }
 
     /**
-     * Loads medical history data from a CSV file.
-     * @throws IOException If there's an error reading the file.
+     * Loads medical history data from the CSV file into memory.
+     * Clears any existing histories before loading new data.
+     * Each line in the CSV file represents one medical history record with its complete details.
+     * Prints debug information during the loading process.
+     *
+     * @throws IOException If there's an error reading the histories CSV file
      */
     public void loadHistoriesFromCSV() throws IOException {
         histories.clear(); // Clear existing histories before loading
@@ -63,8 +79,12 @@ public class HistoryDataManager {
     }
 
     /**
-     * Saves medical history data to a CSV file.
-     * @throws IOException If there's an error writing to the file.
+     * Saves all medical history records from memory back to the CSV file.
+     * Writes each history record as a comma-separated line in the file.
+     * Creates a new file if it doesn't exist, or overwrites the existing file.
+     * Includes a header line with column names.
+     *
+     * @throws IOException If there's an error writing to the histories CSV file
      */
     public void saveHistoriesToCSV() throws IOException {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(HISTORY_FILE))) {
@@ -87,9 +107,12 @@ public class HistoryDataManager {
     }
 
     /**
-     * [CREATE] Adds a new medical history record to the system.
-     * @param history The History object to add.
-     * @throws IllegalArgumentException If the history record already exists.
+     * Adds a new medical history record to the system.
+     * Validates that no duplicate history ID exists before adding.
+     * Used by doctors to create new medical history entries for patients.
+     *
+     * @param history The History object to add to the system
+     * @throws IllegalArgumentException If a history record with the same ID already exists
      */
     public void addHistory(History history) throws IllegalArgumentException {
         if (getHistoryByID(history.getHistoryID()) != null) {
@@ -99,17 +122,23 @@ public class HistoryDataManager {
     }
 
     /**
-     * [READ] Retrieves the list of all medical history records.
-     * @return List of History objects.
+     * Retrieves a copy of all medical history records in the system.
+     * Returns a new list to preserve encapsulation of the internal histories list.
+     * Used for displaying complete medical history records to authorized users.
+     *
+     * @return A new List containing all History objects in the system
      */
     public List<History> getHistories() {
         return new ArrayList<>(histories); // Return a copy to preserve encapsulation
     }
 
     /**
-     * [READ] Retrieves a medical history record by its ID.
-     * @param historyID The ID of the history record to retrieve.
-     * @return The History object if found, null otherwise.
+     * Retrieves a specific medical history record by its unique identifier.
+     * Searches through all history records to find an exact ID match.
+     * Used when accessing or updating a specific medical history entry.
+     *
+     * @param historyID The unique identifier of the history record to retrieve
+     * @return The matching History object if found, null if no match exists
      */
     public History getHistoryByID(String historyID) {
         return histories.stream()
@@ -119,9 +148,12 @@ public class HistoryDataManager {
     }
 
     /**
-     * [READ] Retrieves all medical history records for a specific patient.
-     * @param patientID The ID of the patient.
-     * @return List of History objects for the specified patient.
+     * Retrieves all medical history records associated with a specific patient.
+     * Filters the complete history list to find all records matching the patient ID.
+     * Used to display a patient's complete medical history.
+     *
+     * @param patientID The unique identifier of the patient whose history to retrieve
+     * @return List of History objects belonging to the specified patient
      */
     public List<History> getHistoriesByPatientID(String patientID) {
         return histories.stream()
@@ -130,9 +162,12 @@ public class HistoryDataManager {
     }
 
     /**
-     * [READ] Retrieves a filtered list of medical history records based on specified criteria.
-     * @param filters Map of filter criteria (e.g., patientID, diagnosisDate range, etc.)
-     * @return List of History objects matching the filter criteria
+     * Retrieves a filtered list of medical history records based on specified criteria.
+     * Supports filtering by patient ID, diagnosis, and other attributes.
+     * Used for searching and filtering medical histories based on various parameters.
+     *
+     * @param filters Map containing filter criteria where key is the field name and value is the filter value
+     * @return List of History objects matching all specified filter criteria
      */
     public List<History> getFilteredHistories(Map<String, String> filters) {
         return histories.stream()
@@ -154,9 +189,12 @@ public class HistoryDataManager {
     }
 
     /**
-     * [UPDATE] Updates an existing medical history record's information.
-     * @param updatedHistory The History object with updated information.
-     * @throws IllegalArgumentException If the history record doesn't exist.
+     * Updates an existing medical history record with new information.
+     * Locates the existing record by ID and replaces it with the updated version.
+     * Used by doctors to modify or correct existing medical history entries.
+     *
+     * @param updatedHistory The History object containing the updated information
+     * @throws IllegalArgumentException If no history record with the specified ID exists
      */
     public void updateHistory(History updatedHistory) throws IllegalArgumentException {
         for (int i = 0; i < histories.size(); i++) {
@@ -169,9 +207,12 @@ public class HistoryDataManager {
     }
 
     /**
-     * [DELETE] Removes a medical history record from the system.
-     * @param historyID The ID of the history record to remove.
-     * @throws IllegalArgumentException If the history record doesn't exist.
+     * Removes a medical history record from the system.
+     * Searches for and removes the record matching the specified ID.
+     * Used for removing incorrect or outdated medical history entries.
+     *
+     * @param historyID The unique identifier of the history record to remove
+     * @throws IllegalArgumentException If no history record with the specified ID exists
      */
     public void removeHistory(String historyID) throws IllegalArgumentException {
         if (!histories.removeIf(history -> history.getHistoryID().equals(historyID))) {

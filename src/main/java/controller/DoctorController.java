@@ -26,8 +26,19 @@ import entity.Slot;
 import entity.User;
 
 /**
- * Controller class for managing doctor-related operations in the Hospital
- * Management System.
+ * Controller class for managing doctor-related operations in the Hospital Management System.
+ * This class handles all doctor functionalities including managing appointments, patient records,
+ * prescriptions, medical histories, and doctor schedules. It serves as an intermediary between
+ * the doctor boundary class and various data managers.
+ * 
+ * The controller supports key doctor operations such as:
+ * - Managing doctor schedules and appointment slots
+ * - Viewing and managing patient medical records
+ * - Writing prescriptions and recording appointment outcomes
+ * - Accessing patient histories and medication information
+ * 
+ * @author Group 7
+ * @version 1.0
  */
 public class DoctorController {
 
@@ -41,13 +52,18 @@ public class DoctorController {
     private AuthenticationController authController;
 
     /**
-     * Constructor for DoctorController.
+     * Constructor for DoctorController that initializes all required data managers.
+     * This constructor sets up the controller with all necessary dependencies to manage
+     * doctor operations including user data, appointments, medical histories, and prescriptions.
      *
-     * @param userDataManager The UserDataManager instance
-     * @param slotDataManager The SlotDataManager instance
-     * @param appointmentDataManager The AppointmentDataManager instance
-     * @param historyDataManager The HistoryDataManager instance
-     * @param authController The AuthenticationController instance
+     * @param userDataManager The data manager for handling user-related operations
+     * @param slotDataManager The data manager for handling time slot operations
+     * @param appointmentDataManager The data manager for handling appointment operations
+     * @param historyDataManager The data manager for handling medical history operations
+     * @param outcomeDataManager The data manager for handling appointment outcomes
+     * @param medicationDataManager The data manager for handling medication data
+     * @param prescriptionDataManager The data manager for handling prescription operations
+     * @param authController The controller for handling authentication operations
      */
     public DoctorController(UserDataManager userDataManager, SlotDataManager slotDataManager,
             AppointmentDataManager appointmentDataManager, HistoryDataManager historyDataManager,
@@ -67,19 +83,23 @@ public class DoctorController {
     }
 
     /**
-     * [READ] Retrieves a doctor by their ID.
+     * Retrieves a doctor by their ID from the system.
+     * This method searches the user database for a doctor with the specified ID.
+     * The returned user is cast to a Doctor object if found.
      *
-     * @param userID The ID of the doctor to retrieve.
-     * @return The Doctor object with the specified ID, or null if not found.
+     * @param userID The unique identifier of the doctor to retrieve
+     * @return The Doctor object with the specified ID, or null if not found
      */
     public Doctor getDoctorByID(String userID) {
         return (Doctor) userDataManager.getUserByID(userID);
     }
 
     /**
-     * Retrieves all doctors in the system.
+     * Retrieves all doctors registered in the system.
+     * This method filters all users in the system to return only those who are doctors.
+     * The returned list contains all active doctor accounts in the system.
      *
-     * @return List of all Doctor objects
+     * @return List of all Doctor objects in the system
      */
     public List<Doctor> getAllDoctors() {
         return userDataManager.getUsers().stream()
@@ -87,12 +107,14 @@ public class DoctorController {
                 .map(user -> (Doctor) user)
                 .collect(Collectors.toList());
     }
-
-    //------------------------------------------Get-List Methods-------------------------------------------------
+    
     /**
      * Retrieves a list of patients under the current doctor's care.
+     * This method filters appointments to find patients who have either confirmed or completed
+     * appointments with the currently logged-in doctor.
+     * Duplicate patient entries are removed from the final list.
      *
-     * @return List of Patient objects under the doctor's care
+     * @return List of Patient objects under the current doctor's care
      */
     public List<Patient> getPatientsUnderCare() {
         Doctor currentDoctor = (Doctor) authController.getCurrentUser();
@@ -118,9 +140,12 @@ public class DoctorController {
 
     /**
      * Retrieves a list of patients under a specific doctor's care.
+     * This method filters appointments to find patients who have confirmed
+     * appointments with the specified doctor.
+     * Duplicate patient entries are removed from the final list.
      *
-     * @param doctorID The ID of the doctor
-     * @return List of Patient objects under the doctor's care
+     * @param doctorID The unique identifier of the doctor
+     * @return List of Patient objects under the specified doctor's care
      */
     public List<Patient> getPatientsUnderCare(String doctorID) {
         List<String> patientIDs = appointmentDataManager.getFilteredAppointments(Map.of(
@@ -136,10 +161,13 @@ public class DoctorController {
     }
 
     /**
-     * Retrieves a list of medical history for a specific patient.
+     * Retrieves a list of medical history records for a specific patient.
+     * This method accesses the history database to retrieve all medical records
+     * associated with the given patient ID.
+     * The records are returned in chronological order.
      *
-     * @param patientID The ID of the patient
-     * @return List of History objects for the patient
+     * @param patientID The unique identifier of the patient
+     * @return List of History objects containing the patient's medical records
      */
     public List<History> getPatientMedicalHistory(String patientID) {
         return historyDataManager.getHistoriesByPatientID(patientID);
@@ -147,6 +175,9 @@ public class DoctorController {
 
     /**
      * Retrieves all slots for current doctor.
+     * This method filters all slots in the system to return only those
+     * associated with the currently logged-in doctor.
+     * Returns all slots regardless of their status.
      *
      * @return List of Slot objects for the current doctor
      */
@@ -159,6 +190,9 @@ public class DoctorController {
 
     /**
      * Retrieves slots with the "AVAILABLE" status for the current doctor.
+     * This method filters all slots to return only available ones for the
+     * currently logged-in doctor.
+     * The slots are sorted by date and start time.
      *
      * @return List of Available Slot objects for the current doctor, ordered by date and start time
      */
@@ -173,8 +207,11 @@ public class DoctorController {
 
     /**
      * Retrieves slots with the "AVAILABLE" status for a specific doctor.
+     * This method filters all slots to return only available ones for the
+     * specified doctor.
+     * The slots are sorted by date and start time.
      *
-     * @param doctorID The ID of the doctor
+     * @param doctorID The unique identifier of the doctor
      * @return List of available Slot objects for the specified doctor, ordered by date and start time
      */
     public List<Slot> getAvailableSlotsForDoctor(String doctorID) {
@@ -187,8 +224,11 @@ public class DoctorController {
 
     /**
      * Retrieves pending slots for current doctor.
+     * This method filters all slots to return only those with pending status
+     * for the currently logged-in doctor.
+     * Pending slots are those awaiting confirmation or action.
      *
-     * @return List of Pending Slot objects for the specified doctor
+     * @return List of Pending Slot objects for the current doctor
      */
     public List<Slot> getPendingSlotsForDoctor() {
         Doctor currentDoctor = (Doctor) authController.getCurrentUser();
@@ -200,8 +240,11 @@ public class DoctorController {
 
     /**
      * Retrieves booked slots for current doctor.
+     * This method filters all slots to return only those with booked status
+     * for the currently logged-in doctor.
+     * Booked slots are those that have been confirmed for appointments.
      *
-     * @return List of Booked Slot objects for the specified doctor
+     * @return List of Booked Slot objects for the current doctor
      */
     public List<Slot> getBookedSlotsForDoctor() {
         Doctor currentDoctor = (Doctor) authController.getCurrentUser();
@@ -212,9 +255,11 @@ public class DoctorController {
     }
 
     /**
-     * Retrieves a list of all medication objects
+     * Retrieves a list of all medications available in the system.
+     * This method provides access to the complete medication database.
+     * The list includes all active medications that can be prescribed.
      *
-     * @return List of all medication objects
+     * @return List of all Medication objects in the system
      */
     public List<Medication> getAllMedication() {
         return medicationDataManager.getMedications();
@@ -222,8 +267,11 @@ public class DoctorController {
 
     /**
      * Retrieves a list of completed appointments for the current doctor.
+     * This method filters appointments to return only those that have been
+     * marked as completed for the currently logged-in doctor.
+     * Completed appointments are those where the consultation has finished.
      *
-     * @return List of completed Appointment objects for the specified doctor.
+     * @return List of completed Appointment objects for the current doctor
      */
     public List<Appointment> getCompletedAppointmentsForDoctor() {
         Doctor currentDoctor = (Doctor) authController.getCurrentUser();
@@ -237,11 +285,12 @@ public class DoctorController {
     }
 
     /**
-     * Retrieves a list of outcomes for completed appointments of the current
-     * doctor.
+     * Retrieves a list of outcomes for completed appointments of the current doctor.
+     * This method first gets all completed appointments for the current doctor,
+     * then retrieves the associated outcomes.
+     * Only valid outcomes with non-null IDs are included in the result.
      *
-     * @return List of Outcome objects linked to completed appointments for the
-     * current doctor.
+     * @return List of Outcome objects linked to completed appointments for the current doctor
      */
     public List<Outcome> getOutcomesForCompletedAppointmentsForDoctor() {
         // Get the list of completed appointments for the current doctor
@@ -257,12 +306,13 @@ public class DoctorController {
     }
 
     /**
-     * Retrieves the prescriptions for a given appointment ID.
+     * Retrieves the prescriptions for a given appointment.
+     * This method filters the prescription database to find all prescriptions
+     * associated with the specified appointment ID.
+     * Returns an empty list if no prescriptions are found.
      *
-     * @param appointmentID The appointment ID to filter the prescription
-     * database.
-     * @return The list of prescriptions if found; otherwise, return an empty
-     * list.
+     * @param appointmentID The unique identifier of the appointment
+     * @return List of Prescription objects associated with the appointment
      */
     public List<Prescription> getPrescriptionsByAppointmentID(String appointmentID) {
         return prescriptionDataManager.getPrescriptions().stream()
@@ -270,12 +320,13 @@ public class DoctorController {
                 .collect(Collectors.toList());
     }
 
-    //------------------------------------------Get-Object Methods-------------------------------------------------
     /**
      * Retrieves a patient object by their ID.
+     * This method searches the user database for a patient with the specified ID.
+     * Returns null if the user is not found or is not a patient.
      *
-     * @param patientID The ID of the patient object to retrieve
-     * @return The Patient object with the specified ID, or null if not found
+     * @param patientID The unique identifier of the patient to retrieve
+     * @return The Patient object if found and is a patient, null otherwise
      */
     public Patient getPatientByID(String patientID) {
         User user = userDataManager.getUserByID(patientID);
@@ -284,30 +335,37 @@ public class DoctorController {
 
     /**
      * Retrieves a history object by its ID.
+     * This method accesses the history database to retrieve a specific
+     * medical history record.
+     * Returns null if the history record is not found.
      *
-     * @param historyID The ID of the history object to retrieve
-     * @return The History object with the specified ID, or null if not found
+     * @param historyID The unique identifier of the history record to retrieve
+     * @return The History object if found, null otherwise
      */
     public History getHistoryByID(String historyID) {
-
         return historyDataManager.getHistoryByID(historyID);
     }
 
     /**
      * Retrieves a slot object by its ID.
+     * This method searches the slot database for a specific time slot.
+     * Returns null if the slot is not found.
      *
-     * @param slotID The ID of the slot object to retrieve
-     * @return The Slot object with the specified ID, or null if not found
+     * @param slotID The unique identifier of the slot to retrieve
+     * @return The Slot object if found, null otherwise
      */
     public Slot getSlotByID(String slotID) {
         return slotDataManager.getSlotByID(slotID);
     }
 
     /**
-     * Retrieves a slot record by its ID.
+     * Retrieves an appointment by its associated slot ID.
+     * This method searches the appointment database for an appointment
+     * linked to the specified slot.
+     * Returns null if no appointment is found for the slot.
      *
-     * @param slotID The ID of the slot record to retrieve
-     * @return The Slot object with the specified ID, or null if not found
+     * @param slotID The unique identifier of the slot
+     * @return The Appointment object if found, null otherwise
      */
     public Appointment getAppointmentBySlotID(String slotID) {
         return appointmentDataManager.getAppointmentBySlotID(slotID);
@@ -315,9 +373,12 @@ public class DoctorController {
 
     /**
      * Retrieves the patient associated with a given appointment.
+     * This method extracts the patient ID from the appointment and
+     * retrieves the corresponding patient record.
+     * Performs validation to ensure the user is a patient.
      *
-     * @param appointment The appointment object to retrieve the patient from.
-     * @return The Patient object if patient is found, or null if not found
+     * @param appointment The appointment object to retrieve the patient from
+     * @return The Patient object if found and valid, null otherwise
      */
     public Patient getPatientByAppointment(Appointment appointment) {
         if (appointment == null) {
@@ -336,20 +397,23 @@ public class DoctorController {
 
     /**
      * Retrieves an appointment object by its ID.
+     * This method searches the appointment database for a specific appointment.
+     * Returns null if the appointment is not found.
      *
-     * @param appointmentID The ID of the appointment object to retrieve
-     * @return The Appointment object with the specified ID, or null if not
-     * found
+     * @param appointmentID The unique identifier of the appointment to retrieve
+     * @return The Appointment object if found, null otherwise
      */
     public Appointment getAppointmentByID(String appointmentID) {
         return appointmentDataManager.getAppointmentByID(appointmentID);
     }
 
     /**
-     * Retrieves the outcome ID for a given appointment.
+     * Retrieves the outcome ID associated with an appointment.
+     * This method extracts the outcome ID from the given appointment object.
+     * Returns null if the appointment is invalid or has no outcome.
      *
-     * @param appointment The appointment object to get the outcome ID from.
-     * @return The Outcome ID if it found, or null if not found.
+     * @param appointment The appointment object to get the outcome ID from
+     * @return The outcome ID if found, null otherwise
      */
     public String getOutcomeIDFromAppointment(Appointment appointment) {
         if (appointment == null) {
@@ -359,20 +423,25 @@ public class DoctorController {
     }
 
     /**
-     * Retrieves an appointment record by its ID.
+     * Retrieves an outcome record by its ID.
+     * This method searches the outcome database for a specific outcome record.
+     * Returns null if the outcome is not found.
      *
-     * @param outcomeID The ID of the Outcome record to retrieve
-     * @return The Outcome object with the specified ID, or null if not found.
+     * @param outcomeID The unique identifier of the outcome to retrieve
+     * @return The Outcome object if found, null otherwise
      */
     public Outcome getOutcomeByID(String outcomeID) {
         return outcomeDataManager.getOutcomeByID(outcomeID);
     }
 
     /**
-     * Retrieves the a patient object for a given appointment object.
+     * Retrieves a patient object from an appointment.
+     * This method extracts the patient ID from the appointment and
+     * retrieves the corresponding patient record.
+     * Returns null if the patient is not found.
      *
      * @param appointment The appointment object used to retrieve patient ID
-     * @return The Patient object if found, or null if not found.
+     * @return The Patient object if found, null otherwise
      */
     public Patient getPatientFromAppointment(Appointment appointment) {
         String patientID = appointment.getPatientID();
@@ -382,9 +451,11 @@ public class DoctorController {
 
     /**
      * Retrieves a prescription by its ID.
+     * This method searches the prescription database for a specific prescription.
+     * Includes validation for null or empty prescription IDs.
      *
-     * @param prescriptionID The ID of the prescription to retrieve.
-     * @return The Prescription object if it found, or null if not found.
+     * @param prescriptionID The unique identifier of the prescription to retrieve
+     * @return The Prescription object if found, null otherwise
      */
     public Prescription getPrescriptionByID(String prescriptionID) {
         if (prescriptionID == null || prescriptionID.isEmpty()) {
@@ -402,9 +473,10 @@ public class DoctorController {
         return prescription;
     }
 
-    //------------------------------------------ID-Generation Methods-------------------------------------------------
     /**
      * Generates a new unique history ID.
+     * This method creates a sequential ID for new history records.
+     * Ensures uniqueness by checking against existing IDs.
      *
      * @return A new unique history ID
      */
@@ -420,8 +492,10 @@ public class DoctorController {
 
     /**
      * Generates a new unique slot ID.
+     * This method creates a sequential ID for new time slots.
+     * Ensures uniqueness by checking against existing IDs.
      *
-     * @return A new unique history ID
+     * @return A new unique slot ID
      */
     private String generateSlotID() {
         int count = 1;
@@ -435,8 +509,10 @@ public class DoctorController {
 
     /**
      * Generates a new unique Outcome ID.
+     * This method creates a sequential ID for new appointment outcomes.
+     * Ensures uniqueness by checking against existing IDs.
      *
-     * @return A new unique Outcome ID
+     * @return A new unique outcome ID
      */
     private String generateOutcomeID() {
         int count = 1;
@@ -449,7 +525,9 @@ public class DoctorController {
     }
 
     /**
-     * Generates a new unique prescription ID
+     * Generates a new unique prescription ID.
+     * This method creates a sequential ID for new prescriptions.
+     * Ensures uniqueness by checking against existing IDs.
      *
      * @return A new unique prescription ID
      */
@@ -463,15 +541,14 @@ public class DoctorController {
         return uniqueID;
     }
 
-    //---------------------------------------------Validation Functions------------------------------------------------
     /**
-     * Checks if given Patient ID is valid and belongs to a patient under the
-     * doctor's care.
+     * Validates if a patient ID belongs to a patient under the doctor's care.
+     * This method checks if the patient exists and is currently under the
+     * care of the logged-in doctor.
+     * Used for access control and data validation.
      *
-     * @param patientID The Patient ID to validate and is under the current
-     * doctor's care
-     * @return true if Patient ID is valid and belongs to current doctor;
-     * otherwise, return false
+     * @param patientID The patient ID to validate
+     * @return true if patient is under current doctor's care, false otherwise
      */
     public boolean isValidPatientID(String patientID) {
         return getPatientsUnderCare().stream()
@@ -479,14 +556,14 @@ public class DoctorController {
     }
 
     /**
-     * Checks if given History ID belongs to a patient under the current
-     * doctor's care
+     * Validates if a history record belongs to a patient under the doctor's care.
+     * This method checks if the history record exists and is associated with
+     * the specified patient who is under the current doctor's care.
+     * Used for access control and data validation to ensure proper access rights.
      *
-     * @param patientID The Patient ID to validate and is under the current
-     * doctor's care
-     * @param historyID The History ID to validate
-     * @return true if History ID is valid and belongs to current patient and
-     * doctor, otherwise; return false
+     * @param patientID The ID of the patient to validate
+     * @param historyID The ID of the history record to validate
+     * @return true if history belongs to the patient under current doctor's care, false otherwise
      */
     public boolean isPatientsHistory(String patientID, String historyID) {
         return getPatientMedicalHistory(patientID).stream()
@@ -494,11 +571,12 @@ public class DoctorController {
     }
 
     /**
-     * Checks if given Slot ID is valid.
+     * Checks if given Slot ID is valid for the current doctor.
+     * Validates that the slot exists and belongs to the currently logged in doctor.
+     * Used for access control and data validation.
      *
      * @param slotID The Slot ID to validate
-     * @return true if Slot ID is valid, by the current doctor, otherwise;
-     * return false
+     * @return true if Slot ID is valid and belongs to the current doctor, false otherwise
      */
     public boolean isValidDoctorSlotID(String slotID) {
         Doctor currentDoctor = (Doctor) authController.getCurrentUser();
@@ -507,11 +585,12 @@ public class DoctorController {
     }
 
     /**
-     * Checks if given Slot ID is valid & available.
+     * Checks if given Slot ID is valid and has an available status.
+     * Validates that the slot exists, belongs to the current doctor, and has not been booked.
+     * Used for scheduling new appointments.
      *
      * @param slotID The Slot ID to validate
-     * @return true if Slot ID is valid, by the current doctor and is available,
-     * otherwise; return false
+     * @return true if Slot ID is valid, belongs to current doctor and is available, false otherwise
      */
     public boolean isValidAvailableSlotID(String slotID) {
         Doctor currentDoctor = (Doctor) authController.getCurrentUser();
@@ -520,11 +599,12 @@ public class DoctorController {
     }
 
     /**
-     * Checks if given Slot ID is valid & pending.
+     * Checks if given Slot ID is valid and has a pending status.
+     * Validates that the slot exists, belongs to the current doctor, and is pending confirmation.
+     * Used for managing appointment requests.
      *
      * @param slotID The Slot ID to validate
-     * @return true if Slot ID is valid, by the current doctor and is pending,
-     * otherwise; return false
+     * @return true if Slot ID is valid, belongs to current doctor and is pending, false otherwise
      */
     public boolean isValidPendingSlotID(String slotID) {
         Doctor currentDoctor = (Doctor) authController.getCurrentUser();
@@ -533,11 +613,12 @@ public class DoctorController {
     }
 
     /**
-     * Checks if given Slot ID is valid & booked.
+     * Checks if given Slot ID is valid and has a booked status.
+     * Validates that the slot exists, belongs to the current doctor, and has been booked.
+     * Used for managing confirmed appointments.
      *
      * @param slotID The Slot ID to validate
-     * @return true if Slot ID is valid, by the current doctor and is booked;
-     * otherwise, return false
+     * @return true if Slot ID is valid, belongs to current doctor and is booked, false otherwise
      */
     public boolean isValidBookedSlotID(String slotID) {
         Doctor currentDoctor = (Doctor) authController.getCurrentUser();
@@ -546,11 +627,12 @@ public class DoctorController {
     }
 
     /**
-     * Checks if given slot ID is valid & booked.
+     * Checks if given slot ID is valid and has a completed status.
+     * Validates that the slot exists, belongs to the current doctor, and has been completed.
+     * Used for managing appointment history and records.
      *
      * @param slotID The ID to validate
-     * @return true if Slot ID is valid, by the current doctor and, completed;
-     * otherwise, return false
+     * @return true if Slot ID is valid, belongs to current doctor and is completed, false otherwise
      */
     public boolean isValidCompletedSlotID(String slotID) {
         Doctor currentDoctor = (Doctor) authController.getCurrentUser();
@@ -559,12 +641,12 @@ public class DoctorController {
     }
 
     /**
-     * Checks if given appointment ID is valid & completed for the current
-     * doctor.
+     * Checks if given appointment ID is valid and completed for the current doctor.
+     * Validates that the appointment exists, belongs to the current doctor, and has been completed.
+     * Used for managing appointment records and outcomes.
      *
      * @param appointmentID The ID to validate
-     * @return true if Appointment ID is valid, belongs to the current doctor,
-     * and is completed; otherwise, return false
+     * @return true if Appointment ID is valid, belongs to current doctor and is completed, false otherwise
      */
     public boolean isValidCompletedAppointmentID(String appointmentID) {
         Doctor currentDoctor = (Doctor) authController.getCurrentUser();
@@ -580,22 +662,24 @@ public class DoctorController {
     }
 
     /**
-     * Checks if given Medication ID is valid.
+     * Checks if given Medication ID exists in the system.
+     * Validates that the medication exists in the database.
+     * Used for prescription management and validation.
      *
      * @param medicationID The Medication ID to validate
-     * @return true if Medication ID is valid; otherwise, return false
+     * @return true if Medication ID exists in the system, false otherwise
      */
     public boolean isValidMedicationID(String medicationID) {
         return medicationDataManager.getMedicationByID(medicationID) != null;
     }
 
     /**
-     * Checks if given prescription ID is valid and associated with an
-     * appointment that belongs to the current doctor.
+     * Checks if given prescription ID is valid and associated with current doctor.
+     * Validates that the prescription exists and belongs to an appointment under the current doctor.
+     * Used for prescription management and access control.
      *
-     * @param prescriptionID The Prescription ID to validate.
-     * @return true if Prescription ID is valid and is associated with an
-     * appointment the belongs to the current doctor; otherwise, return false
+     * @param prescriptionID The Prescription ID to validate
+     * @return true if prescription exists and belongs to current doctor's appointment, false otherwise
      */
     public boolean isValidPrescriptionID(String prescriptionID) {
         // Retrieve the current doctor
@@ -622,17 +706,16 @@ public class DoctorController {
         // The prescription is valid and the appointment belongs to the current doctor
         return true;
     }
-    //------------------------------------------Funtion 1-specific methods-------------------------------------------------
-    //NIL
 
-    //------------------------------------------Funtion 2-specific methods-------------------------------------------------
     /**
      * Adds a new medical history record for a patient.
+     * Creates a new history record with the provided diagnosis and treatment information.
+     * Generates a unique history ID and sets the current date.
      *
      * @param patientID The ID of the patient
      * @param diagnosis The diagnosis for new history record
      * @param treatment The treatment for new history record
-     * @return true if addition was successful; otherwise, return false.
+     * @return true if addition was successful, false otherwise
      */
     public boolean addMedicalHistory(String patientID, String diagnosis, String treatment) {
         try {
@@ -648,11 +731,13 @@ public class DoctorController {
 
     /**
      * Updates a specific medical history record.
+     * Modifies the diagnosis and/or treatment information for an existing history record.
+     * Only updates fields that contain new non-empty values.
      *
      * @param historyID The ID of the history record to update
      * @param newDiagnosis The new diagnosis
      * @param newTreatment The new treatment
-     * @return true if update was successful; otherwise, return false.
+     * @return true if update was successful, false otherwise
      */
     public boolean updateMedicalHistory(String historyID, String newDiagnosis, String newTreatment) {
         try {
@@ -677,10 +762,12 @@ public class DoctorController {
     }
 
     /**
-     * Removes a specific History
+     * Removes a specific medical history record.
+     * Deletes the history record with the given ID from the system.
+     * Used for managing patient medical records.
      *
      * @param historyID The ID of the history to remove
-     * @return true if removal was successful; otherwise, return false.
+     * @return true if removal was successful, false otherwise
      */
     public boolean removeHistory(String historyID) {
         try {
@@ -692,17 +779,16 @@ public class DoctorController {
         }
     }
 
-    //------------------------------------------Funtion 3-specific methods-------------------------------------------------
-    //NIL
-    //------------------------------------------Funtion 4-specific methods-------------------------------------------------
     /**
-     * Updates a specific slot object.
+     * Updates a specific slot's schedule details.
+     * Modifies the date and time information for an existing slot.
+     * Updates all specified fields in the slot object.
      *
      * @param slot The Slot object to update
      * @param newDate The new date
      * @param newStartTime The new start time
      * @param newEndTime The new end time
-     * @return true if update was successful; otherwise, return false.
+     * @return true if update was successful, false otherwise
      */
     public boolean updateSlot(Slot slot, LocalDate newDate, LocalTime newStartTime, LocalTime newEndTime) {
         try {
@@ -720,11 +806,13 @@ public class DoctorController {
 
     /**
      * Adds an available slot for the current doctor.
+     * Creates a new slot with the specified schedule and marks it as available.
+     * Generates a unique slot ID for the new slot.
      *
      * @param date Date of available slot
      * @param startTime Start time of available slot
      * @param endTime End time of available slot
-     * @return true if addition was successful; otherwise, return false.
+     * @return true if addition was successful, false otherwise
      */
     public boolean addAvailableSlot(LocalDate date, LocalTime startTime, LocalTime endTime) {
         try {
@@ -741,10 +829,12 @@ public class DoctorController {
     }
 
     /**
-     * Removes a specific Slot
+     * Removes a specific slot from the system.
+     * Deletes the slot with the given ID from the schedule.
+     * Used for managing doctor availability.
      *
-     * @param SlotID The ID of the slot to remove
-     * @return true if removal was successful; otherwise, return false.
+     * @param slotID The ID of the slot to remove
+     * @return true if removal was successful, false otherwise
      */
     public boolean removeSlot(String slotID) {
         try {
@@ -758,12 +848,14 @@ public class DoctorController {
 
     /**
      * Creates a new prescription for a medication.
+     * Generates a new prescription with the specified details and sets initial status as pending.
+     * Associates the prescription with an appointment and medication.
      *
      * @param appointmentID The appointment ID this prescription belongs to
      * @param medicationID The medication being prescribed
      * @param quantity Quantity of medication to prescribe
      * @param notes Instructions for taking the medication
-     * @return true if prescription was created successfully; otherwise false
+     * @return true if prescription was created successfully, false otherwise
      */
     public Boolean createPrescription(String appointmentID, String medicationID, int quantity, String notes) {
         try {
@@ -786,6 +878,8 @@ public class DoctorController {
 
     /**
      * Retrieves a medication by its ID.
+     * Fetches detailed medication information from the database.
+     * Used for prescription management and medication information display.
      *
      * @param medicationID The ID of the medication to retrieve
      * @return The Medication object if found, null otherwise
@@ -795,16 +889,16 @@ public class DoctorController {
     }
 
     /**
-     * Adds a new outcome record.
+     * Adds a new outcome record for a completed appointment.
+     * Creates an outcome record with the provided details and updates appointment status.
+     * Also updates the associated slot status to completed.
      *
      * @param appointment Appointment object to complete
      * @param slot Slot object to complete
      * @param serviceProvided The service provided to create new outcome
-     * @param prescriptionID The string of medications, seperated by semicolons,
-     * to create new outcome
+     * @param prescriptionID The string of medications, separated by semicolons
      * @param consultationNotes The consultation notes to create new outcome
-     * @return true if completion of appointment was successful; otherwise,
-     * return false.
+     * @return true if completion of appointment was successful, false otherwise
      */
     public boolean completeAppointment(Appointment appointment, Slot slot, String serviceProvided, String prescriptionID, String consultationNotes) {
         try {
@@ -828,10 +922,12 @@ public class DoctorController {
     }
 
     /**
-     * Takes in the whole string of prescription ID, seperates them by semicolon
-     * and count amount of medications
+     * Counts the number of medications in a prescription string.
+     * Parses the semicolon-separated string of prescription IDs.
+     * Used for prescription management and validation.
      *
-     * @return the number of medications within the current prescription string
+     * @param prescriptionString The string containing prescription IDs separated by semicolons
+     * @return the number of medications within the prescription string
      */
     public int countMedication(String prescriptionString) {
         if (prescriptionString == null || prescriptionString.trim().isEmpty()) {
@@ -842,14 +938,15 @@ public class DoctorController {
     }
 
     /**
-     * Updates an exisitng prescription
+     * Updates an existing prescription with new details.
+     * Modifies medication, quantity, and notes for a prescription.
+     * Used for managing and updating prescription information.
      *
      * @param prescription The Prescription object to update
      * @param newMedicationID The new medication ID
      * @param newQuantity The new quantity
      * @param newPrescriptionNotes The new prescription notes
-     * @return true if update was successful successful; otherwise, return
-     * false.
+     * @return true if update was successful, false otherwise
      */
     public Boolean updatePrescription(Prescription prescription, String newMedicationID, int newQuantity, String newPrescriptionNotes) {
         try {
@@ -865,10 +962,12 @@ public class DoctorController {
     }
 
     /**
-     * Removes a prescription
+     * Removes a prescription from the system.
+     * Deletes the prescription with the given ID.
+     * Used for managing prescriptions and medical records.
      *
      * @param prescriptionID The ID of the prescription to remove
-     * @return true if removal was successful; otherwise, return false.
+     * @return true if removal was successful, false otherwise
      */
     public boolean removePrescription(String prescriptionID) {
         try {
@@ -881,13 +980,15 @@ public class DoctorController {
     }
 
     /**
-     * Updates an existing outcome record.
+     * Updates an existing outcome record with new information.
+     * Modifies service, prescription, and consultation details for an outcome.
+     * Used for managing appointment outcomes and medical records.
      *
      * @param outcome The Outcome object to update
      * @param serviceProvided The new service provided
      * @param prescriptionID The new medications provided
      * @param consultationNotes The new consultation notes
-     * @return true if update was successful; otherwise, return false.
+     * @return true if update was successful, false otherwise
      */
     public boolean updateOutcome(Outcome outcome, String serviceProvided, String prescriptionID, String consultationNotes) {
         try {
@@ -904,14 +1005,14 @@ public class DoctorController {
         }
     }
 
-    //------------------------------------------Other methods-------------------------------------------------
     /**
-     * Sorts the Slots list by priority: "BOOKED," "PENDING," "AVAILABLE,"
-     * "COMPLETED," and "REMOVED," then by status and start time.
+     * Sorts a list of slots by priority and time.
+     * Orders slots by status priority (BOOKED, PENDING, AVAILABLE, COMPLETED, REMOVED),
+     * then by date and start time within each status group.
      *
-     * @return A sorted slots list
+     * @param slots The list of slots to sort
+     * @return A sorted list of slots
      */
-    // Function to sort slots by Date, Status, and Start Time
     public static List<Slot> sortSlots(List<Slot> slots) {
         slots.sort(
                 Comparator.comparing((Slot slot) -> {
@@ -941,6 +1042,8 @@ public class DoctorController {
 
     /**
      * Retrieves pending appointments for the current doctor.
+     * Filters appointments to show only those with REQUESTED status.
+     * Used for managing incoming appointment requests.
      *
      * @return List of appointments with REQUESTED status for the current doctor
      */
@@ -955,6 +1058,8 @@ public class DoctorController {
 
     /**
      * Retrieves confirmed appointments for the current doctor.
+     * Filters appointments to show only those with CONFIRMED status.
+     * Used for managing upcoming appointments.
      *
      * @return List of appointments with CONFIRMED status for the current doctor
      */
@@ -969,12 +1074,13 @@ public class DoctorController {
 
     /**
      * Updates an appointment and its associated slot status.
+     * Handles both acceptance and rejection of appointment requests.
+     * Updates both appointment and slot statuses accordingly.
      *
-     * @param accept If true, sets appointment to CONFIRMED and slot to BOOKED; 
-     *               if false, sets appointment to CANCELLED and slot to REMOVED
+     * @param accept If true, confirms appointment and books slot; if false, cancels both
      * @param appointment Appointment object to update
      * @param slot Slot object to update
-     * @return true if update was successful; otherwise, return false
+     * @return true if update was successful, false otherwise
      */
     public boolean manageAppointment(Boolean accept, Appointment appointment, Slot slot) {
         try {

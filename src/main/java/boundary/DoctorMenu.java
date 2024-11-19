@@ -24,7 +24,12 @@ import utility.ConsoleUtility;
 import utility.TableBuilder;
 
 /**
- * Interface for doctor functionalities in the Hospital Management System.
+ * DoctorMenu provides the user interface for doctor functionalities in the Hospital Management System.
+ * This class handles all doctor-related operations including managing appointments, medical records,
+ * prescriptions and patient information.
+ * 
+ * @author Group 7
+ * @version 1.0
  */
 public class DoctorMenu {
 
@@ -32,9 +37,11 @@ public class DoctorMenu {
     private Scanner scanner;
 
     /**
-     * Constructor for DoctorMenu.
+     * Constructor for DoctorMenu that initializes the doctor interface.
+     * Creates a new DoctorMenu instance with the specified controller.
+     * Sets up the scanner for user input handling.
      *
-     * @param doctorController The DoctorController instance
+     * @param doctorController The DoctorController instance to handle business logic
      */
     public DoctorMenu(DoctorController doctorController) {
         this.doctorController = doctorController;
@@ -42,7 +49,10 @@ public class DoctorMenu {
     }
 
     /**
-     * [MAIN MENU] Displays the menu options available to the doctor.
+     * [MAIN MENU] Displays the main menu options available to doctors and handles user input.
+     * Provides access to various doctor functions like viewing records, managing appointments,
+     * and handling patient information.
+     * Includes error handling for invalid inputs and unexpected exceptions.
      */
     public void displayMenu() {
         while (true) {
@@ -102,7 +112,9 @@ public class DoctorMenu {
     }
 
     /**
-     * [OPTION 1] Views patient medical records.
+     * [OPTION 1] Allows doctors to view medical records for patients under their care.
+     * Displays a list of patients and their medical histories.
+     * Provides functionality to select specific patients and view their detailed records.
      */
     private void viewPatientMedicalRecords() {
         try {
@@ -160,7 +172,10 @@ public class DoctorMenu {
     }
 
     /**
-     * [OPTION 2] Updates patient medical records.
+     * [OPTION 2] Enables doctors to update patient medical records including adding new records,
+     * modifying existing ones, and removing records.
+     * Provides a comprehensive interface for managing patient medical histories.
+     * Includes validation and error handling for all record management operations.
      */
     private void updatePatientMedicalRecords() {
         try {
@@ -253,9 +268,12 @@ public class DoctorMenu {
     }
 
     /**
-     * [OPTION 2.1] Handles updating a specific medical record.
+     * [OPTION 2.1] Updates a specific medical record for a patient.
+     * Allows modification of diagnosis and treatment information.
+     * Includes validation and confirmation steps for the update process.
      *
-     * @param history The History object to update
+     * @param medicalHistory List of medical history records for the patient
+     * @param patient The patient whose record is being updated
      */
     private void updateMedicalRecord(List<History> medicalHistory, Patient patient) {
         String name = patient.getName();
@@ -326,9 +344,11 @@ public class DoctorMenu {
     }
 
     /**
-     * [OPTION 2.2] Handles adding a new medical record for a patient.
+     * [OPTION 2.2] Adds a new medical record for a specified patient.
+     * Collects diagnosis and treatment information for the new record.
+     * Validates input and confirms successful addition of the record.
      *
-     * @param patientID The ID of the patient
+     * @param patientID The ID of the patient receiving the new medical record
      */
     private void addNewMedicalRecord(String patientID) {
 
@@ -354,13 +374,12 @@ public class DoctorMenu {
     }
 
     /**
-     * [OPTION 2.3] Handles removing prescriptions for a doctor.
+     * [OPTION 2.3] Removes a medical history record for a patient.
+     * Displays available records and handles the removal process.
+     * Includes validation and confirmation steps for the removal.
      *
-     * @param medication         List of available medications.
-     * @param prescriptions      List of existing prescriptions.
-     * @param prescriptionString String containing medication IDs separated by
-     *                           semicolons.
-     * @return Updated prescriptionString after removal.
+     * @param medicalHistory List of medical history records to choose from
+     * @param patient The patient whose history record is being removed
      */
     private void removeHistory(List<History> medicalHistory, Patient patient) {
 
@@ -413,8 +432,9 @@ public class DoctorMenu {
     }
 
     /**
-     * [OPTION 3] Views the doctor's personal slot schedule and view the details
-     * of a selected slot.
+     * [OPTION 3] Displays the doctor's personal schedule and appointment details.
+     * Shows all slots and their status, with additional details for booked slots.
+     * Allows viewing of patient information for booked appointments.
      */
     private void viewPersonalSchedule() {
         try {
@@ -495,7 +515,9 @@ public class DoctorMenu {
     }
 
     /**
-     * [OPTION 4] Add, remove or update available slots for appointments.
+     * [OPTION 4] Manages the doctor's availability for appointments.
+     * Allows adding, removing, and updating available time slots.
+     * Displays current availability and handles slot management operations.
      */
     private void manageAvailabilityForAppointments() {
 
@@ -556,7 +578,11 @@ public class DoctorMenu {
     }
 
     /**
-     * [OPTION 4.1] Handles update slots for doctor.
+     * [OPTION 4.1] Updates an existing available time slot.
+     * Allows modification of date and time information for the slot.
+     * Includes validation for time conflicts and date formatting.
+     *
+     * @param availableSlots List of currently available slots that can be updated
      */
     private void updateSlot(List<Slot> availableSlots) {
 
@@ -655,7 +681,9 @@ public class DoctorMenu {
     }
 
     /**
-     * [OPTION 4.2] Handles adding a new slot for a doctor.
+     * [OPTION 4.2] Adds a new available time slot for appointments.
+     * Collects date and time information for the new slot.
+     * Validates input to ensure proper formatting and logical time sequence.
      */
     private void addNewSlot() {
         while (true) {
@@ -703,7 +731,11 @@ public class DoctorMenu {
     }
 
     /**
-     * [OPTION 4.3] Handles removing a slot for a doctor.
+     * [OPTION 4.3] Removes an available time slot from the doctor's schedule.
+     * Displays available slots and handles the removal process.
+     * Includes validation and confirmation steps.
+     *
+     * @param availableSlots List of available slots that can be removed
      */
     private void removeSlot(List<Slot> availableSlots) {
 
@@ -759,7 +791,12 @@ public class DoctorMenu {
     }
 
     /**
-     * [OPTION 5] Accept or Decline appointments with REQUESTED status.
+     * [OPTION 5] Manages appointment requests from patients by displaying pending requests and allowing the doctor to accept or decline them.
+     * The method shows comprehensive patient information and medical history to help the doctor make informed decisions.
+     * For each request, displays:
+     * - Patient details including medical history
+     * - Appointment date and time
+     * - Option to accept or decline the request
      */
     private void manageAppointmentRequests() {
         try {
@@ -842,10 +879,12 @@ public class DoctorMenu {
     }
 
     /**
-     * [OPTION 5.1] Accept or Decline a selected appointment/slot
+     * [OPTION 5.1] Processes the doctor's decision to accept or decline a specific appointment request.
+     * Validates the doctor's input and updates the appointment status accordingly.
+     * Provides feedback on the success or failure of the operation.
      *
-     * @param appointment The appointment to reject or accept
-     * @param slot        The slot to reject or accept
+     * @param appointment The appointment object containing the request details to be processed
+     * @param slot The time slot associated with the appointment request
      */
     private void manageAppointment(Appointment appointment, Slot slot) {
 
@@ -889,7 +928,12 @@ public class DoctorMenu {
     }
 
     /**
-     * [OPTION 6] Views upcoming appointments with CONFIRMED status.
+     * [OPTION 6] Displays and manages the doctor's upcoming confirmed appointments.
+     * Shows a list of all confirmed appointments with their details including:
+     * - Patient information
+     * - Appointment date and time
+     * - Medical history of the patient
+     * Allows the doctor to select and view detailed information for specific appointments.
      */
     private void viewUpcomingAppointments() {
         try {
@@ -963,7 +1007,13 @@ public class DoctorMenu {
     }
 
     /**
-     * [OPTION 7] Records appointment outcome for CONFIRMED appointments.
+     * [OPTION 7] Manages the process of recording outcomes for confirmed appointments.
+     * Allows doctors to:
+     * - Select a confirmed appointment
+     * - View patient details and medical history
+     * - Record services provided
+     * - Add consultation notes
+     * - Prescribe medications if needed
      */
     private void recordAppointmentOutcome() {
         try {
@@ -1041,10 +1091,14 @@ public class DoctorMenu {
     }
 
     /**
-     * Completes a booked appointment for the current doctor
+     * Records the completion of a booked appointment by capturing:
+     * - Service provided during the appointment
+     * - Consultation notes
+     * - Any prescribed medications
+     * Updates the appointment status and creates associated records.
      *
-     * @param appointment The accompanying appointment
-     * @param slot        The selected booked slot
+     * @param appointment The appointment object to be completed
+     * @param slot The time slot associated with the appointment
      */
     private void completeAppointment(Appointment appointment, Slot slot) {
         try {
@@ -1095,13 +1149,17 @@ public class DoctorMenu {
     }
 
     /**
-     * Creates a Prescription object and returns a string of medication IDs.
-     * For example, "M01;M02;M03"
+     * Manages the process of adding prescriptions to an appointment outcome.
+     * Allows doctors to:
+     * - View available medications
+     * - Select medications to prescribe
+     * - Specify quantity and instructions for each prescription
+     * - Add multiple prescriptions for a single appointment
      *
      * @param appointment The appointment to add prescriptions to
      * @param medicationIDString The current string of medication IDs (semicolon separated)
      * @param count Number of medications currently prescribed
-     * @return Updated string of medication IDs
+     * @return Updated string of medication IDs in format "M01;M02;M03"
      */
     private String addPrescription(Appointment appointment, String medicationIDString, int count) {
         try {
@@ -1197,7 +1255,10 @@ public class DoctorMenu {
     }
 
     /**
-     * [OPTION 8] View and Update Appointment Outcome.
+     * [OPTION 8] View and update appointment outcomes for completed appointments.
+     * Allows doctors to review and modify the outcomes of their completed appointments,
+     * including updating service provided, consultation notes, and managing prescriptions.
+     * Displays relevant patient information and current outcome details before updates.
      */
     private void updateAppointmentOutcome() {
         try {
@@ -1268,9 +1329,11 @@ public class DoctorMenu {
     }
 
     /**
-     * Updates an Outcome object.
-     *
-     * @param appointmentID The appointmentID linked to the outcome to update
+     * Updates an existing outcome record for a completed appointment.
+     * Allows modification of service provided, consultation notes, and prescription details.
+     * Displays current outcome information before allowing updates and validates all input.
+     * 
+     * @param appointmentID The unique identifier of the appointment whose outcome needs to be updated
      */
     private void updateOutcome(String appointmentID) {
         // Retrieve the selected appointment, outcome, and prescriptions
@@ -1342,14 +1405,13 @@ public class DoctorMenu {
     }
 
     /**
-     * [OPTION 8.1] Manages a Prescription object linked to an appointment ID
-     *
-     * @param appointmentID      The ID of the appointment linked to the
-     *                           Prescription
-     *                           object
-     * @param prescriptionString The current string of medication. For example,
-     *                           "M01;M02;M02"
-     * @return the updated prescription ID used to update outcome
+     * [OPTION 8.1] Manages prescriptions linked to a specific appointment.
+     * Provides functionality to add new prescriptions or remove existing ones.
+     * Displays current prescriptions and available medications before modifications.
+     * 
+     * @param appointmentID The unique identifier of the appointment to manage prescriptions for
+     * @param prescriptionString The current semicolon-separated string of medication IDs
+     * @return The updated prescription string after modifications
      */
     private String managePrescriptions(String appointmentID, String prescriptionString) {
         List<Prescription> prescriptions;
@@ -1398,13 +1460,14 @@ public class DoctorMenu {
     }
 
     /**
-     * Removes prescriptions and returns the updated prescription string
-     *
-     * @param medication         List of available medications.
-     * @param prescriptions      List of existing prescriptions.
-     * @param prescriptionString String containing medication IDs separated by
-     *                           semicolons.
-     * @return updated prescriptionString after removal.
+     * Removes a prescription from an appointment and updates the prescription string.
+     * Displays available medications and current prescriptions before removal.
+     * Validates prescription ID input and handles the removal process.
+     * 
+     * @param medication List of all available medications in the system
+     * @param prescriptions List of current prescriptions for the appointment
+     * @param prescriptionString Current semicolon-separated string of medication IDs
+     * @return Updated prescription string after removal
      */
     private String removePrescription(List<Medication> medication, List<Prescription> prescriptions,
             String prescriptionString) {
@@ -1472,15 +1535,13 @@ public class DoctorMenu {
         return prescriptionString;
     }
 
-    // -------------------Display Functions--------------------
     /**
-     * 1) Creates a table with the details to display: Patient ID, Name, Date of
-     * Birth, Gender,Contact Number, Email Adress, Blood Type.
-     * <p>
-     * 2) Displays a list of patients and their details.
-     *
-     * @param patients List of Patients Objects to display
-     * @param name     Name of table to be displayed
+     * Creates and displays a formatted table showing patient information.
+     * Shows Patient ID, Name, Date of Birth, Gender, Contact Number, Email Address, and Blood Type.
+     * Handles multiple patient records in a list format.
+     * 
+     * @param patients List of Patient objects to display
+     * @param name Title of the table to be displayed
      */
     private void displayPatients(List<Patient> patients, String name) {
         LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
@@ -1496,13 +1557,12 @@ public class DoctorMenu {
     }
 
     /**
-     * 1) Creates a table with the details to display: Patient ID, Name, Date of
-     * Birth, Gender,Contact Number, Email Adress, Blood Type.
-     * <p>
-     * 2) Displays a selected patient's details.
-     *
-     * @param patients Patient Object to display
-     * @param name     Name of table to be displayed
+     * Creates and displays a formatted table showing a single patient's information.
+     * Shows Patient ID, Name, Date of Birth, Gender, Contact Number, Email Address, and Blood Type.
+     * Formats data for a single patient record.
+     * 
+     * @param patient Single Patient object to display
+     * @param name Title of the table to be displayed
      */
     private void displayPatients(Patient patient, String name) {
         LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
@@ -1520,13 +1580,12 @@ public class DoctorMenu {
     }
 
     /**
-     * 1) Creates a table with the details to display: History ID, Date,
-     * Diagnosis, Treatment.
-     * <p>
-     * 2) Displays a list of medical histories and their details.
-     *
-     * @param medicalHistory List of History Objects to display
-     * @param name           Name of table to be displayed
+     * Creates and displays a formatted table showing medical history information.
+     * Shows History ID, Date, Diagnosis, and Treatment details.
+     * Formats data for multiple medical history records.
+     * 
+     * @param medicalHistory List of History objects to display
+     * @param name Title of the table to be displayed
      */
     private void displayMedicalHistory(List<History> medicalHistory, String name) {
         LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
@@ -1539,15 +1598,12 @@ public class DoctorMenu {
     }
 
     /**
-     * 1) Creates a table with the details to display: Slot ID, Date, Start
-     * Time, End Time, Status.
-     * <p>
-     * 2) Sort the slots by Date, Start Time, and Status.
-     * <p>
-     * 3) Displays a list of sorted slots and their details.
-     *
-     * @param slots List of Slot Objects to display
-     * @param name  Name of table to be displayed
+     * Creates and displays a formatted table showing appointment slots.
+     * Shows Slot ID, Date, Start Time, End Time, and Status.
+     * Sorts slots by date, start time, and status before display.
+     * 
+     * @param slots List of Slot objects to display
+     * @param name Title of the table to be displayed
      */
     public static void displaySlots(List<Slot> slots, String name) {
         // Sort the slots by Date, Start Time, and Status
@@ -1565,13 +1621,12 @@ public class DoctorMenu {
     }
 
     /**
-     * 1) Creates a table with the details to display: Slot ID, Date, Start
-     * Time, End Time, Status.
-     * <p>
-     * 2) Displays a selected slot's details.
-     *
-     * @param slots Slot Object to display
-     * @param name  Name of table to be displayed
+     * Creates and displays a formatted table showing a single appointment slot.
+     * Shows Slot ID, Date, Start Time, End Time, and Status.
+     * Formats data for a single slot record.
+     * 
+     * @param slot Single Slot object to display
+     * @param name Title of the table to be displayed
      */
     private void displaySlots(Slot slot, String name) {
         LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
@@ -1587,13 +1642,12 @@ public class DoctorMenu {
     }
 
     /**
-     * 1) Creates a table with the details to display: Appointment ID, Patient
-     * ID, Doctor ID, Slot ID, Status, Outcome ID.
-     * <p>
-     * 2) Displays a list of appointments and their details.
-     *
-     * @param appointments List of Appointment Objects to display
-     * @param name         Name of table to be displayed
+     * Creates and displays a formatted table showing appointment information.
+     * Shows Appointment ID, Patient details, Doctor details, Schedule, Status, and Outcome ID.
+     * Includes name lookups for patient and doctor IDs.
+     * 
+     * @param appointments List of Appointment objects to display
+     * @param name Title of the table to be displayed
      */
     private void displayAppointments(List<Appointment> appointments, String name) {
         LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
@@ -1635,13 +1689,12 @@ public class DoctorMenu {
     }
 
     /**
-     * 1) Creates a table with the details to display: Outcome ID, Appointment
-     * ID, Service Provided, Medication(s), Consulatation Notes.
-     * <p>
-     * 2) Displays a list of outcomes and their details.
-     *
-     * @param outcomes List of Outcome Objects to display
-     * @param name     Name of table to be displayed
+     * Creates and displays a formatted table showing outcome information.
+     * Shows Outcome ID, Appointment ID, Service Provided, Medications, and Consultation Notes.
+     * Formats data for multiple outcome records.
+     * 
+     * @param outcomes List of Outcome objects to display
+     * @param name Title of the table to be displayed
      */
     private void displayOutcome(List<Outcome> outcomes, String name) {
         LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
@@ -1655,13 +1708,12 @@ public class DoctorMenu {
     }
 
     /**
-     * 1) Creates a table with the details to display: Outcome ID, Appointment
-     * ID, Service Provided, Medication(s), Consulatation Notes.
-     * <p>
-     * 2) Displays a selected outcome's details.
-     *
-     * @param outcome Outcome Object to display
-     * @param name    Name of table to be displayed
+     * Creates and displays a formatted table showing a single outcome record.
+     * Shows Outcome ID, Appointment ID, Service Provided, Medications, and Consultation Notes.
+     * Formats data for a single outcome record.
+     * 
+     * @param outcome Single Outcome object to display
+     * @param name Title of the table to be displayed
      */
     private void displayOutcome(Outcome outcome, String name) {
         LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
@@ -1677,15 +1729,12 @@ public class DoctorMenu {
     }
 
     /**
-     * /**
-     * 1) Creates a table with the details to display: Prescription ID,
-     * Appointment ID, Medication ID, Quantity Provided, Prescription Status,
-     * Prescription Notes.
-     * <p>
-     * 2) Displays a list of medications and their details.
-     *
-     * @param prescriptions List of Prescription Objects to display
-     * @param name          Name of table to be displayed
+     * Creates and displays a formatted table showing prescription information.
+     * Shows Prescription ID, Appointment ID, Medication ID, Quantity, Status, and Notes.
+     * Formats data for multiple prescription records.
+     * 
+     * @param prescriptions List of Prescription objects to display
+     * @param name Title of the table to be displayed
      */
     private void displayPrescriptions(List<Prescription> prescriptions, String name) {
         LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
@@ -1701,13 +1750,12 @@ public class DoctorMenu {
     }
 
     /**
-     * 1) Creates a table with the details to display: Medication ID, Medication
-     * Name, Quantity Remaining.
-     * <p>
-     * 2) Displays a list of medications and their details.
-     *
-     * @param medication List of Medication Objects to display
-     * @param name       Name of table to be displayed
+     * Creates and displays a formatted table showing medication information.
+     * Shows Medication ID, Name, and Quantity Remaining in stock.
+     * Formats data for multiple medication records.
+     * 
+     * @param medication List of Medication objects to display
+     * @param name Title of the table to be displayed
      */
     private void displayMedication(List<Medication> medication, String name) {
         LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();

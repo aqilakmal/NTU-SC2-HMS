@@ -11,6 +11,11 @@ import java.util.Collections;
 
 /**
  * Interface for patient interactions in the Hospital Management System.
+ * This class provides a menu-driven interface for patients to interact with the system.
+ * It handles operations like viewing medical records, scheduling appointments, and updating personal information.
+ *
+ * @author Group 7
+ * @version 1.0
  */
 public class PatientMenu {
 
@@ -19,8 +24,10 @@ public class PatientMenu {
 
     /**
      * Constructor for PatientMenu.
+     * Initializes the menu with a PatientController instance and creates a scanner for user input.
+     * This allows the menu to interact with the business logic layer through the controller.
      * 
-     * @param patientController The PatientController instance
+     * @param patientController The PatientController instance to handle business logic
      */
     public PatientMenu(PatientController patientController) {
         this.patientController = patientController;
@@ -28,9 +35,10 @@ public class PatientMenu {
     }
 
     /**
-     * [MAIN MENU] Displays the menu options available to the patient.
-     * Takes in the user input and navigate to the correct function.
-     * Loops until the user logs out
+     * [MAIN MENU] Displays the main menu options available to the patient and handles user input.
+     * Takes in the user input and navigates to the correct function based on selection.
+     * Provides error handling for invalid inputs and continues to loop until user logs out.
+     * The menu includes options for viewing records, managing appointments, and updating information.
      */
     public void displayMenu() {
         while (true) {
@@ -96,19 +104,31 @@ public class PatientMenu {
     }
 
     /**
-     * [OPTION 1] Views the patient's medical record.
+     * [OPTION 1] Views and displays the patient's complete medical record.
+     * Retrieves the current patient's information and medical history from the controller.
+     * Displays both patient details and medical history in a formatted table view.
      */
     private void viewMedicalRecord() {
-        System.out.println("");
+        ConsoleUtility.printHeader("VIEW MEDICAL RECORD");
+        
+        // Get current patient
+        Patient currentPatient = (Patient) patientController.getPatientByID(patientController.getCurrentUserID());
+        
+        // Display patient details
+        displayPatientInfo(currentPatient, "PATIENT INFORMATION");
+        
+        // Get and display medical history
         List<History> histories = patientController.getPatientMedicalHistory();
+        System.out.println("");
         displayMadicalRecords(histories);
     }
 
     /**
-     * Displays the patient's medical history records in a table format
+     * Displays the patient's medical history records in a formatted table.
+     * Creates a table with columns for History ID, Diagnosis, Diagnosis Date, and Treatment.
+     * Uses TableBuilder utility to format and display the data in a readable manner.
      * 
-     * @param history The list of objects representing the patient's medical history
-     *                records.
+     * @param history The list of History objects representing the patient's medical history records
      */
     private void displayMadicalRecords(List<History> history) {
         LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
@@ -121,7 +141,31 @@ public class PatientMenu {
     }
 
     /**
-     * [OPTION 2] Updates the patient's personal information.
+     * Displays patient information in a formatted table view.
+     * Creates a table with columns for patient details including ID, name, DOB, gender, etc.
+     * Uses TableBuilder utility to ensure consistent and readable formatting.
+     * 
+     * @param patient The patient whose information to display
+     * @param title The title for the information table
+     */
+    private void displayPatientInfo(Patient patient, String title) {
+        LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
+        columnMapping.put("userID", new TableBuilder.ColumnMapping("Patient ID", null));
+        columnMapping.put("name", new TableBuilder.ColumnMapping("Name", null));
+        columnMapping.put("dateOfBirth", new TableBuilder.ColumnMapping("Date of Birth", null));
+        columnMapping.put("gender", new TableBuilder.ColumnMapping("Gender", null));
+        columnMapping.put("contactNumber", new TableBuilder.ColumnMapping("Contact Number", null));
+        columnMapping.put("emailAddress", new TableBuilder.ColumnMapping("Email Address", null));
+        columnMapping.put("bloodType", new TableBuilder.ColumnMapping("Blood Type", null));
+
+        List<Patient> patientList = Collections.singletonList(patient);
+        TableBuilder.createTable(title, patientList, columnMapping, 20);
+    }
+
+    /**
+     * [OPTION 2] Allows patients to update their personal information.
+     * Provides options to change password, contact number, and email address.
+     * Displays current information before and after updates for verification.
      */
     private void updatePersonalInformation() {
         while (true) {
@@ -180,30 +224,11 @@ public class PatientMenu {
     }
 
     /**
-     * Displays patient information in a table format.
-     * 
-     * @param patient The patient whose information to display
-     * @param title The title for the table
-     */
-    private void displayPatientInfo(Patient patient, String title) {
-        LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
-        columnMapping.put("userID", new TableBuilder.ColumnMapping("Patient ID", null));
-        columnMapping.put("name", new TableBuilder.ColumnMapping("Name", null));
-        columnMapping.put("contactNumber", new TableBuilder.ColumnMapping("Contact Number", null));
-        columnMapping.put("emailAddress", new TableBuilder.ColumnMapping("Email Address", null));
-        columnMapping.put("dateOfBirth", new TableBuilder.ColumnMapping("Date of Birth", null));
-        columnMapping.put("gender", new TableBuilder.ColumnMapping("Gender", null));
-        columnMapping.put("bloodType", new TableBuilder.ColumnMapping("Blood Type", null));
-
-        List<Patient> patientList = Collections.singletonList(patient);
-        TableBuilder.createTable(title, patientList, columnMapping, 20);
-    }
-
-    /**
-     * [OPTION 3] Views available appointment slots.
+     * [OPTION 3] Displays all available appointment slots for doctors.
+     * Shows a list of doctors and their available time slots.
+     * Allows patients to view slots for a specific doctor by selecting their ID.
      */
     private void viewAvailableAppointmentSlots() {
-
         ConsoleUtility.printHeader("VIEW AVAILABLE APPOINTMENT SLOTS");
 
         // Get all doctors
@@ -250,16 +275,14 @@ public class PatientMenu {
         // Display available slots
         System.out.println("");
         displayAvailableSlots(availableSlots);
-
     }
 
     /**
-     * Displays the list of doctors.
+     * Displays a list of doctors in a formatted table view.
+     * Shows doctor information including ID, name, specialization, and contact details.
+     * Uses TableBuilder utility to create a consistent and readable format.
      * 
-     * presents a table of available doctors with their IDs, names, and
-     * specializations.
-     * 
-     * @param doctors The list of doctors to display
+     * @param doctors The list of Doctor objects to display
      */
     private void displayDoctorList(List<Doctor> doctors) {
         LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
@@ -273,12 +296,11 @@ public class PatientMenu {
     }
 
     /**
-     * Displays the list of available slots.
+     * Displays available appointment slots in a formatted table view.
+     * Shows slot information including ID, date, and time details.
+     * Uses TableBuilder utility to create a consistent and readable format.
      * 
-     * presents a table of available time slots with their IDs, dates, start times,
-     * and end times.
-     * 
-     * @param slots The list of available slots to display
+     * @param slots The list of Slot objects to display
      */
     private void displayAvailableSlots(List<Slot> slots) {
         LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
@@ -291,7 +313,10 @@ public class PatientMenu {
     }
 
     /**
-     * [OPTION 4] Schedules a new appointment.
+     * [OPTION 4] Handles the process of scheduling a new appointment.
+     * Guides the user through selecting a doctor and available time slot.
+     * Confirms appointment details before finalizing the scheduling.
+     * Displays updated appointment information after successful scheduling.
      */
     private void scheduleAppointment() {
         ConsoleUtility.printHeader("SCHEDULE AN APPOINTMENT");
@@ -389,7 +414,10 @@ public class PatientMenu {
     }
 
     /**
-     * [OPTION 5] Reschedules an existing appointment.
+     * [OPTION 5] Handles the process of rescheduling an existing appointment.
+     * Allows patients to select a confirmed appointment and choose a new time slot.
+     * Verifies the new appointment details before confirming the change.
+     * Updates and displays the rescheduled appointment information.
      */
     private void rescheduleAppointment() {
         ConsoleUtility.printHeader("RESCHEDULE AN APPOINTMENT");
@@ -431,7 +459,6 @@ public class PatientMenu {
         List<Slot> availableSlots = patientController.getAvailableSlotsForDoctor(appointment.getDoctorID());
         if (availableSlots.isEmpty()) {
             System.out.println("\nNo available slots for the selected doctor.");
-
             return;
         }
 
@@ -469,22 +496,26 @@ public class PatientMenu {
             return;
         }
 
-        Slot slot = patientController.getSlotByID(appointment.getSlotID());
-
-        // Make the slot available for booking again
-        if (slot != null) {
-            slot.setStatus(Slot.SlotStatus.AVAILABLE);
+        // Reschedule the appointment
+        boolean success = patientController.rescheduleAppointment(appointment, selectedSlotID);
+        if (success) {
+            System.out.println("Appointment rescheduled successfully. Waiting for doctor's approval.");
+            
+            // Display updated appointment information
+            List<Appointment> updatedAppointments = patientController.getFilteredAppointments("REQUESTED");
+            System.out.println("");
+            displayAppointments(updatedAppointments);
+        } else {
+            System.out.println("Failed to reschedule the appointment. Please try again later.");
         }
-
-        // Update the appointment with the new slot and status
-        patientController.scheduleAppointment(appointment.getDoctorID(), selectedSlotID);
-        System.out.println("Appointment rescheduled successfully.");
     }
 
     /**
-     * Displays the list of scheduled appointments.
+     * Displays appointments in a formatted table view.
+     * Shows comprehensive appointment information including IDs, patient and doctor details, schedule, and status.
+     * Uses TableBuilder utility to create a consistent and readable format.
      * 
-     * @param appointments The list of scheduled appointments to display
+     * @param appointments The list of Appointment objects to display
      */
     private void displayAppointments(List<Appointment> appointments) {
         LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
@@ -525,7 +556,10 @@ public class PatientMenu {
     }
 
     /**
-     * [OPTION 6] Cancels an existing appointment.
+     * [OPTION 6] Handles the process of canceling an existing appointment.
+     * Displays a list of scheduled appointments and allows the patient to select one to cancel.
+     * Validates the appointment status and updates both appointment and slot status upon cancellation.
+     * Provides appropriate feedback messages throughout the cancellation process.
      */
     private void cancelAppointment() {
         ConsoleUtility.printHeader("CANCEL AN APPOINTMENT");
@@ -576,7 +610,9 @@ public class PatientMenu {
     }
 
     /**
-     * [OPTION 7] Views scheduled appointments.
+     * [OPTION 7] Displays all currently scheduled appointments for the patient.
+     * Retrieves and shows a list of appointments that are in the SCHEDULED status.
+     * Uses the displayAppointments method to present the information in a formatted table.
      */
     private void viewScheduledAppointments() {
         ConsoleUtility.printHeader("VIEW SCHEDULED APPOINTMENTS");
@@ -585,7 +621,10 @@ public class PatientMenu {
     }
 
     /**
-     * [OPTION 8] Views past appointment outcome records.
+     * [OPTION 8] Allows patients to view detailed outcome records of past appointments.
+     * Displays a list of completed appointments and prompts the user to select one for detailed viewing.
+     * Shows comprehensive information including appointment details, outcome, and any prescriptions.
+     * Provides an option to return to the main menu without selecting an appointment.
      */
     private void viewPastAppointmentOutcomeRecords() {
         ConsoleUtility.printHeader("VIEW PAST APPOINTMENT OUTCOME RECORDS");
@@ -631,9 +670,12 @@ public class PatientMenu {
     }
 
     /**
-     * Displays the outcome details in a formatted table
+     * Displays detailed outcome information for a specific appointment in a formatted view.
+     * Shows comprehensive details including appointment info, patient and doctor details,
+     * schedule information, outcome details, and prescription information if available.
+     * Uses formatted output to present the information in clearly separated sections.
      * 
-     * @param outcome The outcome record to display
+     * @param outcome The Outcome object containing the appointment outcome details to display
      */
     private void displayOutcome(Outcome outcome) {
         // Get the appointment associated with this outcome

@@ -5,11 +5,28 @@ import java.time.LocalTime;
 
 /**
  * Represents a specific time slot in a schedule in the Hospital Management System.
+ * Slots are used to track doctor availability and manage patient appointments.
+ * 
+ * Key components include:
+ * - Unique slot identifier
+ * - Associated doctor ID
+ * - Date and time range of availability
+ * - Current status (available, pending, booked, etc.)
+ * 
+ * The Slot class provides the foundation for the appointment scheduling system,
+ * allowing doctors to set their availability and patients to book appointments
+ * within those available time slots.
+ *
+ * @author Group 7
+ * @version 1.0
  */
 public class Slot {
 
     /**
      * Enum representing the possible statuses of a slot.
+     * Used to track the current state of appointment slots in the system.
+     * Supports multiple states to handle the complete lifecycle of a slot
+     * from creation through completion or removal.
      */
     public enum SlotStatus {
         AVAILABLE,  // Slot is available for booking
@@ -21,42 +38,52 @@ public class Slot {
 
     /**
      * Unique identifier for the slot.
+     * Used to track and reference specific slots in the system.
      */
     private String slotID;
     
     /**
      * The id of the doctor associated with this slot.
+     * References the specific doctor who will be available during this time slot.
      */
     private String doctorID;
 
     /**
-     * The date of the slot
+     * The date of the slot.
+     * Represents the calendar date when this slot is scheduled.
      */
     private LocalDate date;
 
     /**
      * The start time of the slot.
+     * Represents the time when the doctor's availability begins.
      */
     private LocalTime startTime;
 
     /**
      * The end time of the slot.
+     * Represents the time when the doctor's availability ends.
      */
     private LocalTime endTime;
 
     /**
      * Indicates the current status of the slot.
+     * Tracks whether the slot is available, booked, or in another state.
      */
     private SlotStatus status;
 
     /**
-     * Constructor for Slot.
-     * @param slotID The unique identifier for the slot.
-     * @param doctorID The id of the doctor associated with this slot.
-     * @param date The date of the slot.
-     * @param startTime The start time of the slot.
-     * @param endTime The end time of the slot.
-     * @param status The current status of the slot.
+     * Constructor for creating a new Slot instance in the system.
+     * Initializes a time slot with all required details including doctor
+     * availability and scheduling information. Validates and sets up the
+     * slot record for appointment management.
+     *
+     * @param slotID The unique identifier for the slot
+     * @param doctorID The id of the doctor associated with this slot
+     * @param date The date of the slot
+     * @param startTime The start time of the slot
+     * @param endTime The end time of the slot
+     * @param status The current status of the slot
      */
     public Slot(String slotID, String doctorID, LocalDate date, LocalTime startTime, LocalTime endTime, SlotStatus status) {
         this.slotID = slotID;
@@ -68,101 +95,144 @@ public class Slot {
     }
 
     /**
-     * Get the unique identifier for the slot.
-     * @return The slot ID.
+     * Retrieves the unique identifier for this slot.
+     * This method provides access to the slot's tracking ID which is used
+     * throughout the system to reference and manage this specific time slot.
+     *
+     * @return The unique slot ID string
      */
     public String getSlotID() {
         return slotID;
     }
 
     /**
-     * Get the id of the doctor associated with this slot.
-     * @return The doctor ID.
+     * Retrieves the identifier of the doctor associated with this slot.
+     * This method provides access to the specific doctor ID that is
+     * assigned to be available during this time slot.
+     *
+     * @return The doctor ID string
      */
     public String getDoctorID() {
         return doctorID;
     }
 
     /**
-     * Get the date of the slot.
-     * @return The date.
+     * Retrieves the date when this slot is scheduled.
+     * This method provides access to the calendar date when the doctor
+     * will be available for appointments in this time slot.
+     *
+     * @return The scheduled date
      */
     public LocalDate getDate() {
         return date;
     }
 
     /**
-     * Get the start time of the slot.
-     * @return The start time.
+     * Retrieves the start time of the slot.
+     * This method provides access to the specific time when the doctor's
+     * availability begins for this appointment slot.
+     *
+     * @return The start time
      */
     public LocalTime getStartTime() {
         return startTime;
     }
 
     /**
-     * Get the end time of the slot.
-     * @return The end time.
+     * Retrieves the end time of the slot.
+     * This method provides access to the specific time when the doctor's
+     * availability ends for this appointment slot.
+     *
+     * @return The end time
      */
     public LocalTime getEndTime() {
         return endTime;
     }
 
     /**
-     * Get the current status of the slot.
-     * @return The current status of the slot.
+     * Retrieves the current status of the slot.
+     * This method provides access to the current state of the slot,
+     * indicating whether it is available, booked, or in another state.
+     *
+     * @return The current status of the slot
      */
     public SlotStatus getStatus() {
         return status;
     }
 
     /**
-     * Set the unique identifier for the slot.
-     * @param slotID The slot ID to set.
+     * Updates the unique identifier for this slot.
+     * This method allows the system to modify the tracking ID used
+     * to reference this specific time slot.
+     *
+     * @param slotID The new slot ID to set
      */
     public void setSlotID(String slotID) {
         this.slotID = slotID;
     }
 
     /**
-     * Set the id of the doctor associated with this slot.
-     * @param doctorID The doctor ID to set.
+     * Updates the doctor associated with this slot.
+     * This method allows the system to reassign the slot to a different
+     * doctor when necessary for schedule management.
+     *
+     * @param doctorID The new doctor ID to set
      */
     public void setDoctorID(String doctorID) {
         this.doctorID = doctorID;
     }
 
     /**
-     * Set the date of the slot.
-     * @param date The date to set.
+     * Updates the date of the slot.
+     * This method allows the system to reschedule the slot to a
+     * different calendar date when necessary.
+     *
+     * @param date The new date to set
      */
     public void setDate(LocalDate date) {
         this.date = date;
     }
 
     /**
-     * Set the start time of the slot.
-     * @param startTime The start time to set.
+     * Updates the start time of the slot.
+     * This method allows the system to modify when the doctor's
+     * availability begins for this appointment slot.
+     *
+     * @param startTime The new start time to set
      */
     public void setStartTime(LocalTime startTime) {
         this.startTime = startTime;
     }
 
     /**
-     * Set the end time of the slot.
-     * @param endTime The end time to set.
+     * Updates the end time of the slot.
+     * This method allows the system to modify when the doctor's
+     * availability ends for this appointment slot.
+     *
+     * @param endTime The new end time to set
      */
     public void setEndTime(LocalTime endTime) {
         this.endTime = endTime;
     }
 
     /**
-     * Set the current status of the slot.
-     * @param status The current status to set.
+     * Updates the current status of the slot.
+     * This method allows the system to track changes in the slot's state
+     * as it moves through the appointment lifecycle.
+     *
+     * @param status The new status to set
      */
     public void setStatus(SlotStatus status) {
         this.status = status;
     }
 
+    /**
+     * Generates a string representation of the slot.
+     * This method creates a formatted string containing all relevant
+     * slot information for display or logging purposes.
+     *
+     * @return A string representation of the complete slot record
+     */
     @Override
     public String toString() {
         return "Slot{" + slotID + "," + doctorID + "," + date + "," + startTime + "," + endTime + "," + status + "}";

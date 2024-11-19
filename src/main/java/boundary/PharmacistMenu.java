@@ -14,11 +14,18 @@ import entity.Outcome;
 import entity.Prescription;
 import entity.Slot;
 import entity.User;
+import entity.Request;
 import utility.ConsoleUtility;
 import utility.TableBuilder;
 
 /**
  * Interface for pharmacist operations in the Hospital Management System.
+ * This class provides a command-line interface for pharmacists to manage medications,
+ * prescriptions, view appointment outcomes, and handle inventory replenishment.
+ * The menu allows pharmacists to perform their core responsibilities efficiently.
+ *
+ * @author Group 7
+ * @version 1.0
  */
 public class PharmacistMenu {
 
@@ -28,8 +35,10 @@ public class PharmacistMenu {
 
     /**
      * Constructor for PharmacistMenu.
+     * Initializes the pharmacist menu with a controller and scanner for user input.
+     * Sets up the necessary components for menu operation.
      * 
-     * @param pharmacistController The PharmacistController instance
+     * @param pharmacistController The PharmacistController instance to handle business logic
      */
     public PharmacistMenu(PharmacistController pharmacistController) {
         this.pharmacistController = pharmacistController;
@@ -37,7 +46,10 @@ public class PharmacistMenu {
     }
 
     /**
-     * [MAIN MENU] Displays the menu options available to the pharmacist.
+     * [MAIN MENU] Displays the main menu options available to the pharmacist.
+     * Handles user input and directs to appropriate functionality.
+     * Provides options for viewing records, managing prescriptions, and inventory control.
+     * Includes error handling for invalid inputs and unexpected exceptions.
      */
     public void displayMenu() {
         while (true) {
@@ -83,7 +95,10 @@ public class PharmacistMenu {
     }
 
     /**
-     * [OPTION 1] Views the appointment outcome record.
+     * [OPTION 1] Views the appointment outcome record for completed appointments.
+     * Displays detailed information about appointments including patient details,
+     * doctor information, schedule, and any prescribed medications.
+     * Allows pharmacists to track and verify prescription details.
      */
     public void viewAppointmentOutcomeRecord() {
         try {
@@ -202,10 +217,12 @@ public class PharmacistMenu {
     }
 
     /**
-     * Displays the list of appointments.
+     * Displays the list of appointments in a formatted table.
+     * Shows appointment details including patient and doctor information,
+     * schedule details, and current status.
      * 
      * @param appointments The list of appointments to display
-     * @param title The title for the table
+     * @param title The title for the table display
      */
     private void displayAppointmentList(List<Appointment> appointments, String title) {
         LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
@@ -246,7 +263,9 @@ public class PharmacistMenu {
     }
 
     /**
-     * [OPTION 2] Updates the prescription status.
+     * [OPTION 2] Updates the status of prescriptions from pending to dispensed.
+     * Allows pharmacists to mark prescriptions as dispensed after providing medications.
+     * Includes verification steps and updates medication inventory accordingly.
      */
     private void updatePrescriptionStatus() {
         try {
@@ -318,7 +337,9 @@ public class PharmacistMenu {
     }
 
     /**
-     * [OPTION 3] Views the medication inventory.
+     * [OPTION 3] Displays the current medication inventory status.
+     * Shows all medications in the system with their current stock levels
+     * and low stock alert thresholds.
      */
     public void viewMedicationInventory() {
         
@@ -336,7 +357,10 @@ public class PharmacistMenu {
     }
 
     /**
-     * [OPTION 4] Submits a replenishment request.
+     * [OPTION 4] Handles the submission of medication replenishment requests.
+     * Allows pharmacists to request additional stock for medications
+     * when inventory levels are low.
+     * Includes validation and confirmation steps before submission.
      */
     private void submitReplenishmentRequest() {
         try {
@@ -349,11 +373,11 @@ public class PharmacistMenu {
                 return;
             }
 
-            System.out.println("");
             displayMedicationList(medications);
 
             // Step 2: Prompt user to select a medication
-            String selectedMedicationID = ConsoleUtility.validateInput("\nEnter the Medication ID to replenish: ",
+            System.out.println("");
+            String selectedMedicationID = ConsoleUtility.validateInput("Enter the Medication ID to replenish: ",
                     input -> medications.stream().anyMatch(m -> m.getMedicationID().equals(input)));
 
             Medication selectedMedication = pharmacistController.getMedicationByID(selectedMedicationID);
@@ -388,8 +412,14 @@ public class PharmacistMenu {
             // Step 5: Submit the replenishment request
             boolean success = pharmacistController.submitReplenishmentRequest(selectedMedicationID, quantity);
             if (success) {
-                System.out
-                        .println("Replenishment request submitted successfully. Waiting for administrator's approval.");
+                System.out.println("\nReplenishment request submitted successfully.");
+                
+                // Display the updated request list
+                List<Request> pendingRequests = pharmacistController.getPendingRequests();
+                if (!pendingRequests.isEmpty()) {
+                    System.out.println("");
+                    displayPendingRequests(pendingRequests);
+                }
             } else {
                 System.out.println("Failed to submit the replenishment request. Please try again later.");
             }
@@ -400,7 +430,9 @@ public class PharmacistMenu {
     }
 
     /**
-     * Displays the list of medications.
+     * Displays the list of medications in a formatted table.
+     * Shows medication details including ID, name, current stock level,
+     * and low stock alert threshold.
      * 
      * @param medications The list of medications to display
      */
@@ -415,10 +447,12 @@ public class PharmacistMenu {
     }
 
     /**
-     * Displays a list of prescriptions in a table format.
+     * Displays a list of prescriptions in a formatted table.
+     * Shows prescription details including ID, appointment ID, medication details,
+     * quantity, status, and any additional notes.
      * 
      * @param prescriptions List of prescriptions to display
-     * @param title The title for the table
+     * @param title The title for the table display
      */
     private void displayPrescriptions(List<Prescription> prescriptions, String title) {
         LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
@@ -438,10 +472,11 @@ public class PharmacistMenu {
     }
 
     /**
-     * Displays a single prescription in a table format.
+     * Displays a single prescription in a formatted table.
+     * Converts a single prescription into a list format for consistent display.
      * 
      * @param prescription The prescription to display
-     * @param title The title for the table
+     * @param title The title for the table display
      */
     private void displayPrescriptions(Prescription prescription, String title) {
         List<Prescription> prescriptionList = Collections.singletonList(prescription);
@@ -449,10 +484,12 @@ public class PharmacistMenu {
     }
 
     /**
-     * Displays a list of medications in a table format.
+     * Displays a list of medications in a formatted table.
+     * Shows detailed medication information including stock levels
+     * and alert thresholds.
      * 
      * @param medications List of medications to display
-     * @param title The title for the table
+     * @param title The title for the table display
      */
     private void displayMedication(List<Medication> medications, String title) {
         LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
@@ -462,5 +499,28 @@ public class PharmacistMenu {
         columnMapping.put("lowStockAlertLevel", new TableBuilder.ColumnMapping("Low Stock Alert Level", null));
 
         TableBuilder.createTable(title, medications, columnMapping, 20);
+    }
+
+    /**
+     * Displays the list of pending replenishment requests.
+     * Shows request details including medication information,
+     * requested quantities, and current status.
+     * 
+     * @param pendingRequests The list of pending requests to display
+     */
+    private void displayPendingRequests(List<Request> pendingRequests) {
+        LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
+        columnMapping.put("requestID", new TableBuilder.ColumnMapping("Request ID", null));
+        columnMapping.put("medicationID", new TableBuilder.ColumnMapping("Medication ID", 
+            value -> {
+                String medicationId = value.toString();
+                Medication medication = pharmacistController.getMedicationByID(medicationId);
+                return medication != null ? medication.getName() + " (" + medicationId + ")" : medicationId;
+            }));
+        columnMapping.put("quantity", new TableBuilder.ColumnMapping("Quantity", null));
+        columnMapping.put("requestedBy", new TableBuilder.ColumnMapping("Requested By", null));
+        columnMapping.put("status", new TableBuilder.ColumnMapping("Status", null));
+
+        TableBuilder.createTable("Current Pending Replenishment Requests", pendingRequests, columnMapping, 20);
     }
 }

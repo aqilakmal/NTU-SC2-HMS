@@ -8,9 +8,15 @@ import java.util.LinkedHashMap;
 import java.util.function.Function;
 
 /**
- * Utility class for building and printing tables with dynamic column widths.
+ * Utility class for building and printing formatted tables with dynamic column widths.
+ * This class provides functionality to create visually appealing ASCII tables from lists
+ * of objects, with support for custom column mappings and value transformations.
  * 
- * @example
+ * The class handles dynamic sizing of columns, truncation of long content, proper padding,
+ * and border characters to create professional-looking tables in the console output.
+ * It supports accessing object properties through both getter methods and direct field access.
+ * 
+ * Example usage:
  * List<Person> people = Arrays.asList(
  *     new Person("John", "Smith", 28, LocalDateTime.now()),
  *     new Person("Alexander", "Williams", 33, LocalDateTime.now().minusDays(1)),
@@ -26,36 +32,63 @@ import java.util.function.Function;
  *
  * // Generate and print table
  * TableBuilder.createTable("Person Table", people, columnMapping, 20);
+ * 
+ * @author Group 7
+ * @version 1.0
  */
 public class TableBuilder {
 
     /**
-     * Represents a mapping for a column in the table.
+     * Represents a mapping configuration for a table column.
+     * This class defines how a column should be displayed in the table, including
+     * its header name and an optional transformation function for the column values.
+     * The callback function allows for custom formatting of the column data before display.
      */
     public static class ColumnMapping {
         private String columnName;
         private Function<Object, String> callback;
 
+        /**
+         * Creates a new column mapping with the specified header name and value transformer.
+         * 
+         * @param columnName The display name for the column header
+         * @param callback Optional function to transform the column values before display
+         */
         public ColumnMapping(String columnName, Function<Object, String> callback) {
             this.columnName = columnName;
             this.callback = callback;
         }
 
+        /**
+         * Returns the display name for this column.
+         * 
+         * @return The column's header name as it will appear in the table
+         */
         public String getColumnName() {
             return columnName;
         }
 
+        /**
+         * Returns the transformation function for this column's values.
+         * 
+         * @return The function used to transform column values, or null if no transformation is needed
+         */
         public Function<Object, String> getCallback() {
             return callback;
         }
     }
 
     /**
-     * Creates and prints a table with dynamic column widths.
-     * @param tableName The name of the table
-     * @param objects The list of objects to display in the table
-     * @param columnMapping The mapping of column names to their respective callbacks
-     * @param maxLenCol The maximum length for the columns
+     * Creates and prints a formatted table to the console output.
+     * This method handles the entire table generation process, including calculating column widths,
+     * applying value transformations, and rendering the table with proper borders and padding.
+     * The table automatically adjusts to accommodate the content while respecting the maximum
+     * column width limit.
+     * 
+     * @param tableName The title to display at the top of the table
+     * @param objects The list of objects whose properties will be displayed in the table
+     * @param columnMapping The configuration mapping defining which properties to display and how
+     * @param maxLenCol The maximum allowed width for any column in characters
      */
     public static void createTable(String tableName, List<?> objects, LinkedHashMap<String, ColumnMapping> columnMapping, int maxLenCol) {
         // Determine the maximum width for each column (either from data or header)
@@ -145,9 +178,13 @@ public class TableBuilder {
     }
 
     /**
-     * Prints a cell with proper padding.
-     * @param content The content of the cell
-     * @param width The width of the cell
+     * Prints a single cell in the table with proper padding.
+     * This method handles the formatting of individual cells, ensuring consistent spacing
+     * and alignment within the table structure. It adds padding after the content to
+     * maintain the specified column width.
+     * 
+     * @param content The text content to display in the cell
+     * @param width The total width the cell should occupy, including padding
      */
     private static void printCell(String content, int width) {
         // Calculate padding after adding ellipsis if necessary
@@ -156,10 +193,14 @@ public class TableBuilder {
     }
 
     /**
-     * Prints a line with the specified characters.
-     * @param totalWidth The total width of the line
-     * @param leftCorner The character for the left corner
-     * @param rightCorner The character for the right corner
+     * Prints a horizontal line for table borders with specified corner characters.
+     * This method generates the horizontal lines used for table borders and separators,
+     * using the specified characters for the left and right corners. The line width
+     * is calculated to match the table's total width.
+     * 
+     * @param totalWidth The total width of the line excluding corners
+     * @param leftCorner The character to use for the left corner
+     * @param rightCorner The character to use for the right corner
      */
     private static void printLine(int totalWidth, char leftCorner, char rightCorner) {
         System.out.print(leftCorner);
@@ -170,12 +211,16 @@ public class TableBuilder {
     }
 
     /**
-     * Gets the attribute value via getter method or direct field access.
-     * @param obj The object to get the attribute value from
-     * @param attributeName The name of the attribute
-     * @param callback The callback to apply to the attribute value
-     * @return The attribute value as a string
-     * @throws Exception If there's an error getting the attribute value
+     * Retrieves an attribute value from an object using reflection.
+     * This method attempts to access object properties first through getter methods,
+     * then through direct field access if no getter is available. It also applies
+     * any specified transformation to the value before returning it as a string.
+     * 
+     * @param obj The object from which to retrieve the attribute value
+     * @param attributeName The name of the attribute to retrieve
+     * @param callback Optional transformation function to apply to the value
+     * @return The attribute value as a string, possibly transformed by the callback
+     * @throws Exception If the attribute cannot be accessed or transformed
      */
     private static String getAttributeValue(Object obj, String attributeName, Function<Object, String> callback) throws Exception {
         // Capitalize the first letter of the attribute to find getter method

@@ -1,12 +1,28 @@
 package entity;
 
 /**
- * Represents a request to replenish medication stock in the Hospital Management System.
+ * Represents a medication replenishment request in the Hospital Management System. Requests are created
+ * by pharmacists when medication stock levels are low and need to be replenished.
+ * 
+ * Key components include:
+ * - Unique request identifier
+ * - Reference to the medication that needs replenishment
+ * - Quantity requested
+ * - Current request status (pending or approved)
+ * - IDs of requesting pharmacist and approving administrator
+ * 
+ * The Request class supports the inventory management workflow by tracking replenishment
+ * requests from creation through approval by administrators.
+ *
+ * @author Group 7
+ * @version 1.0
  */
 public class Request {
 
     /**
      * Enum representing the possible statuses of a replenishment request.
+     * Used to track the approval state of requests in the system.
+     * Supports PENDING (newly created) and APPROVED (fulfilled by administrator) states.
      */
     public enum RequestStatus {
         PENDING, APPROVED
@@ -14,38 +30,49 @@ public class Request {
     
     /**
      * Unique identifier for the replenishment request.
+     * Used to track and reference specific requests in the system.
      */
     private String requestID;
     
     /**
      * Unique identifier for the medication to be replenished.
+     * References the specific medication that needs stock replenishment.
      */
     private String medicationID;
     
     /**
      * The quantity of medication requested.
+     * Specifies the amount of medication stock to be replenished.
      */
     private int quantity;
     
     /**
      * The current status of the request.
+     * Tracks whether the request has been approved by an administrator.
      */
     private RequestStatus status;
     
     /**
      * The id of the pharmacist who created the request.
+     * References the pharmacist who initiated the replenishment request.
      */
     private String requestedBy;
     
     /**
-     * The id of the administrator who approved the request (null if not yet approved).
+     * The id of the administrator who approved the request.
+     * References the administrator who approved the replenishment.
+     * Will be null if request is not yet approved.
      */
     private String approvedBy;
     
     /**
-     * Constructor for Request.
+     * Constructor for creating a new Request instance in the system.
+     * Initializes a replenishment request with all required details including
+     * medication reference, quantity needed, and tracking information.
+     * Validates and sets up the request record for processing in the system.
+     *
      * @param requestID The unique identifier for the replenishment request
-     * @param medication The medication to be replenished
+     * @param medicationID The unique identifier for the medication to be replenished
      * @param quantity The quantity of medication requested
      * @param status The current status of the request
      * @param requestedBy The pharmacist who created the request
@@ -61,69 +88,100 @@ public class Request {
     }
     
     /**
-     * Get the unique identifier for the replenishment request.
-     * @return The request ID
+     * Retrieves the unique identifier for this replenishment request.
+     * This method provides access to the request's tracking ID which is used
+     * throughout the system to reference and manage this specific request.
+     *
+     * @return The unique request ID string
      */
     public String getRequestID() {
         return requestID;
     }
     
     /**
-     * Get the medication to be replenished.
-     * @return The medication object
+     * Retrieves the identifier of the medication to be replenished.
+     * This method provides access to the specific medication ID that
+     * is associated with this replenishment request.
+     *
+     * @return The medication ID string
      */
     public String getMedicationID() {
         return medicationID;
     }
     
     /**
-     * Get the quantity of medication requested.
-     * @return The quantity of medication
+     * Retrieves the quantity of medication requested.
+     * This method provides access to the amount of medication stock
+     * that was requested for replenishment by the pharmacist.
+     *
+     * @return The requested quantity as an integer
      */
     public int getQuantity() {
         return quantity;
     }
     
     /**
-     * Get the current status of the request.
-     * @return The status of the request
+     * Retrieves the current status of the replenishment request.
+     * This method provides access to whether the request is still
+     * pending or has been approved by an administrator.
+     *
+     * @return The current RequestStatus enum value
      */
     public RequestStatus getStatus() {
         return status;
     }
     
     /**
-     * Get the pharmacist who created the request.
-     * @return The pharmacist who created the request
+     * Retrieves the ID of the pharmacist who created the request.
+     * This method provides access to the identifier of the pharmacist
+     * who initiated this replenishment request in the system.
+     *
+     * @return The pharmacist's user ID string
      */
     public String getRequestedBy() {
         return requestedBy;
     }
     
     /**
-     * Get the administrator who approved the request (null if not yet approved).
-     * @return The administrator who approved the request, or null if not yet approved
+     * Retrieves the ID of the administrator who approved the request.
+     * This method provides access to the identifier of the administrator
+     * who processed and approved this replenishment request.
+     *
+     * @return The administrator's user ID string, or null if not yet approved
      */
     public String getApprovedBy() {
         return approvedBy;
     }
     
     /**
-     * Set the status of the request.
-     * @param status The new status of the request
+     * Updates the status of the replenishment request.
+     * This method allows administrators to change the request status
+     * when processing and approving replenishment requests.
+     *
+     * @param status The new RequestStatus to set for this request
      */
     public void setStatus(RequestStatus status) {
         this.status = status;
     }
     
     /**
-     * Set the administrator who approved the request.
-     * @param approvedBy The administrator who approved the request
+     * Updates the ID of the administrator who approved the request.
+     * This method allows the system to record which administrator
+     * processed and approved this replenishment request.
+     *
+     * @param approvedBy The user ID of the approving administrator
      */
     public void setApprovedBy(String approvedBy) {
         this.approvedBy = approvedBy;
     }
 
+    /**
+     * Generates a string representation of the request.
+     * This method creates a formatted string containing all relevant
+     * request information for display or logging purposes.
+     *
+     * @return A string representation of the complete request record
+     */
     @Override
     public String toString() {
         return "Request{" + requestID + "," + medicationID + "," + quantity + "," + status + "," + requestedBy + "," + approvedBy + "}";

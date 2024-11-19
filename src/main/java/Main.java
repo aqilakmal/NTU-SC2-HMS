@@ -30,20 +30,20 @@ import controller.data.UserDataManager;
 // Entity
 import entity.User;
 /**
- * Main class for the Hospital Management System. This class serves as the entry
- * point for the application and manages the initialization of all system components.
+ * Main class for the Hospital Management System (HMS). This class serves as the entry
+ * point for the application and orchestrates the initialization and coordination of 
+ * all system components.
  * 
- * <p>This class is responsible for:
- * <ul>
- *   <li>Initializing all data managers</li>
- *   <li>Loading data from CSV files</li>
- *   <li>Setting up controllers</li>
- *   <li>Managing the login process</li>
- *   <li>Saving data on system exit</li>
- * </ul>
- * </p>
+ * The class manages the complete lifecycle of the HMS application including:
+ * - Data manager initialization and CSV data loading
+ * - Controller initialization and dependency injection
+ * - User authentication and role-based menu routing
+ * - System shutdown and data persistence
  * 
- * @author Your Name
+ * The class implements a command-line interface for user interaction and handles
+ * all potential runtime errors to ensure system stability.
+ * 
+ * @author Group 7
  * @version 1.0
  */
 public class Main {
@@ -65,18 +65,19 @@ public class Main {
     private static RequestDataManager requestDataManager;
 
     /**
-     * The main method that starts the Hospital Management System.
+     * The main entry point for the Hospital Management System.
      * 
-     * <p>This method performs the following operations in order:
-     * <ol>
-     *   <li>Initializes all data managers and loads data from CSV files</li>
-     *   <li>Initializes all controllers</li>
-     *   <li>Sets up the login menu and displays the home screen</li>
-     *   <li>Saves all data when the program terminates</li>
-     * </ol>
-     * </p>
-     *
-     * @param args Command line arguments (not used in this application)
+     * Executes the following operations in sequence:
+     * 1. Displays welcome message and initializes system components
+     * 2. Loads all required data from CSV storage
+     * 3. Sets up the user interface and authentication system
+     * 4. Runs the main application loop
+     * 5. Performs cleanup and data persistence on exit
+     * 
+     * The method implements comprehensive error handling to ensure
+     * graceful system behavior even in case of failures.
+     * 
+     * @param args Command line arguments (not used in current implementation)
      */
     public static void main(String[] args) {
         System.out.println("Welcome to the Hospital Management System");
@@ -98,7 +99,14 @@ public class Main {
     }
 
     /**
-     * Initialize all data managers and load data from CSV.
+     * Initializes all data managers and loads data from CSV storage.
+     * 
+     * Creates instances of all required data managers and loads their respective
+     * data from CSV files. This includes user data, medication inventory,
+     * appointment slots, medical histories, and other system records.
+     * 
+     * If any data loading operation fails, the error is logged but the system
+     * continues to operate with empty data sets where necessary.
      */
     private static void initializeDataManagers() {
         userDataManager = new UserDataManager();
@@ -125,7 +133,17 @@ public class Main {
     }
 
     /**
-     * Initialize all controllers with the loaded data managers.
+     * Initializes all system controllers with their required dependencies.
+     * 
+     * Creates and configures controller instances for each user role:
+     * - Authentication controller for login management
+     * - Administrator controller for system management
+     * - Doctor controller for medical operations
+     * - Patient controller for appointment management
+     * - Pharmacist controller for medication management
+     * 
+     * If controller initialization fails, the system will terminate with
+     * an error message as controllers are essential for operation.
      */
     private static void initializeControllers() {
         try {
@@ -167,7 +185,9 @@ public class Main {
                 outcomeDataManager,
                 appointmentDataManager,
                 slotDataManager,
-                userDataManager
+                userDataManager,
+                requestDataManager,
+                authController
             );
         } catch (Exception e) {
             System.err.println("Critical Error: Failed to initialize controllers. The system cannot start.");
@@ -178,7 +198,14 @@ public class Main {
     }
 
     /**
-     * Displays the home screen menu and handles user input.
+     * Manages the main application loop and user interface.
+     * 
+     * Displays the main menu with login and exit options, handles user input,
+     * and manages the flow of control. Implements input validation and error
+     * handling for all user interactions.
+     * 
+     * The loop continues until the user chooses to exit the system or
+     * an unrecoverable error occurs.
      */
     private static void displayHomeScreen() {
         while (true) {
@@ -212,7 +239,15 @@ public class Main {
     }
 
     /**
-     * Handles the login process and redirects to appropriate menu based on user role.
+     * Manages the user authentication process and role-based menu routing.
+     * 
+     * Handles the following operations:
+     * 1. User credential validation
+     * 2. First-time login password change requirement
+     * 3. Role-based menu initialization and display
+     * 
+     * Implements comprehensive error handling for authentication failures
+     * and invalid role assignments.
      */
     private static void handleLogin() {
         try {
@@ -257,7 +292,17 @@ public class Main {
     }
 
     /**
-     * Saves all data to CSV on exit.
+     * Performs system shutdown operations and data persistence.
+     * 
+     * Saves all system data to CSV storage including:
+     * - User records
+     * - Medication inventory
+     * - Appointment schedules
+     * - Medical histories
+     * - System configurations
+     * 
+     * Logs any errors that occur during the save operation but continues
+     * with the shutdown process.
      */
     private static void saveDataOnExit() {
         try {

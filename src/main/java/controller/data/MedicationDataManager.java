@@ -8,8 +8,18 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * Manages medication data operations including loading from and saving to CSV files,
- * as well as basic CRUD operations for medications in the Hospital Management System.
+ * Manages medication data operations in the Hospital Management System (HMS).
+ * This class handles all medication-related data persistence and CRUD operations,
+ * including loading from and saving to CSV files, filtering medications, and managing
+ * inventory levels.
+ * 
+ * The class provides functionality for pharmacists to monitor medication stock levels,
+ * administrators to manage the medication inventory, and doctors to view available
+ * medications for prescriptions. It maintains a comprehensive record of all medications
+ * in the system.
+ *
+ * @author Group 7
+ * @version 1.0
  */
 public class MedicationDataManager {
 
@@ -17,19 +27,26 @@ public class MedicationDataManager {
 
     /**
      * List of medications in the system.
+     * Contains all medications loaded from CSV storage.
      */
     private static List<Medication> medications;
 
     /**
      * Constructs a new MedicationDataManager with an empty list of medications.
+     * Initializes the medications list to store medication data loaded from CSV storage.
+     * This constructor is called during system initialization to prepare for medication management.
      */
     public MedicationDataManager() {
         medications = new ArrayList<>();
     }
 
     /**
-     * Loads medication data from a CSV file.
-     * @throws IOException If there's an error reading the file.
+     * Loads medication data from the CSV file into memory.
+     * Clears any existing medications before loading new data.
+     * Each line in the CSV file represents one medication with its complete details.
+     * Prints debug information during the loading process.
+     *
+     * @throws IOException If there's an error reading the medications CSV file
      */
     public void loadMedicationsFromCSV() throws IOException {
         medications.clear(); // Clear existing medications before loading
@@ -59,9 +76,11 @@ public class MedicationDataManager {
     }
 
     /**
-     * Saves medication data to a CSV file.
-     * @param fileName The name of the CSV file to save data to.
-     * @throws IOException If there's an error writing to the file.
+     * Saves the current state of all medications to the CSV file.
+     * Writes medication data in a structured format with headers.
+     * Ensures data persistence by saving all medication attributes.
+     *
+     * @throws IOException If there's an error writing to the medications CSV file
      */
     public void saveMedicationsToCSV() throws IOException {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(MEDICATION_FILE))) {
@@ -83,9 +102,12 @@ public class MedicationDataManager {
     }
 
     /**
-     * [CREATE] Adds a new medication to the system.
-     * @param medication The Medication object to add.
-     * @throws IllegalArgumentException If the medication already exists.
+     * Adds a new medication to the system's inventory.
+     * Validates that no duplicate medication ID exists before adding.
+     * Used by administrators to add new medications to the system.
+     *
+     * @param medication The Medication object to add to the system
+     * @throws IllegalArgumentException If a medication with the same ID already exists
      */
     public void addMedication(Medication medication) throws IllegalArgumentException {
         if (getMedicationByID(medication.getMedicationID()) != null) {
@@ -95,17 +117,23 @@ public class MedicationDataManager {
     }
 
     /**
-     * [READ] Retrieves the list of all medications.
-     * @return List of Medication objects.
+     * Retrieves a copy of all medications in the system.
+     * Returns a new list to preserve encapsulation of the internal medications list.
+     * Used for displaying complete medication inventory to authorized users.
+     *
+     * @return A new List containing all Medication objects in the system
      */
     public List<Medication> getMedications() {
         return new ArrayList<>(medications); // Return a copy to preserve encapsulation
     }
 
     /**
-     * [READ] Retrieves a medication by its ID.
-     * @param medicationID The ID of the medication to retrieve.
-     * @return The Medication object if found, null otherwise.
+     * Retrieves a specific medication by its unique identifier.
+     * Searches through all medications to find an exact ID match.
+     * Used when accessing or updating a specific medication entry.
+     *
+     * @param medicationID The unique identifier of the medication to retrieve
+     * @return The Medication object if found, null if no match exists
      */
     public Medication getMedicationByID(String medicationID) {
         return medications.stream()
@@ -115,9 +143,12 @@ public class MedicationDataManager {
     }
 
     /**
-     * [READ] Retrieves a filtered list of medications based on specified criteria.
-     * @param filters Map of filter criteria (e.g., name, stockLevel, etc.)
-     * @return List of Medication objects matching the filter criteria
+     * Retrieves a filtered list of medications based on specified criteria.
+     * Supports filtering by medication name, stock level, and other attributes.
+     * Used for searching and filtering medications based on various parameters.
+     *
+     * @param filters Map containing filter criteria where key is the field name and value is the filter value
+     * @return List of Medication objects matching all specified filter criteria
      */
     public List<Medication> getFilteredMedications(Map<String, String> filters) {
         return medications.stream()
@@ -139,9 +170,12 @@ public class MedicationDataManager {
     }
 
     /**
-     * [UPDATE] Updates an existing medication's information.
-     * @param updatedMedication The Medication object with updated information.
-     * @throws IllegalArgumentException If the medication doesn't exist.
+     * Updates an existing medication's information in the system.
+     * Locates the existing medication by ID and replaces it with the updated version.
+     * Used by administrators to modify medication details or update stock levels.
+     *
+     * @param updatedMedication The Medication object containing the updated information
+     * @throws IllegalArgumentException If no medication with the specified ID exists
      */
     public void updateMedication(Medication updatedMedication) throws IllegalArgumentException {
         for (int i = 0; i < medications.size(); i++) {
@@ -154,9 +188,12 @@ public class MedicationDataManager {
     }
 
     /**
-     * [DELETE] Removes a medication from the system.
-     * @param medicationID The ID of the medication to remove.
-     * @throws IllegalArgumentException If the medication doesn't exist.
+     * Removes a medication from the system's inventory.
+     * Searches for and removes the medication matching the specified ID.
+     * Used for removing discontinued or obsolete medications from the system.
+     *
+     * @param medicationID The unique identifier of the medication to remove
+     * @throws IllegalArgumentException If no medication with the specified ID exists
      */
     public void removeMedication(String medicationID) throws IllegalArgumentException {
         if (!medications.removeIf(medication -> medication.getMedicationID().equals(medicationID))) {

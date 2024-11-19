@@ -8,8 +8,18 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * Manages user data operations including loading from and saving to CSV files,
- * as well as basic CRUD operations for users in the Hospital Management System.
+ * Manages user data operations in the Hospital Management System (HMS).
+ * This class handles all user-related data persistence and CRUD operations,
+ * including loading from and saving to CSV files, filtering users, and managing
+ * user details.
+ * 
+ * The class provides functionality for administrators to manage hospital staff,
+ * supports user authentication during login, and maintains a comprehensive record
+ * of all system users including patients, doctors, pharmacists and administrators.
+ * It ensures data integrity and proper access control based on user roles.
+ *
+ * @author Group 7
+ * @version 1.0
  */
 public class UserDataManager {
 
@@ -17,19 +27,28 @@ public class UserDataManager {
 
     /**
      * List of users in the system.
+     * Stores all user records loaded from CSV storage and maintains
+     * the current state of users in memory.
      */
     private static List<User> users;
 
     /**
      * Constructs a new UserDataManager with an empty list of users.
+     * Initializes the users list to store user data loaded from CSV storage.
+     * This constructor is called during system initialization to prepare for user management.
      */
     public UserDataManager() {
         users = new ArrayList<>();
     }
 
     /**
-     * Loads user data from a CSV file.
-     * @throws IOException If there's an error reading the file.
+     * Loads user data from the CSV file into memory.
+     * Reads and parses each line of the CSV file to create appropriate User objects
+     * based on their roles (Patient, Doctor, Pharmacist, Administrator).
+     * Validates data format and skips invalid entries while logging them for review.
+     * Clears existing users before loading to ensure data consistency.
+     *
+     * @throws IOException If there's an error reading from the users CSV file
      */
     public void loadUsersFromCSV() throws IOException {
         users.clear(); // Clear existing users before loading
@@ -86,8 +105,12 @@ public class UserDataManager {
     }
 
     /**
-     * Saves user data to a CSV file.
-     * @throws IOException If there's an error writing to the file.
+     * Saves all user data from memory to the CSV file.
+     * Writes the complete list of users to persistent storage, handling different user types
+     * appropriately (Patient, Doctor, Pharmacist, Administrator).
+     * Includes a header line with column names for data structure clarity.
+     *
+     * @throws IOException If there's an error writing to the users CSV file
      */
     public void saveUsersToCSV() throws IOException {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(USER_FILE))) {
@@ -125,9 +148,12 @@ public class UserDataManager {
     }
 
     /**
-     * [CREATE] Adds a new user to the system.
-     * @param user The User object to add.
-     * @throws IllegalArgumentException If the user already exists.
+     * Adds a new user to the system's records.
+     * Validates that no duplicate user ID exists before adding.
+     * Used by administrators to create new user accounts in the system.
+     *
+     * @param user The User object containing the new user's details
+     * @throws IllegalArgumentException If a user with the same ID already exists
      */
     public void addUser(User user) throws IllegalArgumentException {
         if (getUserByID(user.getUserID()) != null) {
@@ -137,17 +163,23 @@ public class UserDataManager {
     }
 
     /**
-     * [READ] Retrieves the list of all users.
-     * @return List of User objects.
+     * Retrieves a copy of the complete list of users in the system.
+     * Returns a new ArrayList to preserve encapsulation of the internal users list.
+     * Used by administrators to view and manage all system users.
+     *
+     * @return A new ArrayList containing all User objects in the system
      */
     public List<User> getUsers() {
         return new ArrayList<>(users); // Return a copy to preserve encapsulation
     }
 
     /**
-     * [READ] Retrieves a user by their ID.
-     * @param userID The ID of the user to retrieve.
-     * @return The User object if found, null otherwise.
+     * Retrieves a specific user by their unique ID.
+     * Used for user authentication and profile management.
+     * Returns null if no user is found with the specified ID.
+     *
+     * @param userID The unique identifier of the user to retrieve
+     * @return The User object if found, null otherwise
      */
     public User getUserByID(String userID) {
         return users.stream()
@@ -157,9 +189,12 @@ public class UserDataManager {
     }
 
     /**
-     * [READ] Retrieves a filtered list of users based on specified criteria.
-     * @param filters Map of filter criteria (e.g., role, gender, etc.)
-     * @return List of User objects matching the filter criteria
+     * Retrieves a filtered list of users based on specified criteria.
+     * Supports filtering by role, gender, and other user attributes.
+     * Used by administrators to search and manage users based on specific criteria.
+     *
+     * @param filters Map containing filter criteria where key is the attribute name and value is the filter value
+     * @return List of User objects matching all specified filter criteria
      */
     public List<User> getFilteredUsers(Map<String, String> filters) {
         return users.stream()
@@ -181,9 +216,12 @@ public class UserDataManager {
     }
 
     /**
-     * [UPDATE] Updates an existing user's information.
-     * @param updatedUser The User object with updated information.
-     * @throws IllegalArgumentException If the user doesn't exist.
+     * Updates an existing user's information in the system.
+     * Validates the user exists before attempting the update.
+     * Used to modify user details while maintaining data integrity.
+     *
+     * @param updatedUser The User object containing the updated information
+     * @throws IllegalArgumentException If no user exists with the specified ID
      */
     public void updateUser(User updatedUser) throws IllegalArgumentException {
         for (int i = 0; i < users.size(); i++) {
@@ -196,9 +234,12 @@ public class UserDataManager {
     }
 
     /**
-     * [DELETE] Removes a user from the system.
-     * @param userID The ID of the user to remove.
-     * @throws IllegalArgumentException If the user doesn't exist.
+     * Removes a user from the system by their ID.
+     * Validates the user exists before attempting removal.
+     * Used by administrators to manage system users.
+     *
+     * @param userID The unique identifier of the user to remove
+     * @throws IllegalArgumentException If no user exists with the specified ID
      */
     public void removeUser(String userID) throws IllegalArgumentException {
         if (!users.removeIf(user -> user.getUserID().equals(userID))) {

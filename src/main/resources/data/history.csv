@@ -1,3 +1,3 @@
 historyID,patientID,diagnosisDate,diagnosis,treatment
-H01,P01,2023-10-01,Influenza Type A,Prescribed Amoxicillin and Ibuprofen
-H02,P01,2023-09-15,Bronchitis,Bed rest and increased fluid intake
+H01,P,2023-10-01,Influenza Type A,Prescribed Amoxicillin and Ibuprofen
+H02,P,2023-09-15,Bronchitis,Bed rest and increased fluid intake

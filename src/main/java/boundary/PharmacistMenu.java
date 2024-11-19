@@ -1,61 +1,38 @@
 package boundary;
 
-import java.io.IOException;
 import java.util.InputMismatchException;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
+import java.util.Collections;
 
-import controller.DoctorController;
-import controller.PatientController;
 import controller.PharmacistController;
-import controller.data.AppointmentDataManager;
-import controller.data.MedicationDataManager;
-import controller.data.OutcomeDataManager;
-import controller.data.PrescriptionDataManager;
-import controller.data.UserDataManager;
 import entity.Appointment;
 import entity.Medication;
 import entity.Outcome;
 import entity.Prescription;
+import entity.Slot;
+import entity.User;
 import utility.ConsoleUtility;
 import utility.TableBuilder;
 
-
-//Change to controller 
 /**
  * Interface for pharmacist operations in the Hospital Management System.
  */
 public class PharmacistMenu {
-    
+
     private PharmacistController pharmacistController;
-    private AppointmentDataManager appointmentDataManager;
-    private UserDataManager userDataManager;
-    private MedicationDataManager medicationDataManager;
-    private PrescriptionDataManager prescriptionDataManager;
-    private OutcomeDataManager outcomeDataManager;
-
-    // private AppointmentController appointmentController;
-
 
     private Scanner scanner;
-    private PatientController patientController;
-    private DoctorController doctorController;
 
     /**
      * Constructor for PharmacistMenu.
      * 
      * @param pharmacistController The PharmacistController instance
      */
-    public PharmacistMenu(PharmacistController pharmacistController,AppointmentDataManager appointmentDataManager,
-     UserDataManager userDataManager, MedicationDataManager medicationDataManager, PrescriptionDataManager prescriptionDataManager, OutcomeDataManager outcomeDataManager) 
-    {
+    public PharmacistMenu(PharmacistController pharmacistController) {
         this.pharmacistController = pharmacistController;
-        this.appointmentDataManager = appointmentDataManager;
-        this.medicationDataManager = medicationDataManager;
-        this.prescriptionDataManager=prescriptionDataManager;
-        this.userDataManager = userDataManager;
-        this.outcomeDataManager = outcomeDataManager;
         this.scanner = new Scanner(System.in);
     }
 
@@ -77,12 +54,23 @@ public class PharmacistMenu {
                 scanner.nextLine(); // Consume newline
 
                 switch (choice) {
-                    case 1: viewAppointmentOutcomeRecord(); break;
-                    case 2: updatePrescriptionStatus(); break;
-                    case 3: viewMedicationInventory(); break;
-                    case 4: submitReplenishmentRequest(); break;
-                    case 5: System.out.println("Logging out and returning to home screen..."); return;
-                    default: System.out.println("Invalid choice. Please enter a number between 1 and 5.");
+                    case 1:
+                        viewAppointmentOutcomeRecord();
+                        break;
+                    case 2:
+                        updatePrescriptionStatus();
+                        break;
+                    case 3:
+                        viewMedicationInventory();
+                        break;
+                    case 4:
+                        submitReplenishmentRequest();
+                        break;
+                    case 5:
+                        System.out.println("Logging out and returning to home screen...");
+                        return;
+                    default:
+                        System.out.println("Invalid choice. Please enter a number between 1 and 5.");
                 }
             } catch (InputMismatchException e) {
                 System.out.println("Error: Invalid input. Please enter a number.");
@@ -97,125 +85,251 @@ public class PharmacistMenu {
     /**
      * [OPTION 1] Views the appointment outcome record.
      */
-  /**
- * [OPTION 1] Views the appointment outcome record.
- */
-public void viewAppointmentOutcomeRecord() {
-    // Step 1: Get the appointment ID from the user
-    System.out.print("Enter Appointment ID to view the outcome: ");
-    String appointmentID = scanner.nextLine();
+    public void viewAppointmentOutcomeRecord() {
+        try {
+            while (true) {
+                ConsoleUtility.printHeader("VIEW APPOINTMENT OUTCOME RECORD");
 
-    // Step 2: Retrieve the appointment from AppointmentDataManager
-    Appointment appointment = appointmentDataManager.getAppointmentByID(appointmentID);
-    
-    if (appointment == null) {
-        System.out.println("Appointment not found.");
-        return;
-    }
-
-    // Step 3: Check if the appointment is completed
-    if (appointment.getStatus() == Appointment.AppointmentStatus.COMPLETED) {
-        // Step 4: Retrieve the outcome by outcomeID
-        String outcomeID = appointment.getOutcomeID();
-        Outcome outcome = outcomeDataManager.getOutcomeByID(outcomeID);
-        
-        if (outcome != null) {
-            // Display consultation notes
-            String consultationNotes = outcome.getConsultationNotes();
-            System.out.println("Outcome for Appointment ID " + appointmentID + ":");
-            System.out.println("Consultation Notes: " + (consultationNotes != null ? consultationNotes : "No notes available."));
-            
-            // Get the prescription ID(s) and fetch medicine names
-            String prescriptionID = outcome.getPrescriptionID();
-            if (prescriptionID != null && !prescriptionID.isEmpty()) {
-                System.out.print("Prescribed Medicines: ");
-                
-                // Split prescription ID string on comma or semicolon
-                String[] prescriptionIDs = prescriptionID.split("[,;]");
-                for (String id : prescriptionIDs) {
-                    // Get the medication object from MedicationDataManager
-                    Medication medication = medicationDataManager.getMedicationByID(id.trim());
-                    if (medication != null) {
-                        System.out.print(medication.getName() + " ");
-                    } else {
-                        System.out.print("Unknown Medicine (" + id + ") ");
-                    }
+                // Get all completed appointments
+                List<Appointment> completedAppointments = pharmacistController.getCompletedAppointments();
+                if (completedAppointments.isEmpty()) {
+                    System.out.println("No completed appointments found.");
+                    return;
                 }
-                System.out.println(); // New line after displaying all medicines
-            } else {
-                System.out.println("No medicines prescribed.");
-            }
-        } else {
-            System.out.println("No outcome recorded for this appointment.");
-        }
-    } else {
-        System.out.println("This appointment has not been completed yet. Outcome is not available.");
-    }
-}
 
+                // Display completed appointments
+                displayAppointmentList(completedAppointments, "COMPLETED APPOINTMENTS");
+
+                // Get appointment ID from user
+                System.out.println("");
+                String appointmentID = ConsoleUtility.validateInput(
+                    "Enter Appointment ID to view details (or press Enter to go back): ",
+                    input -> {
+                        boolean exists = completedAppointments.stream()
+                            .anyMatch(a -> a.getAppointmentID().equals(input));
+                        if (!exists && !input.isEmpty()) {
+                            System.out.println("Invalid ID, appointment does not exist.");
+                        }
+                        return exists || input.isEmpty();
+                    });
+
+                if (appointmentID.isEmpty()) {
+                    System.out.println("Returning to Main Menu...");
+                    return;
+                }
+
+                // Get appointment details
+                Map<String, Object> appointmentDetails = pharmacistController.getAppointmentDetails(appointmentID);
+                if (appointmentDetails == null) {
+                    System.out.println("Appointment not found or slot information is missing.");
+                    continue;
+                }
+
+                Appointment selectedAppointment = (Appointment) appointmentDetails.get("appointment");
+                Slot slot = pharmacistController.getSlotByID(selectedAppointment.getSlotID());
+                User patient = pharmacistController.getPatientByID(selectedAppointment.getPatientID());
+                User doctor = pharmacistController.getDoctorByID(selectedAppointment.getDoctorID());
+
+                // Display detailed appointment information
+                System.out.println("\nDETAILED APPOINTMENT INFORMATION");
+                System.out.println("-".repeat(50));
+                System.out.printf("Appointment ID: %s%n", selectedAppointment.getAppointmentID());
+                System.out.printf("Status: %s%n", selectedAppointment.getStatus());
+                
+                System.out.println("\nPatient Information:");
+                System.out.printf("Patient ID: %s%n", patient.getUserID());
+                System.out.printf("Patient Name: %s%n", patient.getName());
+                System.out.printf("Contact: %s%n", patient.getContactNumber());
+                
+                System.out.println("\nDoctor Information:");
+                System.out.printf("Doctor ID: %s%n", doctor.getUserID());
+                System.out.printf("Doctor Name: %s%n", doctor.getName());
+                System.out.printf("Contact: %s%n", doctor.getContactNumber());
+                
+                System.out.println("\nSchedule Information:");
+                System.out.printf("Date: %s%n", slot.getDate());
+                System.out.printf("Time: %s - %s%n", slot.getStartTime(), slot.getEndTime());
+                System.out.printf("Slot Status: %s%n", slot.getStatus());
+                System.out.println("-".repeat(50));
+
+                // Display outcome information if available
+                String outcomeID = selectedAppointment.getOutcomeID();
+                if (outcomeID != null && !outcomeID.isEmpty()) {
+                    Outcome outcome = pharmacistController.getOutcomeByID(outcomeID);
+                    if (outcome != null) {
+                        System.out.println("\nOUTCOME INFORMATION");
+                        System.out.println("-".repeat(50));
+                        System.out.printf("Outcome ID: %s%n", outcome.getOutcomeID());
+                        System.out.printf("Service Provided: %s%n", outcome.getServiceProvided());
+                        System.out.println("\nConsultation Notes:");
+                        System.out.println(outcome.getConsultationNotes());
+
+                        // Display prescription information if available
+                        String prescriptionID = outcome.getPrescriptionID();
+                        if (prescriptionID != null && !prescriptionID.isEmpty() && !prescriptionID.equals("NIL")) {
+                            Prescription prescription = pharmacistController.getPrescriptionByID(prescriptionID);
+                            if (prescription != null) {
+                                System.out.println("\nPRESCRIPTION DETAILS");
+                                System.out.println("-".repeat(50));
+                                System.out.printf("Prescription ID: %s%n", prescription.getPrescriptionID());
+                                
+                                // Get and display medication details
+                                String[] medicationIDs = prescription.getMedicationID().split(";");
+                                System.out.println("\nPrescribed Medications:");
+                                for (String medicationID : medicationIDs) {
+                                    Medication medication = pharmacistController.getMedicationByID(medicationID);
+                                    if (medication != null) {
+                                        System.out.printf("- %s (ID: %s)%n", medication.getName(), medicationID);
+                                        System.out.printf("  Current Stock Level: %d%n", medication.getStockLevel());
+                                    }
+                                }
+
+                                System.out.printf("Status: %s%n", prescription.getStatus());
+                                System.out.printf("Notes: %s%n", prescription.getNotes());
+                            }
+                        } else {
+                            System.out.println("No prescription was issued for this appointment.");
+                        }
+                    }
+                } else {
+                    System.out.println("No outcome record available for this appointment.");
+                }
+                System.out.println("-".repeat(50));
+            }
+        } catch (Exception e) {
+            System.err.println("An error occurred while viewing appointment outcome: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Displays the list of appointments.
+     * 
+     * @param appointments The list of appointments to display
+     * @param title The title for the table
+     */
+    private void displayAppointmentList(List<Appointment> appointments, String title) {
+        LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
+        
+        // Appointment ID column
+        columnMapping.put("appointmentID", new TableBuilder.ColumnMapping("Appointment ID", null));
+        
+        // Patient column with name and ID
+        columnMapping.put("patientID", new TableBuilder.ColumnMapping("Patient (ID)", 
+                value -> {
+                    String patientId = value.toString();
+                    User patient = pharmacistController.getPatientByID(patientId);
+                    return patient != null ? patient.getName() + " (" + patientId + ")" : "Unknown";
+                }));
+        
+        // Doctor column with name and ID
+        columnMapping.put("doctorID", new TableBuilder.ColumnMapping("Doctor (ID)",
+                value -> {
+                    String doctorId = value.toString();
+                    User doctor = pharmacistController.getDoctorByID(doctorId);
+                    return doctor != null ? doctor.getName() + " (" + doctorId + ")" : "Unknown";
+                }));
+
+        // Time column combining date and time from slot
+        columnMapping.put("slotID", new TableBuilder.ColumnMapping("Schedule",
+                value -> {
+                    String slotId = value.toString();
+                    Slot slot = pharmacistController.getSlotByID(slotId);
+                    if (slot != null) {
+                        return slot.getDate() + " " + slot.getStartTime() + "-" + slot.getEndTime();
+                    }
+                    return "Unknown";
+                }));
+
+        columnMapping.put("status", new TableBuilder.ColumnMapping("Status", null));
+
+        TableBuilder.createTable(title, appointments, columnMapping, 25);
+    }
 
     /**
      * [OPTION 2] Updates the prescription status.
      */
     private void updatePrescriptionStatus() {
-        Scanner scanner = new Scanner(System.in);
-
-        // Prompt the pharmacist to enter the prescription ID
-        System.out.print("Enter the Prescription ID to update: ");
-        String prescriptionID = scanner.nextLine();
-
-        // Retrieve the prescription by ID
-        Prescription prescription = prescriptionDataManager.getPrescriptionByID(prescriptionID);
-        
-        // Verify if the prescription exists
-        if (prescription == null) {
-            System.out.println("Prescription not found.");
-            return;
-        }
-
-        // Check if the prescription is already marked as "DISPENSED"
-        if (prescription.getStatus() == Prescription.PrescriptionStatus.DISPENSED) {
-            System.out.println("Prescription is already dispensed.");
-            return;
-        }
-
-        // Update the prescription status to "DISPENSED"
-        prescription.setStatus(Prescription.PrescriptionStatus.DISPENSED);
-
-        // Reflect changes in the data manager and save to CSV (or database)
-        prescriptionDataManager.updatePrescription(prescription);
-        System.out.println("Prescription status updated to DISPENSED successfully.");
-
-        // Save updated prescriptions to CSV file
         try {
-            prescriptionDataManager.savePrescriptionsToCSV();
-            System.out.println("Prescription status update saved successfully.");
-        } catch (IOException e) {
-            System.err.println("Error saving the updated prescription status: " + e.getMessage());
+            while (true) {
+                ConsoleUtility.printHeader("UPDATE PRESCRIPTION STATUS");
+
+                // Get pending prescriptions
+                List<Prescription> pendingPrescriptions = pharmacistController.getPendingPrescriptions();
+                if (pendingPrescriptions.isEmpty()) {
+                    System.out.println("No pending prescriptions found.");
+                    return;
+                }
+
+                // Display pending prescriptions
+                displayPrescriptions(pendingPrescriptions, "PENDING PRESCRIPTIONS");
+
+                // Get prescription ID from user
+                System.out.println("");
+                String prescriptionID = ConsoleUtility.validateInput(
+                    "Enter Prescription ID to update (or press Enter to go back): ",
+                    input -> {
+                        boolean exists = pendingPrescriptions.stream()
+                            .anyMatch(p -> p.getPrescriptionID().equals(input));
+                        if (!exists && !input.isEmpty()) {
+                            System.out.println("Invalid ID, prescription does not exist.");
+                        }
+                        return exists || input.isEmpty();
+                    });
+
+                if (prescriptionID.isEmpty()) {
+                    System.out.println("Returning to Main Menu...");
+                    return;
+                }
+
+                // Display current prescription details
+                Prescription selectedPrescription = pharmacistController.getPrescriptionByID(prescriptionID);
+                System.out.println("");
+                displayPrescriptions(selectedPrescription, "SELECTED PRESCRIPTION");
+
+                // Get medications for the prescription
+                List<Medication> medications = pharmacistController.getMedicationsForPrescription(prescriptionID);
+                displayMedication(medications, "MEDICATION DETAILS");
+
+                // Get confirmation
+                if (!ConsoleUtility.getConfirmation("\nDo you want to mark this prescription as dispensed?")) {
+                    System.out.println("Operation cancelled.");
+                    continue;
+                }
+
+                // Update status
+                boolean success = pharmacistController.updatePrescriptionStatus(prescriptionID, 
+                    Prescription.PrescriptionStatus.DISPENSED);
+                
+                if (success) {
+                    System.out.println("\nPrescription status updated successfully.");
+                    // Display updated prescription and medication
+                    displayPrescriptions(pharmacistController.getPrescriptionByID(prescriptionID), 
+                        "UPDATED PRESCRIPTION");
+                    displayMedication(medications, "UPDATED MEDICATION INVENTORY");
+                } else {
+                    System.out.println("Failed to update prescription status.");
+                }
+            }
+        } catch (IllegalStateException e) {
+            System.out.println("Error: " + e.getMessage());
+        } catch (Exception e) {
+            System.err.println("An unexpected error occurred: " + e.getMessage());
         }
-
-        // Reflect the update in patient's records (assuming additional implementation here if needed)
-        updatePatientRecordWithDispensedStatus(prescription);
-
-
-    
-}
-
-
+    }
 
     /**
      * [OPTION 3] Views the medication inventory.
      */
-     public void viewMedicationInventory() {
-        System.out.println("\n<======= Medication Inventory =======>");
+    public void viewMedicationInventory() {
         
-        // Retrieve all medications from the MedicationDataManager
-        List<Medication> medications = medicationDataManager.getMedications();
-        
+        ConsoleUtility.printHeader("MEDICATION INVENTORY");
+
+        // Get medications through controller
+        List<Medication> medications = pharmacistController.getAllMedications();
+
         if (medications.isEmpty()) {
             System.out.println("No medications found in inventory.");
         } else {
-            // Use displayMedicationList to print the medication inventory in a formatted table
             displayMedicationList(medications);
             System.out.println("Total Medications: " + medications.size());
         }
@@ -226,7 +340,7 @@ public void viewAppointmentOutcomeRecord() {
      */
     private void submitReplenishmentRequest() {
         try {
-            ConsoleUtility.printHeader("SUBMIT REPLENISHMENT REQUEST", false);
+            ConsoleUtility.printHeader("SUBMIT REPLENISHMENT REQUEST");
 
             // Step 1: Display list of medications
             List<Medication> medications = pharmacistController.getAllMedications();
@@ -274,7 +388,8 @@ public void viewAppointmentOutcomeRecord() {
             // Step 5: Submit the replenishment request
             boolean success = pharmacistController.submitReplenishmentRequest(selectedMedicationID, quantity);
             if (success) {
-                System.out.println("Replenishment request submitted successfully. Waiting for administrator's approval.");
+                System.out
+                        .println("Replenishment request submitted successfully. Waiting for administrator's approval.");
             } else {
                 System.out.println("Failed to submit the replenishment request. Please try again later.");
             }
@@ -298,13 +413,54 @@ public void viewAppointmentOutcomeRecord() {
 
         TableBuilder.createTable("Medication Inventory", medications, columnMapping, 20);
     }
+
     /**
-     * Reflects the prescription status update in the patient's medical records.
-     * @param prescription The updated prescription
+     * Displays a list of prescriptions in a table format.
+     * 
+     * @param prescriptions List of prescriptions to display
+     * @param title The title for the table
      */
-    private void updatePatientRecordWithDispensedStatus(Prescription prescription) {
-        // Assuming there is logic to retrieve and update the patient records.
-        // You would implement the logic to access the patient's record and update it accordingly.
-        System.out.println("Patient record updated with dispensed status for prescription ID: " + prescription.getPrescriptionID());
+    private void displayPrescriptions(List<Prescription> prescriptions, String title) {
+        LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
+        columnMapping.put("prescriptionID", new TableBuilder.ColumnMapping("Prescription ID", null));
+        columnMapping.put("appointmentID", new TableBuilder.ColumnMapping("Appointment ID", null));
+        columnMapping.put("medicationID", new TableBuilder.ColumnMapping("Medication", 
+            value -> {
+                String medicationId = value.toString();
+                Medication medication = pharmacistController.getMedicationByID(medicationId);
+                return medication != null ? medication.getName() + " (" + medicationId + ")" : medicationId;
+            }));
+        columnMapping.put("quantity", new TableBuilder.ColumnMapping("Quantity", null));
+        columnMapping.put("status", new TableBuilder.ColumnMapping("Status", null));
+        columnMapping.put("notes", new TableBuilder.ColumnMapping("Notes", null));
+
+        TableBuilder.createTable(title, prescriptions, columnMapping, 20);
+    }
+
+    /**
+     * Displays a single prescription in a table format.
+     * 
+     * @param prescription The prescription to display
+     * @param title The title for the table
+     */
+    private void displayPrescriptions(Prescription prescription, String title) {
+        List<Prescription> prescriptionList = Collections.singletonList(prescription);
+        displayPrescriptions(prescriptionList, title);
+    }
+
+    /**
+     * Displays a list of medications in a table format.
+     * 
+     * @param medications List of medications to display
+     * @param title The title for the table
+     */
+    private void displayMedication(List<Medication> medications, String title) {
+        LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
+        columnMapping.put("medicationID", new TableBuilder.ColumnMapping("Medication ID", null));
+        columnMapping.put("name", new TableBuilder.ColumnMapping("Name", null));
+        columnMapping.put("stockLevel", new TableBuilder.ColumnMapping("Stock Level", null));
+        columnMapping.put("lowStockAlertLevel", new TableBuilder.ColumnMapping("Low Stock Alert Level", null));
+
+        TableBuilder.createTable(title, medications, columnMapping, 20);
     }
 }

@@ -80,6 +80,7 @@ HMS follows the B-C-E (Boundary-Controller-Entity) architecture pattern:
 
 ### Project Structure
 
+```plaintext
 HospitalManagementSystem/
 ├── src/
 │ ├── main/
@@ -94,3 +95,4 @@ HospitalManagementSystem/
 │ └── java/ # Test classes
 ├── pom.xml # Maven configuration
 └── run.sh # Run script
+```

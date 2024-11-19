@@ -1,8 +1,5 @@
 package entity;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Represents an appointment between a patient and a doctor in the Hospital Management System.
  */

@@ -19,6 +19,7 @@ import entity.Outcome;
 import entity.Patient;
 import entity.Prescription;
 import entity.Slot;
+import entity.Doctor;
 import utility.ConsoleUtility;
 import utility.TableBuilder;
 
@@ -50,7 +51,7 @@ public class DoctorMenu {
                 System.out.println("{1} View Patient Medical Records");
                 System.out.println("{2} Update Patient Medical Records");
                 System.out.println("{3} View Personal Schedule");
-                System.out.println("{4} Manage Availability for Appointments (Add, Remove, Update)");
+                System.out.println("{4} Manage Availability for Appointments");
                 System.out.println("{5} Accept or Decline Appointment Requests");
                 System.out.println("{6} View Upcoming Appointments");
                 System.out.println("{7} Record Appointment Outcome");
@@ -107,18 +108,32 @@ public class DoctorMenu {
         try {
             String name;
             Patient selectedPatient;
-            List<Patient> patients; // Display the list of patients under the doctor's care
+
             while (true) {
                 ConsoleUtility.printHeader("VIEW PATIENT MEDICAL RECORDS");
-                patients = doctorController.getPatientsUnderCare();
+                final List<Patient> patients = doctorController.getPatientsUnderCare();
+
                 if (patients.isEmpty()) {
                     System.out.println("\nYou currently have no patients under your care.");
                     return;
                 }
+
                 displayPatients(patients, "Patients Under Your Care");
 
-                String patientID = ConsoleUtility.validateInput("\nEnter the Patient ID to view their medical records (or press Enter to go back): ",
-                        input -> input.isEmpty() || doctorController.isValidPatientID(input));
+                // Prompt the user to select a patient
+                System.out.println("");
+                String patientID = ConsoleUtility.validateInput(
+                        "Enter the Patient ID to view their medical records (or press Enter to go back): ",
+                        input -> {
+                            boolean exists = patients.stream().anyMatch(p -> p.getUserID().equals(input));
+                            if (!exists) {
+                                if (input.isEmpty()) {
+                                    return true;
+                                }
+                                System.out.println("Invalid ID, patient does not exist.");
+                            }
+                            return exists;
+                        });
 
                 if (patientID.isEmpty()) {
                     return;
@@ -133,6 +148,7 @@ public class DoctorMenu {
                     continue;
                 }
 
+                System.out.println();
                 displayMedicalHistory(medicalHistory, name + "'s Medical History");
             }
 
@@ -150,28 +166,44 @@ public class DoctorMenu {
         try {
             String name;
             Patient selectedPatient;
-            List<Patient> patients;
             List<History> medicalHistory;
+
             // Display the list of patients under the doctor's care
             while (true) {
-                ConsoleUtility.printHeader("UPDATE PATIENT MEDICAL RECORDS", false);
-                patients = doctorController.getPatientsUnderCare();
+
+                ConsoleUtility.printHeader("UPDATE PATIENT MEDICAL RECORDS");
+                final List<Patient> patients = doctorController.getPatientsUnderCare();
+
                 if (patients.isEmpty()) {
                     System.out.println("\nYou currently have no patients under your care.");
                     return;
                 }
-                System.out.println();
+
                 displayPatients(patients, "Patients Under Your Care");
 
-                String patientID = ConsoleUtility.validateInput("\nEnter the Patient ID to update (or press Enter to go back): ",
-                        input -> input.isEmpty() || doctorController.isValidPatientID(input));
+                // Prompt the user to select a patient
+                System.out.println("");
+                String patientID = ConsoleUtility.validateInput(
+                        "Enter the Patient ID to update (or press Enter to go back): ",
+                        input -> {
+                            boolean exists = patients.stream().anyMatch(p -> p.getUserID().equals(input));
+                            if (!exists) {
+                                if (input.isEmpty()) {
+                                    return true;
+                                }
+                                System.out.println("Invalid ID, patient does not exist.");
+                            }
+                            return exists;
+                        });
 
                 if (patientID.isEmpty()) {
                     return;
                 }
+
                 selectedPatient = doctorController.getPatientByID(patientID);
                 name = selectedPatient.getName();
 
+                // Loop to update medical history
                 while (true) {
 
                     medicalHistory = doctorController.getPatientMedicalHistory(patientID);
@@ -185,6 +217,7 @@ public class DoctorMenu {
                         break;
                     }
 
+                    System.out.println("");
                     displayMedicalHistory(medicalHistory, name + "'s Medical History");
                     ConsoleUtility.printHeader("AVAILABLE MEDICAL HISTORY FUNCTIONS");
                     System.out.println("{1} Update History");
@@ -202,7 +235,6 @@ public class DoctorMenu {
                             addNewMedicalRecord(patientID);
                             break;
                         case 3:
-
                             removeHistory(medicalHistory, selectedPatient);
                             break;
                         case 4:
@@ -221,50 +253,41 @@ public class DoctorMenu {
     }
 
     /**
-     * Handles adding a new medical record for a patient.
-     *
-     * @param patientID The ID of the patient
-     */
-    private void addNewMedicalRecord(String patientID) {
-        try {
-            String diagnosis = ConsoleUtility.validateInput("Enter diagnosis: ", input -> !input.trim().isEmpty());
-            String treatment = ConsoleUtility.validateInput("Enter treatment: ", input -> !input.trim().isEmpty());
-
-            boolean added = doctorController.addMedicalHistory(patientID, diagnosis, treatment);
-
-            if (added) {
-                System.out.println("New medical record added successfully.");
-            } else {
-                System.out.println("Failed to add new medical record. Please try again.");
-            }
-        } catch (IllegalArgumentException e) {
-            System.err.println("Error adding new medical record: " + e.getMessage());
-        } catch (Exception e) {
-            System.err.println("An unexpected error occurred while adding the new medical record: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * Handles updating a specific medical record.
+     * [OPTION 2.1] Handles updating a specific medical record.
      *
      * @param history The History object to update
      */
     private void updateMedicalRecord(List<History> medicalHistory, Patient patient) {
         String name = patient.getName();
-        String patientID = patient.getUserID();
         History selectedHistory;
+
+        // Loop to update medical history
         while (true) {
-            medicalHistory = doctorController.getPatientMedicalHistory(patientID);
+
+            ConsoleUtility.printHeader("UPDATE PATIENT MEDICAL RECORDS");
+
             displayMedicalHistory(medicalHistory, name + "'s Medical History");
-            String historyID = ConsoleUtility.validateInput("\nEnter the History ID to update (or press Enter to go back): ",
-                    input -> input.isEmpty() || doctorController.isPatientsHistory(patient.getUserID(), input));
+
+            System.out.println("");
+            String historyID = ConsoleUtility.validateInput(
+                    "Enter the History ID to update (or press Enter to go back): ",
+                    input -> {
+                        boolean exists = medicalHistory.stream().anyMatch(h -> h.getHistoryID().equals(input));
+                        if (!exists) {
+                            if (input.isEmpty()) {
+                                return true;
+                            }
+                            System.out.println("Invalid ID, history does not exist.");
+                        }
+                        return exists;
+                    });
 
             if (historyID.isEmpty()) {
                 return;
             }
 
             selectedHistory = doctorController.getHistoryByID(historyID);
+
             if (selectedHistory == null) {
                 System.out.println("Error: Invalid History ID. Please try again.");
                 continue;
@@ -274,7 +297,7 @@ public class DoctorMenu {
             String newDiagnosis = ConsoleUtility.validateInput("Enter new diagnosis (or press Enter to keep current): ",
                     input -> input.isEmpty() || !input.trim().isEmpty());
 
-            System.out.println("Current Treatment: " + selectedHistory.getTreatment());
+            System.out.println("\nCurrent Treatment: " + selectedHistory.getTreatment());
             String newTreatment = ConsoleUtility.validateInput("Enter new treatment (or press Enter to keep current): ",
                     input -> input.isEmpty() || !input.trim().isEmpty());
 
@@ -303,23 +326,64 @@ public class DoctorMenu {
     }
 
     /**
-     * Handles removing prescriptions for a doctor.
+     * [OPTION 2.2] Handles adding a new medical record for a patient.
      *
-     * @param medication List of available medications.
-     * @param prescriptions List of existing prescriptions.
+     * @param patientID The ID of the patient
+     */
+    private void addNewMedicalRecord(String patientID) {
+
+        ConsoleUtility.printHeader("ADD NEW MEDICAL RECORD");
+
+        try {
+            String diagnosis = ConsoleUtility.validateInput("Enter diagnosis: ", input -> !input.trim().isEmpty());
+            String treatment = ConsoleUtility.validateInput("Enter treatment: ", input -> !input.trim().isEmpty());
+
+            boolean added = doctorController.addMedicalHistory(patientID, diagnosis, treatment);
+
+            if (added) {
+                System.out.println("New medical record added successfully.");
+            } else {
+                System.out.println("Failed to add new medical record. Please try again.");
+            }
+        } catch (IllegalArgumentException e) {
+            System.err.println("Error adding new medical record: " + e.getMessage());
+        } catch (Exception e) {
+            System.err.println("An unexpected error occurred while adding the new medical record: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * [OPTION 2.3] Handles removing prescriptions for a doctor.
+     *
+     * @param medication         List of available medications.
+     * @param prescriptions      List of existing prescriptions.
      * @param prescriptionString String containing medication IDs separated by
-     * semicolons.
+     *                           semicolons.
      * @return Updated prescriptionString after removal.
      */
     private void removeHistory(List<History> medicalHistory, Patient patient) {
-        String name = patient.getName();
-        String patientID = patient.getUserID();
+
+        ConsoleUtility.printHeader("REMOVE MEDICAL RECORD");
 
         try {
             // Display the list of medications and prescriptions
-            displayMedicalHistory(medicalHistory, name + "'s Medical History");
-            String historyID = ConsoleUtility.validateInput("\nEnter the History ID to remove (or press Enter to go back): ",
-                    input -> input.isEmpty() || doctorController.isPatientsHistory(patientID, input));
+            displayMedicalHistory(medicalHistory, patient.getName() + "'s Medical History");
+
+            // Prompt the user to select a history
+            System.out.println("");
+            String historyID = ConsoleUtility.validateInput(
+                    "Enter the History ID to remove (or press Enter to go back): ",
+                    input -> {
+                        boolean exists = medicalHistory.stream().anyMatch(h -> h.getHistoryID().equals(input));
+                        if (!exists) {
+                            if (input.isEmpty()) {
+                                return true;
+                            }
+                            System.out.println("Invalid ID, history does not exist.");
+                        }
+                        return exists;
+                    });
 
             if (historyID.isEmpty()) {
                 return;
@@ -360,6 +424,7 @@ public class DoctorMenu {
             String patientID;
             List<History> medicalHistory;
 
+            // Loop to view personal schedule
             while (true) {
 
                 ConsoleUtility.printHeader("VIEW PERSONAL SCHEDULE");
@@ -371,10 +436,21 @@ public class DoctorMenu {
                 }
 
                 displaySlots(slots, "CURRENT SLOTS");
-                System.out.println();
 
-                String slotID = ConsoleUtility.validateInput("\nEnter an available Slot ID to view its details (or press Enter to go back): ",
-                        input -> input.isEmpty() || doctorController.isValidDoctorSlotID(input));
+                // Prompt the user to select a slot
+                System.out.println("");
+                String slotID = ConsoleUtility.validateInput(
+                        "Enter an available Slot ID to view its details (or press Enter to go back): ",
+                        input -> {
+                            boolean exists = slots.stream().anyMatch(s -> s.getSlotID().equals(input));
+                            if (!exists) {
+                                if (input.isEmpty()) {
+                                    return true;
+                                }
+                                System.out.println("Invalid ID, slot does not exist.");
+                            }
+                            return exists;
+                        });
 
                 Slot selectedSlot = doctorController.getSlotByID(slotID);
 
@@ -388,6 +464,7 @@ public class DoctorMenu {
                     continue;
                 }
 
+                System.out.println("");
                 displaySlots(selectedSlot, "Slot Details");
 
                 Slot.SlotStatus aSlotStatus = selectedSlot.getStatus();
@@ -397,7 +474,7 @@ public class DoctorMenu {
                     selectedPatient = doctorController.getPatientByAppointment(selectedAppointment);
                     patientID = selectedPatient.getUserID();
                     medicalHistory = doctorController.getPatientMedicalHistory(patientID);
-                    displayAppointments(selectedAppointment, "Appointment Details");
+                    displayAppointments(Collections.singletonList(selectedAppointment), "Appointment Details");
                     displayPatients(selectedPatient, "PATIENT'S DETAILS");
 
                     if (medicalHistory.isEmpty()) {
@@ -425,27 +502,27 @@ public class DoctorMenu {
         try {
             List<Slot> slots;
             List<Slot> availableSlots;
-            Boolean availableSlotsBoolean;
 
-            //Display all slots and then available slots
+            // Display all slots and then available slots
             while (true) {
                 ConsoleUtility.printHeader("MANAGE AVAILABILITY FOR APPOINTMENTS");
-                //refresh slots after every run to keep the slots updated
+
+                // refresh slots after every run to keep the slots updated
                 slots = doctorController.getAllSlotsForDoctor();
                 if (slots.isEmpty()) {
                     System.out.println("\nYou currently have no slots.");
                 } else {
                     displaySlots(slots, "ALL CURRENT SLOTS");
-
                 }
+
                 availableSlots = doctorController.getAvailableSlotsForDoctor();
-                availableSlotsBoolean = true;
+
                 if (availableSlots.isEmpty()) {
-                    availableSlotsBoolean = false;
                     System.out.println("\nYou currently have no available slots.");
                 } else {
                     displaySlots(availableSlots, "AVAILABLE SLOTS");
                 }
+
                 ConsoleUtility.printHeader("AVAILABLE SLOT FUNCTIONS");
                 System.out.println("{1} Update Avaiable Slot");
                 System.out.println("{2} Add Available Slot");
@@ -456,21 +533,13 @@ public class DoctorMenu {
 
                 switch (choice) {
                     case 1:
-                        if (availableSlotsBoolean) {
-                            updateSlot(availableSlots);
-                        } else {
-                            System.out.println("\nYou have no available slots to update");
-                        }
+                        updateSlot(availableSlots);
                         break;
                     case 2:
                         addNewSlot();
                         break;
                     case 3:
-                        if (availableSlotsBoolean) {
-                            removeSlot(availableSlots);
-                        } else {
-                            System.out.println("\nYou have no available slots to remove.");
-                        }
+                        removeSlot(availableSlots);
                         break;
                     case 4:
                         System.out.println("Returning to Main Menu...");
@@ -487,14 +556,37 @@ public class DoctorMenu {
     }
 
     /**
-     * Handles update slots for doctor.
+     * [OPTION 4.1] Handles update slots for doctor.
      */
     private void updateSlot(List<Slot> availableSlots) {
+
+        if (availableSlots.isEmpty()) {
+            System.out.println("\nYou have no available slots to update.");
+            return;
+        }
+
         while (true) {
             try {
+
+                ConsoleUtility.printHeader("UPDATE AVAILABLE SLOT");
+
+                // Display the list of available slots
                 displaySlots(availableSlots, "AVAILABLE SLOTS");
-                String slotID = ConsoleUtility.validateInput("\nEnter an available Slot ID to update (or press Enter to go back): ",
-                        input -> input.isEmpty() || doctorController.isValidAvailableSlotID(input));
+
+                // Prompt the user to select a slot
+                System.out.println("");
+                String slotID = ConsoleUtility.validateInput(
+                        "Enter an available Slot ID to update (or press Enter to go back): ",
+                        input -> {
+                            boolean exists = availableSlots.stream().anyMatch(s -> s.getSlotID().equals(input));
+                            if (!exists) {
+                                if (input.isEmpty()) {
+                                    return true;
+                                }
+                                System.out.println("Invalid ID, slot does not exist.");
+                            }
+                            return exists;
+                        });
 
                 if (slotID.isEmpty()) {
                     return;
@@ -520,24 +612,24 @@ public class DoctorMenu {
                                 System.out.println("Invalid date format. Please use YYYY-MM-DD.");
                                 return false;
                             }
-                        }
-                );
+                        });
 
                 LocalDate date = dateInput.isEmpty() ? selectedSlot.getDate() : LocalDate.parse(dateInput);
 
                 System.out.println("\nCurrent Start Time: " + selectedSlot.getStartTime());
                 String startTimeInput = ConsoleUtility.validateInput(
-                        "Enter start time (HH:MM) or press Enter to use the current value (" + selectedSlot.getStartTime() + "): ",
-                        input -> input.isEmpty() || ConsoleUtility.isValidTime(input)
-                );
+                        "Enter start time (HH:MM) or press Enter to use the current value ("
+                                + selectedSlot.getStartTime() + "): ",
+                        input -> input.isEmpty() || ConsoleUtility.isValidTime(input));
 
-                LocalTime startTime = startTimeInput.isEmpty() ? selectedSlot.getStartTime() : LocalTime.parse(startTimeInput);
+                LocalTime startTime = startTimeInput.isEmpty() ? selectedSlot.getStartTime()
+                        : LocalTime.parse(startTimeInput);
 
                 System.out.println("\nCurrent End Time: " + selectedSlot.getEndTime());
                 String endTimeInput = ConsoleUtility.validateInput(
-                        "Enter end time (HH:MM) or press Enter to use the current value (" + selectedSlot.getEndTime() + "): ",
-                        input -> input.isEmpty() || ConsoleUtility.isValidTime(input)
-                );
+                        "Enter end time (HH:MM) or press Enter to use the current value (" + selectedSlot.getEndTime()
+                                + "): ",
+                        input -> input.isEmpty() || ConsoleUtility.isValidTime(input));
 
                 LocalTime endTime = endTimeInput.isEmpty() ? selectedSlot.getEndTime() : LocalTime.parse(endTimeInput);
 
@@ -563,11 +655,14 @@ public class DoctorMenu {
     }
 
     /**
-     * Handles adding a new slot for a doctor.
+     * [OPTION 4.2] Handles adding a new slot for a doctor.
      */
     private void addNewSlot() {
         while (true) {
             try {
+
+                ConsoleUtility.printHeader("ADD NEW AVAILABLE SLOT");
+
                 // Prompt and validate the date and time inputs
                 LocalDate date = LocalDate.parse(ConsoleUtility.validateInput(
                         "Enter date (YYYY-MM-DD): ", input -> {
@@ -578,16 +673,13 @@ public class DoctorMenu {
                                 System.out.println("Invalid date format. Please enter a valid date (YYYY-MM-DD).");
                                 return false;
                             }
-                        }
-                ));
+                        }));
 
                 LocalTime startTime = LocalTime.parse(ConsoleUtility.validateInput(
-                        "Enter start time (HH:MM): ", ConsoleUtility::isValidTime
-                ));
+                        "Enter start time (HH:MM): ", ConsoleUtility::isValidTime));
 
                 LocalTime endTime = LocalTime.parse(ConsoleUtility.validateInput(
-                        "Enter end time (HH:MM): ", ConsoleUtility::isValidTime
-                ));
+                        "Enter end time (HH:MM): ", ConsoleUtility::isValidTime));
 
                 if (!startTime.isBefore(endTime)) {
                     throw new IllegalArgumentException("Start time must be before End time.");
@@ -610,15 +702,39 @@ public class DoctorMenu {
         }
     }
 
+    /**
+     * [OPTION 4.3] Handles removing a slot for a doctor.
+     */
     private void removeSlot(List<Slot> availableSlots) {
+
+        if (availableSlots.isEmpty()) {
+            System.out.println("\nYou have no available slots to remove.");
+            return;
+        }
+
         try {
+            ConsoleUtility.printHeader("REMOVE AVAILABLE SLOT");
             displaySlots(availableSlots, "AVAILABLE SLOTS");
-            String slotID = ConsoleUtility.validateInput("\nEnter an available Slot ID to remove (or press Enter to go back): ",
-                    input -> input.isEmpty() || doctorController.isValidAvailableSlotID(input));
+
+            // Prompt the user to select a slot
+            System.out.println("");
+            String slotID = ConsoleUtility.validateInput(
+                    "Enter an available Slot ID to remove (or press Enter to go back): ",
+                    input -> {
+                        boolean exists = availableSlots.stream().anyMatch(s -> s.getSlotID().equals(input));
+                        if (!exists) {
+                            if (input.isEmpty()) {
+                                return true;
+                            }
+                            System.out.println("Invalid ID, slot does not exist.");
+                        }
+                        return exists;
+                    });
 
             if (slotID.isEmpty()) {
                 return;
             }
+
             Slot selectedSlot = doctorController.getSlotByID(slotID);
 
             if (selectedSlot == null) {
@@ -633,6 +749,7 @@ public class DoctorMenu {
             } else {
                 System.out.println("Failed to remove slot. Please try again.");
             }
+
         } catch (IllegalArgumentException e) {
             System.err.println("Error removing slot: " + e.getMessage());
         } catch (Exception e) {
@@ -642,75 +759,107 @@ public class DoctorMenu {
     }
 
     /**
-     * [OPTION 5] Accept or Decline appointments/slots with REQUESTED/PENDING
-     * status.
+     * [OPTION 5] Accept or Decline appointments with REQUESTED status.
      */
     private void manageAppointmentRequests() {
         try {
-
-            List<Slot> pendingSlots;
-
+            // Main loop for managing appointment requests
             while (true) {
                 ConsoleUtility.printHeader("MANAGE APPOINTMENT REQUESTS");
-                pendingSlots = doctorController.getPendingSlotsForDoctor();
-                if (pendingSlots.isEmpty()) {
-                    System.out.println("\nYou currently have no pending appointments.");
-                    System.out.println("\nReturning to Main Menu...");
+
+                // Get all pending appointments for the doctor
+                List<Appointment> pendingAppointments = doctorController.getPendingAppointmentsForDoctor();
+
+                // If there are no pending appointments, return to the main menu
+                if (pendingAppointments.isEmpty()) {
+                    System.out.println("You currently have no pending appointment requests.");
+                    System.out.println("Returning to Main Menu...");
                     return;
                 }
 
-                displaySlots(pendingSlots, "PENDING APPOINTMENTS");
+                // Display the list of pending appointments
+                displayAppointments(pendingAppointments, "PENDING APPOINTMENT REQUESTS");
 
-                String slotID = ConsoleUtility.validateInput("\nEnter an pending Slot ID to accept or decline (or press Enter to go back)[e.g. S01]: ",
-                        input -> input.isEmpty() || doctorController.isValidPendingSlotID(input));
-                if (slotID.isEmpty()) {
-                    System.out.println("\nReturning to Main Menu...");
+                // Prompt the user to select an appointment
+                System.out.println("");
+                String appointmentID = ConsoleUtility.validateInput(
+                        "Enter an Appointment ID to accept or decline (or press Enter to go back): ",
+                        input -> {
+                            boolean exists = pendingAppointments.stream()
+                                .anyMatch(a -> a.getAppointmentID().equals(input));
+                            if (!exists) {
+                                if (input.isEmpty()) {
+                                    return true;
+                                }
+                                System.out.println("Invalid ID, appointment does not exist.");
+                            }
+                            return exists;
+                        });
+
+                if (appointmentID.isEmpty()) {
+                    System.out.println("Returning to Main Menu...");
                     return;
                 }
-                Slot selectedSlot = doctorController.getSlotByID(slotID);
-                if (selectedSlot == null) {
-                    System.out.println("Error: Invalid Slot ID. Please try again.");
+
+                // Get the selected appointment
+                Appointment selectedAppointment = doctorController.getAppointmentByID(appointmentID);
+                if (selectedAppointment == null) {
+                    System.out.println("Error: Invalid Appointment ID. Please try again.");
                     continue;
                 }
 
-                Appointment selectedAppointment = doctorController.getAppointmentBySlotID(slotID);
+                // Get the selected slot
+                Slot selectedSlot = doctorController.getSlotByID(selectedAppointment.getSlotID());
+
+                // Get the selected patient
                 Patient selectedPatient = doctorController.getPatientByAppointment(selectedAppointment);
                 String patientID = selectedPatient.getUserID();
-                System.out.println();
+
+                // Display the selected patient's details
+                System.out.println("");
                 displayPatients(selectedPatient, "REQUESTING PATIENT'S DETAILS");
 
+                // Get the selected patient's medical history
                 List<History> medicalHistory = doctorController.getPatientMedicalHistory(patientID);
 
+                // If the patient has no medical history records, display a message
                 if (medicalHistory.isEmpty()) {
                     System.out.println("This patient has no medical history records.");
                 } else {
                     displayMedicalHistory(medicalHistory, "REQUESTING PATIENT'S MEDICAL RECORDS");
                 }
 
-                displaySlots(selectedSlot, "SELECTED APPOINTMENT");
+                // Display the selected appointment
+                displayAppointments(Collections.singletonList(selectedAppointment), "SELECTED APPOINTMENT REQUEST");
 
+                // Manage the selected appointment
                 manageAppointment(selectedAppointment, selectedSlot);
             }
-
         } catch (Exception e) {
-            System.err.println("An error occurred while viewing pending appointments: " + e.getMessage());
+            System.err.println("An error occurred while managing appointment requests: " + e.getMessage());
             e.printStackTrace();
         }
     }
 
     /**
-     * Accept or Decline a selected appointment/slot
+     * [OPTION 5.1] Accept or Decline a selected appointment/slot
      *
      * @param appointment The appointment to reject or accept
-     * @param slot The slot to reject or accept
+     * @param slot        The slot to reject or accept
      */
     private void manageAppointment(Appointment appointment, Slot slot) {
 
         try {
             Boolean accept;
-            String acceptString = ConsoleUtility.validateInput("\nWould you like to accept this appointment?(press Enter to go back) [y/n]: ",
+
+            // Get user confirmation
+            System.out.println("");
+            String acceptString = ConsoleUtility.validateInput(
+                    "Would you like to accept this appointment? (press Enter to go back) [y/n]: ",
                     input -> input.isEmpty() || input.equalsIgnoreCase("y") || input.equalsIgnoreCase("n"));
+
             acceptString = acceptString.toLowerCase();
+
             if (acceptString.isEmpty()) {
                 return;
             } else if (acceptString.equals("y")) {
@@ -740,54 +889,73 @@ public class DoctorMenu {
     }
 
     /**
-     * [OPTION 6] Views upcoming appointments. Similar to [OPTION 3] View
-     * Personal Schedule, but only slots with BOOKED status
+     * [OPTION 6] Views upcoming appointments with CONFIRMED status.
      */
     private void viewUpcomingAppointments() {
         try {
-
-            List<Slot> bookedSlots;
-
+            // Main loop for viewing upcoming appointments
             while (true) {
                 ConsoleUtility.printHeader("VIEW UPCOMING APPOINTMENTS");
-                bookedSlots = doctorController.getBookedSlotsForDoctor();
-                if (bookedSlots.isEmpty()) {
-                    System.out.println("\nYou currently have no upcoming appointments.");
-                    System.out.println("\nReturning to Main Menu...");
-                    return;
-                }
-                displaySlots(bookedSlots, "UPCOMING APPOINTMENT");
-                String slotID = ConsoleUtility.validateInput("\nEnter an upcoming Slot ID to view its details (or press Enter to go back)[e.g. S01]: ",
-                        input -> input.isEmpty() || doctorController.isValidBookedSlotID(input));
-                if (slotID.isEmpty()) {
-                    System.out.println("\nReturning to Main Menu...");
+
+                // Get all confirmed appointments for the doctor
+                List<Appointment> confirmedAppointments = doctorController.getConfirmedAppointmentsForDoctor();
+
+                // If there are no confirmed appointments, return to the main menu
+                if (confirmedAppointments.isEmpty()) {
+                    System.out.println("You currently have no upcoming appointments.");
+                    System.out.println("Returning to Main Menu...");
                     return;
                 }
 
-                Slot selectedSlot = doctorController.getSlotByID(slotID);
+                // Display the list of confirmed appointments
+                displayAppointments(confirmedAppointments, "UPCOMING APPOINTMENTS");
 
-                if (selectedSlot == null) {
-                    System.out.println("Error: Invalid Slot ID. Please try again.");
+                // Prompt the user to select an appointment
+                System.out.println("");
+                String appointmentID = ConsoleUtility.validateInput(
+                        "Enter an Appointment ID to view details (or press Enter to go back): ",
+                        input -> {
+                            boolean exists = confirmedAppointments.stream()
+                                .anyMatch(a -> a.getAppointmentID().equals(input));
+                            if (!exists) {
+                                if (input.isEmpty()) {
+                                    return true;
+                                }
+                                System.out.println("Invalid ID, appointment does not exist.");
+                            }
+                            return exists;
+                        });
+
+                if (appointmentID.isEmpty()) {
+                    System.out.println("Returning to Main Menu...");
+                    return;
+                }
+
+                // Get the selected appointment
+                Appointment selectedAppointment = doctorController.getAppointmentByID(appointmentID);
+                if (selectedAppointment == null) {
+                    System.out.println("Error: Invalid Appointment ID. Please try again.");
                     continue;
                 }
 
-                Appointment selectedAppointment = doctorController.getAppointmentBySlotID(slotID);
+                // Get the selected patient
                 Patient selectedPatient = doctorController.getPatientByAppointment(selectedAppointment);
                 String patientID = selectedPatient.getUserID();
+
+                // Get the selected patient's medical history
                 List<History> medicalHistory = doctorController.getPatientMedicalHistory(patientID);
 
-                displaySlots(selectedSlot, "Slot Details");
-                displayAppointments(selectedAppointment, "Appointment Details");
+                // Display detailed information
+                System.out.println("");
+                displayAppointments(Collections.singletonList(selectedAppointment), "APPOINTMENT DETAILS");
                 displayPatients(selectedPatient, "PATIENT'S DETAILS");
 
                 if (medicalHistory.isEmpty()) {
                     System.out.println("This patient has no medical history records.");
-                    continue;
+                } else {
+                    displayMedicalHistory(medicalHistory, "PATIENT'S MEDICAL RECORDS");
                 }
-
-                displayMedicalHistory(medicalHistory, "PATIENT'S MEDICAL RECORDS");
             }
-
         } catch (Exception e) {
             System.err.println("An error occurred while viewing upcoming appointments: " + e.getMessage());
             e.printStackTrace();
@@ -795,61 +963,79 @@ public class DoctorMenu {
     }
 
     /**
-     * [OPTION 7] Records appointment outcome.
+     * [OPTION 7] Records appointment outcome for CONFIRMED appointments.
      */
     private void recordAppointmentOutcome() {
         try {
-
-            List<Slot> bookedSlots;
-
+            // Main loop for recording appointment outcomes
             while (true) {
                 ConsoleUtility.printHeader("RECORD APPOINTMENT OUTCOME");
 
-                bookedSlots = doctorController.getBookedSlotsForDoctor();
+                // Get all confirmed appointments for the doctor
+                List<Appointment> confirmedAppointments = doctorController.getConfirmedAppointmentsForDoctor();
 
-                if (bookedSlots.isEmpty()) {
-                    System.out.println("\nYou currently have no more booked appointments to record and complete.");
+                // If there are no confirmed appointments, return to the main menu
+                if (confirmedAppointments.isEmpty()) {
+                    System.out.println("You currently have no appointments to complete.");
+                    System.out.println("Returning to Main Menu...");
+                    return;
+                }
+
+                // Display the list of confirmed appointments
+                displayAppointments(confirmedAppointments, "SELECT AN APPOINTMENT TO COMPLETE");
+
+                // Prompt the user to select an appointment
+                System.out.println("");
+                String appointmentID = ConsoleUtility.validateInput(
+                        "Enter an Appointment ID to complete (or press Enter to go back): ",
+                        input -> {
+                            boolean exists = confirmedAppointments.stream()
+                                .anyMatch(a -> a.getAppointmentID().equals(input));
+                            if (!exists) {
+                                if (input.isEmpty()) {
+                                    return true;
+                                }
+                                System.out.println("Invalid ID, appointment does not exist.");
+                            }
+                            return exists;
+                        });
+
+                if (appointmentID.isEmpty()) {
                     System.out.println("\nReturning to Main Menu...");
                     return;
                 }
-                displaySlots(bookedSlots, "SELECT A BOOKED APPOINTMENT TO COMPLETE");
 
-                String slotID = ConsoleUtility.validateInput("\nEnter an Slot ID (Appointment ID) to complete (or press Enter to go back)[e.g. S01]: ",
-                        input -> input.isEmpty() || doctorController.isValidBookedSlotID(input));
-
-                if (slotID.isEmpty()) {
-                    System.out.println("\nReturning to Main Menu...");
-                    return;
+                // Get the selected appointment
+                Appointment selectedAppointment = doctorController.getAppointmentByID(appointmentID);
+                if (selectedAppointment == null) {
+                    System.out.println("Error: Invalid Appointment ID. Please try again.");
+                    continue;
                 }
 
-                Slot selectedSlot = doctorController.getSlotByID(slotID);
-                if (selectedSlot == null) {
-                    System.out.println("Error: Invalid Slot ID. Please try again.");
-                    return;
-                }
+                // Get the selected slot
+                Slot selectedSlot = doctorController.getSlotByID(selectedAppointment.getSlotID());
 
-                Appointment selectedAppointment = doctorController.getAppointmentBySlotID(slotID);
+                // Get the selected patient
                 Patient selectedPatient = doctorController.getPatientByAppointment(selectedAppointment);
-                String patientID = selectedPatient.getUserID();
-                System.out.println();
+
+                // Display the selected patient's details
+                System.out.println("");
                 displayPatients(selectedPatient, "PATIENT'S DETAILS");
 
-                List<History> medicalHistory = doctorController.getPatientMedicalHistory(patientID);
-
-                if (medicalHistory.isEmpty()) {
-                    System.out.println("This patient has no medical history records.");
-                    return;
+                // Get and display the selected patient's medical history
+                List<History> medicalHistory = doctorController.getPatientMedicalHistory(selectedPatient.getUserID());
+                if (!medicalHistory.isEmpty()) {
+                    displayMedicalHistory(medicalHistory, "PATIENT'S MEDICAL RECORDS");
                 }
 
-                displayMedicalHistory(medicalHistory, "PATIENT'S MEDICAL RECORDS");
+                // Display the selected appointment
+                displayAppointments(Collections.singletonList(selectedAppointment), "SELECTED APPOINTMENT");
 
-                displaySlots(selectedSlot, "SELECTED APPOINTMENT");
-
+                // Complete the selected appointment
                 completeAppointment(selectedAppointment, selectedSlot);
             }
-
         } catch (Exception e) {
-            System.err.println("An error occurred while viewing upcoming appointments: " + e.getMessage());
+            System.err.println("An error occurred while recording appointment outcome: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -858,23 +1044,44 @@ public class DoctorMenu {
      * Completes a booked appointment for the current doctor
      *
      * @param appointment The accompanying appointment
-     * @param slot The selected booked slot
+     * @param slot        The selected booked slot
      */
     private void completeAppointment(Appointment appointment, Slot slot) {
         try {
-            String serviceProvided = ConsoleUtility.validateInput("Enter service provided: ", input -> !input.trim().isEmpty());
-            String consultationNotes = ConsoleUtility.validateInput("\nEnter consultation notes: ", input -> !input.trim().isEmpty());
-            Boolean prescriptionsBoolean = ConsoleUtility.getConfirmation("\nDoes the patient require any prescriptions?");
+
+            // Get user input for service provided
+            System.out.println("");
+            String serviceProvided = ConsoleUtility.validateInput("Enter service provided: ",
+                    input -> !input.trim().isEmpty());
+
+            // Get user input for consultation notes
+            String consultationNotes = ConsoleUtility.validateInput("Enter consultation notes: ",
+                    input -> !input.trim().isEmpty());
+
+            // Get user confirmation for prescriptions
+            Boolean prescriptionsBoolean = ConsoleUtility
+                    .getConfirmation("Does the patient require any prescriptions?");
             String prescriptionString = "";
+
+            // If the patient requires prescriptions, add them
             if (prescriptionsBoolean) {
                 prescriptionString = addPrescription(appointment, prescriptionString, 0);
             } else {
                 prescriptionString = "NIL";
             }
 
-            Boolean success = doctorController.completeAppointment(appointment, slot, serviceProvided, prescriptionString, consultationNotes);
+            // Complete the selected appointment
+            Boolean success = doctorController.completeAppointment(appointment, slot, serviceProvided,
+                    prescriptionString, consultationNotes);
+
+            // If the appointment is successfully completed, display a success message
             if (success) {
                 System.out.println("Appointment Sucessfully Completed.");
+
+                // Display the outcome of the completed appointment
+                System.out.println("");
+                displayOutcome(doctorController.getOutcomeByID(appointment.getOutcomeID()),
+                        "OUTCOME OF COMPLETED APPOINTMENT");
             } else {
                 System.out.println("Error completing appointment.");
             }
@@ -888,83 +1095,97 @@ public class DoctorMenu {
     }
 
     /**
-     * Creates a Prescription object and returns a string of prescriptionID. For
-     * example, "M01;M02;M02"
+     * Creates a Prescription object and returns a string of medication IDs.
+     * For example, "M01;M02;M03"
      *
-     * @param appointment The accompanying appointment
-     * @param prescriptionID The prescription ID to manage (perhaps using
-     * prescription ID instead of medication ID might be clearer)
-     * @param count number of medications in current prescription ID, 0 if it is
-     * a new appointment record
-     * @return the updated prescription ID
+     * @param appointment The appointment to add prescriptions to
+     * @param medicationIDString The current string of medication IDs (semicolon separated)
+     * @param count Number of medications currently prescribed
+     * @return Updated string of medication IDs
      */
-    private String addPrescription(Appointment appointment, String prescriptionID, int count) {
+    private String addPrescription(Appointment appointment, String medicationIDString, int count) {
         try {
             String appointmentID = appointment.getAppointmentID();
+            boolean isFirstVisit = true;
             int quantity;
             String notes;
             String medicationID;
             Boolean success;
-            //we use an array list to split and store the medications
-            List<String> prescriptionList = new ArrayList<>();
 
-            List<Medication> medication = doctorController.getAllMedication();
-
-            // Initialize prescriptionList if prescriptionID is not empty or "NIL"
-            if (!prescriptionID.isEmpty() && !prescriptionID.equals("NIL")) {
-                prescriptionList = new ArrayList<>(Arrays.asList(prescriptionID.split(";")));
+            // Store list of medication IDs
+            List<String> medicationList = new ArrayList<>();
+            if (!medicationIDString.isEmpty() && !medicationIDString.equals("NIL")) {
+                medicationList = new ArrayList<>(Arrays.asList(medicationIDString.split(";")));
             }
 
             do {
-                // Display list of medications to the user
-                displayMedication(medication, "LIST OF MEDICATIONS");
+                List<Medication> medications = doctorController.getAllMedication();
 
-                // Prompt user to enter medication ID
+                if (isFirstVisit) {
+                    System.out.println("");
+                    displayMedication(medications, "AVAILABLE MEDICATIONS");
+                    isFirstVisit = false;
+                }
+
+                System.out.println("");
                 medicationID = ConsoleUtility.validateInput(
-                        "\nEnter a Medication ID to prescribe to the patient (press Enter to finish prescription) [e.g. M01]: ",
-                        input -> input.isEmpty() || doctorController.isValidMedicationID(input));
+                        "Enter a Medication ID to prescribe (press Enter to finish prescribing) [e.g. M01]: ",
+                        input -> {
+                            boolean exists = medications.stream()
+                                .anyMatch(m -> m.getMedicationID().equals(input));
+                            if (!exists) {
+                                if (input.isEmpty()) {
+                                    return true;
+                                }
+                                System.out.println("Invalid Medication ID. Please try again.");
+                            }
+                            return exists;
+                        });
 
-                // If the input is empty and no medication has been prescribed yet, set prescriptionID to "NIL"
                 if (medicationID.isEmpty() && count == 0) {
-                    prescriptionID = "NIL";
+                    medicationIDString = "NIL";
                     break;
                 } else if (medicationID.isEmpty()) {
-                    break; // Finish adding prescriptions if user presses Enter
+                    break;
                 }
 
-                // Ensure the medicationID is not already in the prescription list
-                if (prescriptionList.contains(medicationID)) {
-                    System.out.println("This medication has already been prescribed. Please enter a different medication.");
-                    continue; // Skip to the next iteration of the loop
+                // Check if this medication has already been prescribed
+                if (medicationList.contains(medicationID)) {
+                    System.out.println("This medication has already been prescribed for this appointment.");
+                    continue;
                 }
 
-                // Add the medicationID to the list to ensure no duplicates
-                prescriptionList.add(medicationID);
+                // Add medication ID to tracking list
+                medicationList.add(medicationID);
 
-                // Update the prescriptionID string with the new medication
-                if (prescriptionID.equals("NIL")) {
-                    prescriptionID = medicationID; // Replace "NIL" with the first medication
-                } else if (prescriptionID.isEmpty()) {
-                    prescriptionID = medicationID; // First medication, no need for a semicolon
+                // Update the medication ID string
+                if (medicationIDString.equals("NIL")) {
+                    medicationIDString = medicationID;
+                } else if (medicationIDString.isEmpty()) {
+                    medicationIDString = medicationID;
                 } else {
-                    prescriptionID = prescriptionID + ";" + medicationID; // Subsequent medications
+                    medicationIDString = medicationIDString + ";" + medicationID;
                 }
 
-                // Prompt user to enter quantity and notes for the medication
-                quantity = ConsoleUtility.validateIntegerInput("Enter quantity: ");
-                notes = ConsoleUtility.validateInput("Enter prescription notes: ", input -> !input.trim().isEmpty());
+                // Get prescription details
+                quantity = ConsoleUtility.validateIntegerInput("Enter quantity to prescribe: ");
+                notes = ConsoleUtility.validateInput(
+                    "Enter prescription instructions (e.g., 'Take twice daily after meals'): ", 
+                    input -> !input.trim().isEmpty()
+                );
 
-                // Add the prescription to the system through doctorController
-                success = doctorController.addPrescription(appointmentID, medicationID, quantity, notes);
+                // Create new prescription
+                success = doctorController.createPrescription(appointmentID, medicationID, quantity, notes);
 
                 if (success) {
-                    System.out.println("Medication successfully added to prescription.");
+                    System.out.println("Medication successfully prescribed.");
                 } else {
-                    System.out.println("Error adding prescription.");
+                    System.out.println("Error creating prescription.");
                 }
 
                 count++;
             } while (true);
+
         } catch (IllegalArgumentException e) {
             System.err.println("Error adding prescription: " + e.getMessage());
         } catch (Exception e) {
@@ -972,7 +1193,7 @@ public class DoctorMenu {
             e.printStackTrace();
         }
 
-        return prescriptionID;
+        return medicationIDString;
     }
 
     /**
@@ -981,36 +1202,62 @@ public class DoctorMenu {
     private void updateAppointmentOutcome() {
         try {
             List<Medication> medication = doctorController.getAllMedication();
-            List<Appointment> completedAppointment;
             List<Outcome> outcomes;
-            List<Patient> patients; // Display the list of patients under the doctor's care
+            List<Patient> patients;
 
             while (true) {
+
                 ConsoleUtility.printHeader("VIEW AND UPDATE APPOINTMENT OUTCOME");
 
-                completedAppointment = doctorController.getCompletedAppointmentsForDoctor();
+                // Get all completed appointments for the current doctor
+                List<Appointment> completedAppointment = doctorController.getCompletedAppointmentsForDoctor();
+
+                // Get all outcomes for the completed appointments
                 outcomes = doctorController.getOutcomesForCompletedAppointmentsForDoctor();
+
+                // Get all patients under the current doctor's care
                 patients = doctorController.getPatientsUnderCare();
 
+                // If there are no completed appointments, display a message and return to the main menu
                 if (completedAppointment.isEmpty()) {
-                    System.out.println("\nYou currently have no completed appointments to view or update.");
-                    System.out.println("\nReturning to Main Menu...");
+                    System.out.println("You currently have no completed appointments to view or update.");
+                    System.out.println("Returning to Main Menu...");
                     return;
                 }
 
-                displayPatients(patients, "Patients Under Care");
+                // Display the list of patients under the doctor's care
+                displayPatients(patients, "PATIENT INFO");
+
+                // Display the list of medications
                 displayMedication(medication, "LIST OF MEDICATIONS");
+
+                // Display the list of outcomes
                 displayOutcome(outcomes, "OUTCOMES");
+
+                // Display the list of completed appointments
                 displayAppointments(completedAppointment, "SELECT A COMPLETED APPOINTMENT OUTCOME TO UPDATE");
 
-                String appointmentID = ConsoleUtility.validateInput("\nEnter an Appointment ID to update (or press Enter to go back)[e.g. A01]: ",
-                        input -> input.isEmpty() || doctorController.isValidCompletedAppointmentID(input));
+                // Get user input for the appointment ID to update
+                System.out.println("");
+                String appointmentID = ConsoleUtility.validateInput(
+                        "Enter an Appointment ID to update (or press Enter to go back)[e.g. A01]: ",
+                        input -> {
+                            boolean exists = completedAppointment.stream().anyMatch(a -> a.getAppointmentID().equals(input));
+                            if (!exists) {
+                                if (input.isEmpty()) {
+                                    return true;
+                                }
+                                System.out.println("Invalid ID, appointment does not exist.");
+                            }
+                            return exists;
+                        });
 
                 if (appointmentID.isEmpty()) {
                     System.out.println("\nReturning to Main Menu...");
                     return;
                 }
 
+                // Update outcome path
                 updateOutcome(appointmentID);
             }
 
@@ -1034,14 +1281,16 @@ public class DoctorMenu {
         Patient patient = doctorController.getPatientFromAppointment(selectedAppointment);
 
         if (selectedOutcome == null) {
-            System.out.println("Error: This appointment does not have an outcome. Please complete this appointment first.");
+            System.out.println(
+                    "Error: This appointment does not have an outcome. Please complete this appointment first.");
             return;
         }
 
         try {
             // Display current patient and outcome information
-            displayPatients(patient, "Details of the Affected patient");
-            displayOutcome(selectedOutcome, "Details of the current outcome");
+            System.out.println("");
+            displayPatients(patient, "PATIENT INFO");
+            displayOutcome(selectedOutcome, "OUTCOME INFO");
 
             // Update the outcome details: service provided and consultation notes
             System.out.println("\nCurrent Service Provided: " + selectedOutcome.getServiceProvided());
@@ -1054,7 +1303,7 @@ public class DoctorMenu {
                 newServiceProvided = selectedOutcome.getServiceProvided();
             }
 
-            System.out.println("Current Consultation Notes: " + selectedOutcome.getConsultationNotes());
+            System.out.println("\nCurrent Consultation Notes: " + selectedOutcome.getConsultationNotes());
             String newConsultationNotes = ConsoleUtility.validateInput(
                     "Enter new consultation notes (or press Enter to keep current): ",
                     input -> input.isEmpty() || !input.trim().isEmpty());
@@ -1065,8 +1314,10 @@ public class DoctorMenu {
             }
 
             // Display current prescriptions and update if needed
+            System.out.println("");
             displayPrescriptions(prescriptions, "CURRENT PRESCRIPTIONS PROVIDED FOR THIS APPOINTMENT");
-            Boolean prescriptionsBoolean = ConsoleUtility.getConfirmation("\nDoes the patient require any changes to the prescriptions?");
+            Boolean prescriptionsBoolean = ConsoleUtility
+                    .getConfirmation("\nDoes the patient require any changes to the prescriptions?");
             String prescriptionString = selectedOutcome.getPrescriptionID();
 
             if (prescriptionsBoolean) {
@@ -1074,7 +1325,8 @@ public class DoctorMenu {
             }
 
             // Update outcome with new or existing values
-            Boolean success = doctorController.updateOutcome(selectedOutcome, newServiceProvided, prescriptionString, newConsultationNotes);
+            Boolean success = doctorController.updateOutcome(selectedOutcome, newServiceProvided, prescriptionString,
+                    newConsultationNotes);
             if (success) {
                 System.out.println("Outcome Successfully Updated.");
             } else {
@@ -1090,12 +1342,13 @@ public class DoctorMenu {
     }
 
     /**
-     * Manages a Prescription object linked to an appointment ID
+     * [OPTION 8.1] Manages a Prescription object linked to an appointment ID
      *
-     * @param appointmentID The ID of the appointment linked to the Prescription
-     * object
+     * @param appointmentID      The ID of the appointment linked to the
+     *                           Prescription
+     *                           object
      * @param prescriptionString The current string of medication. For example,
-     * "M01;M02;M02"
+     *                           "M01;M02;M02"
      * @return the updated prescription ID used to update outcome
      */
     private String managePrescriptions(String appointmentID, String prescriptionString) {
@@ -1112,38 +1365,30 @@ public class DoctorMenu {
             displayMedication(medication, "LIST OF MEDICATIONS");
 
             if (prescriptions.isEmpty()) {
-                System.out.println("\nYou currently have no prescriptions.");
+                System.out.println("You currently have no prescriptions.");
             } else {
                 displayPrescriptions(prescriptions, "PRESCRIPTIONS PROVIDED FOR THIS APPOINTMENT");
             }
 
             ConsoleUtility.printHeader("AVAILABLE PRESCRIPTIONS FUNCTIONS");
-            System.out.println("{1} Update Prescription");
-            System.out.println("{2} Add Prescription");
-            System.out.println("{3} Remove Prescription");
-            System.out.println("{4} Complete Updating of Outcome");
+            System.out.println("{1} Add Prescription");
+            System.out.println("{2} Remove Prescription");
+            System.out.println("{3} Complete Updating of Outcome");
 
             int choice = ConsoleUtility.validateIntegerInput("Enter your choice: ");
 
             switch (choice) {
                 case 1:
-                    if (!prescriptions.isEmpty()) {
-                        prescriptionString = updatePrescription(medication, prescriptions, prescriptionString);
-                    } else {
-                        System.out.println("\nYou have no prescription to update.");
-                    }
-                    break;
-                case 2:
                     prescriptionString = addPrescription(appointment, prescriptionString, count);
                     break;
-                case 3:
+                case 2:
                     if (!prescriptions.isEmpty()) {
                         prescriptionString = removePrescription(medication, prescriptions, prescriptionString);
                     } else {
                         System.out.println("\nYou have no prescription to remove.");
                     }
                     break;
-                case 4:
+                case 3:
                     System.out.println("Completing the update process for the outcome.");
                     return prescriptionString; // Exit the loop and method
                 default:
@@ -1153,137 +1398,35 @@ public class DoctorMenu {
     }
 
     /**
-     * Handles updating prescriptions for a doctor.
-     *
-     * @param medication List of available medications.
-     * @param prescriptions List of existing prescriptions.
-     * @param prescriptionString String containing medication IDs separated by
-     * semicolons.
-     * @return updated prescriptionString.
-     */
-    private String updatePrescription(List<Medication> medication, List<Prescription> prescriptions, String prescriptionString) {
-        try {
-            // Display the available medications and prescriptions
-            displayMedication(medication, "LIST OF MEDICATIONS");
-            displayPrescriptions(prescriptions, "PRESCRIPTIONS");
-
-            // Get prescription ID from user
-            String prescriptionID = ConsoleUtility.validateInput(
-                    "\nEnter a prescription ID to update (or press Enter to go back): ",
-                    input -> input.isEmpty() || doctorController.isValidPrescriptionID(input));
-
-            if (prescriptionID.isEmpty()) {
-                return prescriptionString; // User chose to go back without updating
-            }
-
-            // Retrieve the selected prescription
-            Prescription selectedPrescription = doctorController.getPrescriptionByID(prescriptionID);
-            if (selectedPrescription == null) {
-                System.out.println("Error: Invalid Prescription ID. Please try again.");
-                return prescriptionString;
-            }
-
-            // Extract the prescriptionString into a List of medication IDs
-            List<String> prescriptionList = new ArrayList<>();
-            if (!prescriptionString.isEmpty() && !prescriptionString.equals("NIL")) {
-                prescriptionList = new ArrayList<>(Arrays.asList(prescriptionString.split(";")));
-            }
-
-            // Get current details of the selected prescription
-            String currentMedicationID = selectedPrescription.getMedicationID();
-            int currentQuantity = selectedPrescription.getQuantity();
-            String currentNotes = selectedPrescription.getNotes();
-
-            // Display current details and prompt for updates
-            displayPrescriptions(selectedPrescription, "SELECTED PRESCRIPTION");
-            displayMedication(medication, "LIST OF MEDICATIONS");
-            System.out.println("\nCurrent Medication: " + currentMedicationID);
-            String newMedicationID = ConsoleUtility.validateInput(
-                    "Enter new Medication ID to update (or press Enter to keep current): ",
-                    input -> input.isEmpty() || doctorController.isValidMedicationID(input));
-
-            System.out.println("\nCurrent Quantity: " + currentQuantity);
-            String quantityInput = ConsoleUtility.validateInput(
-                    "Enter new quantity (or press Enter to keep current): ",
-                    input -> input.isEmpty() || ConsoleUtility.isValidInteger(input));
-
-            int newQuantity;
-            if (quantityInput.isEmpty()) {
-                newQuantity = currentQuantity; // Keep current value
-            } else {
-                try {
-                    newQuantity = Integer.parseInt(quantityInput); // Parse to int
-                } catch (NumberFormatException e) {
-                    System.out.println("Invalid input. Please enter a valid integer.");
-                    newQuantity = currentQuantity; // or some default value
-                }
-            }
-
-            System.out.println("Current Prescription Notes: " + currentNotes);
-            String newNotes = ConsoleUtility.validateInput(
-                    "Enter new prescription notes (or press Enter to keep current): ",
-                    input -> input.isEmpty() || !input.trim().isEmpty());
-
-            if (newMedicationID.isEmpty() && quantityInput.isEmpty() && newNotes.isEmpty()) {
-                System.out.println("No changes made to the prescription.");
-                return prescriptionString; // Return the original prescription string if no updates are made
-            }
-
-            // Update prescription list only if a new medication ID is provided and it's different from the current
-            if (!newMedicationID.isEmpty() && !newMedicationID.equals(currentMedicationID)) {
-                if (prescriptionList.contains(newMedicationID)) {
-                    System.out.println("This medication has already been prescribed. Please enter a different medication.");
-                    return prescriptionString; // Prevent duplicate medication and return original string
-                }
-                // Replace the old medication ID with the new one
-                int index = prescriptionList.indexOf(currentMedicationID);
-                if (index != -1) {
-                    prescriptionList.set(index, newMedicationID);
-                }
-            }
-
-            // Update the prescriptionString with the new values from the list and recreates it in the form of medication ID seperated by semicolons ("M01;M02;M02")
-            prescriptionString = String.join(";", prescriptionList);
-
-            // Update the prescription in the system
-            boolean updated = doctorController.updatePrescription(selectedPrescription, newMedicationID.isEmpty() ? currentMedicationID : newMedicationID, newQuantity, newNotes.isEmpty() ? currentNotes : newNotes);
-
-            if (updated) {
-                System.out.println("Prescription updated successfully.");
-            } else {
-                System.out.println("Failed to update prescription. Please try again.");
-            }
-
-        } catch (IllegalArgumentException e) {
-            System.err.println("Error updating prescription: " + e.getMessage());
-        } catch (Exception e) {
-            System.err.println("An unexpected error occurred while updating prescription: " + e.getMessage());
-            e.printStackTrace();
-        }
-
-        // Return the updated prescription string
-        return prescriptionString;
-    }
-
-    /**
      * Removes prescriptions and returns the updated prescription string
      *
-     * @param medication List of available medications.
-     * @param prescriptions List of existing prescriptions.
+     * @param medication         List of available medications.
+     * @param prescriptions      List of existing prescriptions.
      * @param prescriptionString String containing medication IDs separated by
-     * semicolons.
+     *                           semicolons.
      * @return updated prescriptionString after removal.
      */
-    private String removePrescription(List<Medication> medication, List<Prescription> prescriptions, String prescriptionString) {
+    private String removePrescription(List<Medication> medication, List<Prescription> prescriptions,
+            String prescriptionString) {
         try {
             // Display the list of medications and prescriptions
+            System.out.println("");
             displayMedication(medication, "LIST OF MEDICATIONS");
             displayPrescriptions(prescriptions, "PRESCRIPTIONS");
 
             // Get prescription ID from user
             String prescriptionID = ConsoleUtility.validateInput(
-                    "\nEnter a prescription ID to remove (or press Enter to go back): ",
-                    input -> input.isEmpty() || doctorController.isValidPrescriptionID(input));
+                    "Enter a prescription ID to remove (or press Enter to go back): ",
+                    input -> {
+                        boolean exists = prescriptions.stream().anyMatch(p -> p.getPrescriptionID().equals(input));
+                        if (!exists) {
+                            if (input.isEmpty()) {
+                                return true;
+                            }
+                            System.out.println("Invalid ID, prescription does not exist.");
+                        }
+                        return exists;
+                    });
 
             if (prescriptionID.isEmpty()) {
                 return prescriptionString; // User chose to go back without removing anything
@@ -1305,7 +1448,7 @@ public class DoctorMenu {
                 // Remove the medication ID from prescriptionString
                 String medicationIDToRemove = selectedPrescription.getMedicationID();
 
-                //creates an array to store IDs and manage medication IDs
+                // creates an array to store IDs and manage medication IDs
                 List<String> prescriptionList = new ArrayList<>(Arrays.asList(prescriptionString.split(";")));
 
                 // Remove the medication ID from the list
@@ -1329,14 +1472,15 @@ public class DoctorMenu {
         return prescriptionString;
     }
 
-    //-------------------Display Functions--------------------
+    // -------------------Display Functions--------------------
     /**
      * 1) Creates a table with the details to display: Patient ID, Name, Date of
-     * Birth, Gender,Contact Number, Email Adress, Blood Type.<p>
+     * Birth, Gender,Contact Number, Email Adress, Blood Type.
+     * <p>
      * 2) Displays a list of patients and their details.
      *
      * @param patients List of Patients Objects to display
-     * @param name Name of table to be displayed
+     * @param name     Name of table to be displayed
      */
     private void displayPatients(List<Patient> patients, String name) {
         LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
@@ -1353,11 +1497,12 @@ public class DoctorMenu {
 
     /**
      * 1) Creates a table with the details to display: Patient ID, Name, Date of
-     * Birth, Gender,Contact Number, Email Adress, Blood Type.<p>
+     * Birth, Gender,Contact Number, Email Adress, Blood Type.
+     * <p>
      * 2) Displays a selected patient's details.
      *
      * @param patients Patient Object to display
-     * @param name Name of table to be displayed
+     * @param name     Name of table to be displayed
      */
     private void displayPatients(Patient patient, String name) {
         LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
@@ -1376,11 +1521,12 @@ public class DoctorMenu {
 
     /**
      * 1) Creates a table with the details to display: History ID, Date,
-     * Diagnosis, Treatment.<p>
+     * Diagnosis, Treatment.
+     * <p>
      * 2) Displays a list of medical histories and their details.
      *
      * @param medicalHistory List of History Objects to display
-     * @param name Name of table to be displayed
+     * @param name           Name of table to be displayed
      */
     private void displayMedicalHistory(List<History> medicalHistory, String name) {
         LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
@@ -1394,12 +1540,14 @@ public class DoctorMenu {
 
     /**
      * 1) Creates a table with the details to display: Slot ID, Date, Start
-     * Time, End Time, Status.<p>
-     * 2) Sort the slots by Date, Start Time, and Status.<p>
+     * Time, End Time, Status.
+     * <p>
+     * 2) Sort the slots by Date, Start Time, and Status.
+     * <p>
      * 3) Displays a list of sorted slots and their details.
      *
      * @param slots List of Slot Objects to display
-     * @param name Name of table to be displayed
+     * @param name  Name of table to be displayed
      */
     public static void displaySlots(List<Slot> slots, String name) {
         // Sort the slots by Date, Start Time, and Status
@@ -1418,11 +1566,12 @@ public class DoctorMenu {
 
     /**
      * 1) Creates a table with the details to display: Slot ID, Date, Start
-     * Time, End Time, Status.<p>
+     * Time, End Time, Status.
+     * <p>
      * 2) Displays a selected slot's details.
      *
      * @param slots Slot Object to display
-     * @param name Name of table to be displayed
+     * @param name  Name of table to be displayed
      */
     private void displaySlots(Slot slot, String name) {
         LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
@@ -1439,53 +1588,60 @@ public class DoctorMenu {
 
     /**
      * 1) Creates a table with the details to display: Appointment ID, Patient
-     * ID, Doctor ID, Slot ID, Status, Outcome ID.<p>
+     * ID, Doctor ID, Slot ID, Status, Outcome ID.
+     * <p>
      * 2) Displays a list of appointments and their details.
      *
      * @param appointments List of Appointment Objects to display
-     * @param name Name of table to be displayed
+     * @param name         Name of table to be displayed
      */
     private void displayAppointments(List<Appointment> appointments, String name) {
         LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
+
+        // Appointment ID column
         columnMapping.put("appointmentID", new TableBuilder.ColumnMapping("Appointment ID", null));
-        columnMapping.put("patientID", new TableBuilder.ColumnMapping("Patient ID", null));
-        columnMapping.put("doctorID", new TableBuilder.ColumnMapping("Doctor ID", null));
-        columnMapping.put("slotID", new TableBuilder.ColumnMapping("Slot ID", null));
+
+        // Patient column with name and ID
+        columnMapping.put("patientID", new TableBuilder.ColumnMapping("Patient (ID)",
+                value -> {
+                    String patientId = value.toString();
+                    Patient patient = doctorController.getPatientByID(patientId);
+                    return patient != null ? patient.getName() + " (" + patientId + ")" : "Unknown";
+                }));
+
+        // Doctor column with name and ID
+        columnMapping.put("doctorID", new TableBuilder.ColumnMapping("Doctor (ID)",
+                value -> {
+                    String doctorId = value.toString();
+                    Doctor doctor = doctorController.getDoctorByID(doctorId);
+                    return doctor != null ? doctor.getName() + " (" + doctorId + ")" : "Unknown";
+                }));
+
+        // Time column combining date and time from slot
+        columnMapping.put("slotID", new TableBuilder.ColumnMapping("Schedule",
+                value -> {
+                    String slotId = value.toString();
+                    Slot slot = doctorController.getSlotByID(slotId);
+                    if (slot != null) {
+                        return slot.getDate() + " " + slot.getStartTime() + "-" + slot.getEndTime();
+                    }
+                    return "Unknown";
+                }));
+
         columnMapping.put("status", new TableBuilder.ColumnMapping("Status", null));
         columnMapping.put("outcomeID", new TableBuilder.ColumnMapping("Outcome ID", null));
 
-        TableBuilder.createTable(name, appointments, columnMapping, 20);
-    }
-
-    /**
-     * 1) Creates a table with the details to display: Appointment ID, Patient
-     * ID, Doctor ID, Slot ID, Status, Outcome ID.<p>
-     * 2) Displays a selected appointment's details.
-     *
-     * @param appointments List of Appointment Objects to display
-     * @param name Name of table to be displayed
-     */
-    private void displayAppointments(Appointment appointment, String name) {
-        LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
-        columnMapping.put("appointmentID", new TableBuilder.ColumnMapping("Appointment ID", null));
-        columnMapping.put("patientID", new TableBuilder.ColumnMapping("Patient ID", null));
-        columnMapping.put("doctorID", new TableBuilder.ColumnMapping("Doctor ID", null));
-        columnMapping.put("slotID", new TableBuilder.ColumnMapping("Slot ID", null));
-        columnMapping.put("status", new TableBuilder.ColumnMapping("Status", null));
-        columnMapping.put("outcomeID", new TableBuilder.ColumnMapping("Outcome ID", null));
-
-        List<Appointment> appointmentList = Collections.singletonList(appointment);
-
-        TableBuilder.createTable(name, appointmentList, columnMapping, 20);
+        TableBuilder.createTable(name, appointments, columnMapping, 25);
     }
 
     /**
      * 1) Creates a table with the details to display: Outcome ID, Appointment
-     * ID, Service Provided, Medication(s), Consulatation Notes.<p>
+     * ID, Service Provided, Medication(s), Consulatation Notes.
+     * <p>
      * 2) Displays a list of outcomes and their details.
      *
      * @param outcomes List of Outcome Objects to display
-     * @param name Name of table to be displayed
+     * @param name     Name of table to be displayed
      */
     private void displayOutcome(List<Outcome> outcomes, String name) {
         LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
@@ -1500,11 +1656,12 @@ public class DoctorMenu {
 
     /**
      * 1) Creates a table with the details to display: Outcome ID, Appointment
-     * ID, Service Provided, Medication(s), Consulatation Notes.<p>
+     * ID, Service Provided, Medication(s), Consulatation Notes.
+     * <p>
      * 2) Displays a selected outcome's details.
      *
      * @param outcome Outcome Object to display
-     * @param name Name of table to be displayed
+     * @param name    Name of table to be displayed
      */
     private void displayOutcome(Outcome outcome, String name) {
         LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
@@ -1523,15 +1680,16 @@ public class DoctorMenu {
      * /**
      * 1) Creates a table with the details to display: Prescription ID,
      * Appointment ID, Medication ID, Quantity Provided, Prescription Status,
-     * Prescription Notes.<p>
+     * Prescription Notes.
+     * <p>
      * 2) Displays a list of medications and their details.
      *
      * @param prescriptions List of Prescription Objects to display
-     * @param name Name of table to be displayed
+     * @param name          Name of table to be displayed
      */
     private void displayPrescriptions(List<Prescription> prescriptions, String name) {
         LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
-        //prescriptionID,appointmentID,medicationID,quantity,status,notes
+        // prescriptionID,appointmentID,medicationID,quantity,status,notes
         columnMapping.put("prescriptionID", new TableBuilder.ColumnMapping("Prescription ID", null));
         columnMapping.put("appointmentID", new TableBuilder.ColumnMapping("Appointment ID", null));
         columnMapping.put("medicationID", new TableBuilder.ColumnMapping("Medication ID", null));
@@ -1543,36 +1701,13 @@ public class DoctorMenu {
     }
 
     /**
-     * 1) Creates a table with the details to display: Prescription ID,
-     * Appointment ID, Medication ID, Quantity Provided, Prescription Status,
-     * Prescription Notes.<p>
-     * 2) Displays a selected prescription's details.
-     *
-     * @param prescription Prescription Object to display
-     * @param name Name of table to be displayed
-     */
-    private void displayPrescriptions(Prescription prescription, String name) {
-        LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
-        //prescriptionID,appointmentID,medicationID,quantity,status,notes
-        columnMapping.put("prescriptionID", new TableBuilder.ColumnMapping("Prescription ID", null));
-        columnMapping.put("appointmentID", new TableBuilder.ColumnMapping("Appointment ID", null));
-        columnMapping.put("medicationID", new TableBuilder.ColumnMapping("Medication ID", null));
-        columnMapping.put("quantity", new TableBuilder.ColumnMapping("Quantity Provided", null));
-        columnMapping.put("status", new TableBuilder.ColumnMapping("Prescription Status", null));
-        columnMapping.put("notes", new TableBuilder.ColumnMapping("Prescription Notes", null));
-
-        List<Prescription> prescriptionList = Collections.singletonList(prescription);
-
-        TableBuilder.createTable(name, prescriptionList, columnMapping, 20);
-    }
-
-    /**
      * 1) Creates a table with the details to display: Medication ID, Medication
-     * Name, Quantity Remaining.<p>
+     * Name, Quantity Remaining.
+     * <p>
      * 2) Displays a list of medications and their details.
      *
      * @param medication List of Medication Objects to display
-     * @param name Name of table to be displayed
+     * @param name       Name of table to be displayed
      */
     private void displayMedication(List<Medication> medication, String name) {
         LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();

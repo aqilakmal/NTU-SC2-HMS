@@ -7,12 +7,13 @@ import java.util.Scanner;
 import java.util.List;
 import java.util.InputMismatchException;
 import java.util.LinkedHashMap;
+import java.util.Collections;
 
 /**
  * Interface for patient interactions in the Hospital Management System.
  */
 public class PatientMenu {
-    
+
     private PatientController patientController;
     private Scanner scanner;
 
@@ -35,34 +36,54 @@ public class PatientMenu {
         while (true) {
             try {
                 ConsoleUtility.printHeader("PATIENT MENU");
-                System.out.println("{1} View Medical Record"); // ok (include  alittle bit more)
-                System.out.println("{2} Update Personal Information"); //ok
-                System.out.println("{3} View Available Appointment Slots");//ok
-                System.out.println("{4} Schedule an Appointment");//ok
-                System.out.println("{5} Reschedule an Appointment"); //ok 
-                System.out.println("{6} Cancel an Appointment");//ok 
+                System.out.println("{1} View Medical Record"); // ok (include alittle bit more)
+                System.out.println("{2} Update Personal Information"); // ok
+                System.out.println("{3} View Available Appointment Slots");// ok
+                System.out.println("{4} Schedule an Appointment");// ok
+                System.out.println("{5} Reschedule an Appointment"); // ok
+                System.out.println("{6} Cancel an Appointment");// ok
                 System.out.println("{7} View Scheduled Appointments"); // ok
-                System.out.println("{8} View Past Appointment Outcome Records"); //ok
-                System.out.println("{9} Logout"); //ok
+                System.out.println("{8} View Past Appointment Outcome Records"); // ok
+                System.out.println("{9} Logout"); // ok
                 System.out.print("Enter your choice: ");
 
                 /**
-                 * choice takes in the user's input and navigates to the correct action choosen by the user
+                 * choice takes in the user's input and navigates to the correct action choosen
+                 * by the user
                  */
                 int choice = scanner.nextInt();
                 scanner.nextLine(); // Consume newline
 
                 switch (choice) {
-                    case 1: viewMedicalRecord(); break;
-                    case 2: updatePersonalInformation(); break;
-                    case 3: viewAvailableAppointmentSlots(); break;
-                    case 4: scheduleAppointment(); break;
-                    case 5: rescheduleAppointment(); break;
-                    case 6: cancelAppointment(); break;
-                    case 7: viewScheduledAppointments(); break;
-                    case 8: viewPastAppointmentOutcomeRecords(); break;
-                    case 9: System.out.println("Logging out and returning to home screen..."); return;
-                    default: System.out.println("Invalid choice. Please enter a number between 1 and 9.");
+                    case 1:
+                        viewMedicalRecord();
+                        break;
+                    case 2:
+                        updatePersonalInformation();
+                        break;
+                    case 3:
+                        viewAvailableAppointmentSlots();
+                        break;
+                    case 4:
+                        scheduleAppointment();
+                        break;
+                    case 5:
+                        rescheduleAppointment();
+                        break;
+                    case 6:
+                        cancelAppointment();
+                        break;
+                    case 7:
+                        viewScheduledAppointments();
+                        break;
+                    case 8:
+                        viewPastAppointmentOutcomeRecords();
+                        break;
+                    case 9:
+                        System.out.println("Logging out and returning to home screen...");
+                        return;
+                    default:
+                        System.out.println("Invalid choice. Please enter a number between 1 and 9.");
                 }
             } catch (InputMismatchException e) {
                 System.out.println("Error: Invalid input. Please enter a number.");
@@ -76,202 +97,167 @@ public class PatientMenu {
 
     /**
      * [OPTION 1] Views the patient's medical record.
-     * This method retrieves the patient's medical history data from the patient controller and passes it to 
-       the display method for formatting and output.
-     * Using a column mapping for a structured table view.
-     * 
-     *  @param history The list of objects representing the patient's medical history records.
      */
     private void viewMedicalRecord() {
-        // TODO: Implement logic to view medical record
         System.out.println("");
         List<History> histories = patientController.getPatientMedicalHistory();
         displayMadicalRecords(histories);
-
-
     }
 
-    private void displayMadicalRecords(List<History> history){
+    /**
+     * Displays the patient's medical history records in a table format
+     * 
+     * @param history The list of objects representing the patient's medical history
+     *                records.
+     */
+    private void displayMadicalRecords(List<History> history) {
         LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
-        columnMapping.put("HistoryID", new TableBuilder.ColumnMapping("historyID", null));
-        columnMapping.put("Diagnosis", new TableBuilder.ColumnMapping("diagnosis", null));
-        columnMapping.put("DiagnosisDate", new TableBuilder.ColumnMapping("DiagnosisDate", null));
-        columnMapping.put("treatment", new TableBuilder.ColumnMapping("treatment", null));
+        columnMapping.put("historyID", new TableBuilder.ColumnMapping("History ID", null));
+        columnMapping.put("diagnosis", new TableBuilder.ColumnMapping("Diagnosis", null));
+        columnMapping.put("diagnosisDate", new TableBuilder.ColumnMapping("Diagnosis Date", null));
+        columnMapping.put("treatment", new TableBuilder.ColumnMapping("Treatment", null));
 
-
-        TableBuilder.createTable("Medical history", history, columnMapping, 20);
+        TableBuilder.createTable("Medical History", history, columnMapping, 20);
     }
 
     /**
      * [OPTION 2] Updates the patient's personal information.
-     * 
-     * This method allows the patient to choose between updating their password, contact number, or email address.
-     * The appropriate update method in PatientController is called based on the user's choice.
      */
-        public void updatePersonalInformation() {
-            Scanner scanner = new Scanner(System.in);
-    
-            System.out.println("Select the information to update:");
+    private void updatePersonalInformation() {
+        while (true) {
+            ConsoleUtility.printHeader("UPDATE PERSONAL INFORMATION");
+            
+            // Get current patient and display information in table format
+            Patient currentPatient = (Patient) patientController.getPatientByID(patientController.getCurrentUserID());
+            displayPatientInfo(currentPatient, "CURRENT INFORMATION");
+
+            System.out.println("\nSelect the information to update:");
             System.out.println("{1} Change password");
             System.out.println("{2} Change contact number");
             System.out.println("{3} Change email address");
-    
-            int updateChoice = scanner.nextInt();
-            scanner.nextLine(); // Consume newline
-    
+            System.out.println("{4} Back to main menu");
+            
+            int updateChoice = ConsoleUtility.validateIntegerInput("Enter your choice: ");
+
             switch (updateChoice) {
                 case 1:
-                    System.out.print("Enter new password: ");
-                    String newPassword = scanner.nextLine();
+                    String newPassword = ConsoleUtility.validateInput("Enter new password: ",
+                            ConsoleUtility::isValidBasicInput);
                     patientController.updatePassword(newPassword);
                     System.out.println("Password updated successfully.");
                     break;
-    
-                case 2:
-                    System.out.print("Enter new contact number: ");
-                    String newContactNumber = scanner.nextLine();
-                    patientController.updateContactNumber(newContactNumber);
-                    System.out.println("Contact number updated successfully.");
-                    break;
-    
-                case 3:
-                    System.out.print("Enter new email address: ");
-                    String newEmailAddress = scanner.nextLine();
 
-                    // Assuming you have the userID stored or can retrieve it in the boundary
+                case 2:
+                    String newContactNumber = ConsoleUtility.validateInput("Enter new contact number: ",
+                            ConsoleUtility::isValidContactNumber);
+                    patientController.updateContactNumber(newContactNumber);
+                    
+                    // Show updated information
+                    System.out.println("");
+                    Patient updatedPatient = (Patient) patientController.getPatientByID(patientController.getCurrentUserID());
+                    displayPatientInfo(updatedPatient, "UPDATED INFORMATION");
+                    break;
+
+                case 3:
+                    String newEmailAddress = ConsoleUtility.validateInput("Enter new email address: ",
+                            ConsoleUtility::isValidEmail);
                     patientController.updateEmailAddress(newEmailAddress);
-                    System.out.println("Email address updated successfully.");
-    break;
-    
+                    
+                    // Show updated information
+                    System.out.println("");
+                    Patient updatedPatientEmail = (Patient) patientController.getPatientByID(patientController.getCurrentUserID());
+                    displayPatientInfo(updatedPatientEmail, "UPDATED INFORMATION");
+                    break;
+
+                case 4:
+                    System.out.println("\nReturning to Main Menu...");
+                    return;
+
                 default:
-                    System.out.println("Invalid choice. Please enter a number between 1 and 3.");
+                    System.out.println("Invalid choice. Please enter a number between 1 and 4.");
             }
         }
-    
-    
+    }
+
+    /**
+     * Displays patient information in a table format.
+     * 
+     * @param patient The patient whose information to display
+     * @param title The title for the table
+     */
+    private void displayPatientInfo(Patient patient, String title) {
+        LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
+        columnMapping.put("userID", new TableBuilder.ColumnMapping("Patient ID", null));
+        columnMapping.put("name", new TableBuilder.ColumnMapping("Name", null));
+        columnMapping.put("contactNumber", new TableBuilder.ColumnMapping("Contact Number", null));
+        columnMapping.put("emailAddress", new TableBuilder.ColumnMapping("Email Address", null));
+        columnMapping.put("dateOfBirth", new TableBuilder.ColumnMapping("Date of Birth", null));
+        columnMapping.put("gender", new TableBuilder.ColumnMapping("Gender", null));
+        columnMapping.put("bloodType", new TableBuilder.ColumnMapping("Blood Type", null));
+
+        List<Patient> patientList = Collections.singletonList(patient);
+        TableBuilder.createTable(title, patientList, columnMapping, 20);
+    }
+
     /**
      * [OPTION 3] Views available appointment slots.
-     * 
-     * The method first displays the available doctors and then prompt's the user to select a doctor 
-       then retrieves the list of available slots for that doctor 
-       and displays them
      */
     private void viewAvailableAppointmentSlots() {
-        // TODO: Implement logic to view available appointment slots
 
-       // Step 1: Display list of doctors
-       List<Doctor> doctors = patientController.getAllDoctors();
-       if (doctors.isEmpty()) {
-           System.out.println("No doctors are currently available in the system.");
-           return;
-       }
+        ConsoleUtility.printHeader("VIEW AVAILABLE APPOINTMENT SLOTS");
 
-       System.out.println("");
-       displayDoctorList(doctors);
+        // Get all doctors
+        List<Doctor> doctors = patientController.getAllDoctors();
 
-    // Step 2: Prompt user to select a doctor
-    String selectedDoctorID = ConsoleUtility.validateInput("\nEnter the Doctor ID to view available slots: ",
-            input -> doctors.stream().anyMatch(d -> d.getUserID().equals(input)));
-
-    Doctor selectedDoctor = patientController.getDoctorByID(selectedDoctorID);
-
-    if (selectedDoctor == null) {
-        System.out.println("Invalid Doctor ID. Please try again.");
-        return;
-    }
-    //displayDoctorList(doctors);
-    // Step 3: Display available slots for the selected doctor
-    List<Slot> availableSlots = patientController.getAvailableSlotsForDoctor(selectedDoctorID);
-    if (availableSlots.isEmpty()) {
-        System.out.println("\nNo available slots for the selected doctor.");
-        return;
-    }
-
-    displayAvailableSlots(availableSlots);
-
-    }
-
-    /**
-     * [OPTION 4] Schedules a new appointment.
-     * 
-     * Displays a list of doctors and prompts the user to select the doctor to fix an appointment with
-     * After the user selects the doctor, then it displays the available time slots the selected doctor has and prompts the user to select a time slot to fix the appointment
-     * Shows the appointment details and confirms with the patient
-     * Upon pressing yes, schedules the appointment and waits for the doctor's approval
-     */
-    private void scheduleAppointment() {
-        try {
-            ConsoleUtility.printHeader("SCHEDULE AN APPOINTMENT", false);
-
-            // Step 1: Display list of doctors
-            List<Doctor> doctors = patientController.getAllDoctors();
-            if (doctors.isEmpty()) {
-                System.out.println("No doctors are currently available in the system.");
-                return;
-            }
-
-            System.out.println("");
-            displayDoctorList(doctors);
-
-            // Step 2: Prompt user to select a doctor
-            String selectedDoctorID = ConsoleUtility.validateInput("\nEnter the Doctor ID to schedule with: ",
-                    input -> doctors.stream().anyMatch(d -> d.getUserID().equals(input)));
-
-            Doctor selectedDoctor = patientController.getDoctorByID(selectedDoctorID);
-
-            if (selectedDoctor == null) {
-                System.out.println("Invalid Doctor ID. Please try again.");
-                return;
-            }
-
-            // Step 3: Display available slots for the selected doctor
-            List<Slot> availableSlots = patientController.getAvailableSlotsForDoctor(selectedDoctorID);
-            if (availableSlots.isEmpty()) {
-                System.out.println("\nNo available slots for the selected doctor.");
-                return;
-            }
-
-            displayAvailableSlots(availableSlots);
-
-            // Step 4: Prompt user to select a slot
-            String selectedSlotID = ConsoleUtility.validateInput("\nEnter the Slot ID to schedule: ",
-                    input -> availableSlots.stream().anyMatch(s -> s.getSlotID().equals(input)));
-
-            Slot selectedSlot = patientController.getSlotByID(selectedSlotID);
-
-            if (selectedSlot == null) {
-                System.out.println("Invalid Slot ID. Please try again.");
-                return;
-            }
-
-            // Step 5: Verify appointment information
-            System.out.println("\nAppointment Details:");
-            System.out.println("Doctor: " + selectedDoctor.getName());
-            System.out.println("Date: " + selectedSlot.getDate());
-            System.out.println("Time: " + selectedSlot.getStartTime() + " - " + selectedSlot.getEndTime());
-
-            if (!ConsoleUtility.getConfirmation("Do you want to confirm this appointment?")) {
-                System.out.println("Appointment scheduling cancelled.");
-                return;
-            }
-
-            // Step 6: Schedule the appointment
-            boolean success = patientController.scheduleAppointment(selectedDoctorID, selectedSlotID);
-            if (success) {
-                System.out.println("Appointment scheduled successfully. Waiting for doctor's approval.");
-            } else {
-                System.out.println("Failed to schedule the appointment. Please try again later.");
-            }
-
-        } catch (Exception e) {
-            System.err.println("An error occurred while scheduling the appointment: " + e.getMessage());
+        // Check if there are any doctors in the system
+        if (doctors.isEmpty()) {
+            System.out.println("No doctors are currently available in the system.");
+            return;
         }
+
+        // Display the list of doctors
+        displayDoctorList(doctors);
+        System.out.println("");
+
+        // Prompt the user to select a doctor
+        String selectedDoctorID = ConsoleUtility.validateInput("Enter the Doctor ID to view available slots: ",
+                input -> {
+                    boolean exists = doctors.stream().anyMatch(d -> d.getUserID().equals(input));
+                    if (!exists) {
+                        System.out.println("Invalid ID, doctor does not exist.");
+                    }
+                    return exists;
+                });
+
+        // Get the doctor object based on the selected doctor ID
+        Doctor selectedDoctor = patientController.getDoctorByID(selectedDoctorID);
+
+        // Check if the doctor ID is valid
+        if (selectedDoctor == null) {
+            System.out.println("Invalid Doctor ID. Please try again.");
+            return;
+        }
+
+        // Get the available slots for the selected doctor
+        List<Slot> availableSlots = patientController.getAvailableSlotsForDoctor(selectedDoctorID);
+
+        // Check if there are any available slots for the selected doctor
+        if (availableSlots.isEmpty()) {
+            System.out.println("\nNo available slots for the selected doctor.");
+            return;
+        }
+
+        // Display available slots
+        System.out.println("");
+        displayAvailableSlots(availableSlots);
+
     }
 
     /**
      * Displays the list of doctors.
      * 
-     * presents a table of available doctors with their IDs, names, and specializations.
+     * presents a table of available doctors with their IDs, names, and
+     * specializations.
      * 
      * @param doctors The list of doctors to display
      */
@@ -280,6 +266,8 @@ public class PatientMenu {
         columnMapping.put("userID", new TableBuilder.ColumnMapping("Doctor ID", null));
         columnMapping.put("name", new TableBuilder.ColumnMapping("Name", null));
         columnMapping.put("specialization", new TableBuilder.ColumnMapping("Specialization", null));
+        columnMapping.put("contactNumber", new TableBuilder.ColumnMapping("Contact Number", null));
+        columnMapping.put("emailAddress", new TableBuilder.ColumnMapping("Email Address", null));
 
         TableBuilder.createTable("Available Doctors", doctors, columnMapping, 20);
     }
@@ -287,7 +275,8 @@ public class PatientMenu {
     /**
      * Displays the list of available slots.
      * 
-     * presents a table of available time slots with their IDs, dates, start times, and end times.
+     * presents a table of available time slots with their IDs, dates, start times,
+     * and end times.
      * 
      * @param slots The list of available slots to display
      */
@@ -302,209 +291,421 @@ public class PatientMenu {
     }
 
     /**
-     * [OPTION 5] Reschedules an existing appointment.
-     * 
-     * 
-     * Displays the patient the scheduled(requested) appointments and  promta the user to enter the appointment to reschedule
-     * Retrieves the appointment details
-     * Displays available slots for the doctor and then prompts the user to select a new slot and validates the selection
-     * After confirming, updates the appointment to the new slot, makes the old slot available
+     * [OPTION 4] Schedules a new appointment.
      */
-    private void rescheduleAppointment() {
+    private void scheduleAppointment() {
+        ConsoleUtility.printHeader("SCHEDULE AN APPOINTMENT");
 
-        List<Appointment> appointments = patientController.getreq(); // Fetch scheduled appointments
-        displayreq(appointments); // Pass the appointments to the display method
-        Scanner scanner = new Scanner(System.in);
-        System.out.print("Enter the Appointment ID to reschedule: ");
-        String appointmentID = scanner.nextLine();
-        
-    
-        // Retrieve the appointment from the data manager
-        Appointment appointment = patientController.getAppointmentByID(appointmentID);
+        // Get all doctors
+        List<Doctor> doctors = patientController.getAllDoctors();
+        if (doctors.isEmpty()) {
+            System.out.println("No doctors are currently available in the system.");
+            return;
+        }
 
-    
-        if (appointment != null) {
-            // Check if the appointment can be rescheduled
-            if (appointment.getStatus() == Appointment.AppointmentStatus.CONFIRMED || 
-                appointment.getStatus() == Appointment.AppointmentStatus.REQUESTED) {
-    
-                List<Slot> availableSlots = patientController.getAvailableSlotsForDoctor(appointment.getDoctorID());
-                if (availableSlots.isEmpty()) {
-                    System.out.println("\nNo available slots for the selected doctor.");
-                    return;
-                }
-                
-                // Display available slots
-                displayAvailableSlots(availableSlots);
-    
-                // Ask the user to select a new slot
-                System.out.print("\nEnter the Slot ID to reschedule to: ");
-                String selectedSlotID = scanner.nextLine();
-    
-                // Validate the selected slot
-                Slot selectedSlot = patientController.getSlotByID(selectedSlotID);
-                if (selectedSlot == null || !availableSlots.contains(selectedSlot)) {
-                    System.out.println("Invalid Slot ID. Please try again.");
-                    return;
-                }
-    
-                // Confirm appointment details
-                System.out.println("\nNew Appointment Details:");
-                System.out.println("Doctor: " + patientController.getDoctorByID(appointment.getDoctorID()).getName());
-                System.out.println("Date: " + selectedSlot.getDate());
-                System.out.println("Time: " + selectedSlot.getStartTime() + " - " + selectedSlot.getEndTime());
-    
-                // Confirm the rescheduling
-                if (ConsoleUtility.getConfirmation("Do you want to confirm this rescheduling?")) {
-                    // Update the appointment with the new slot and status
-                   patientController.scheduleAppointment(patientController.getDoctorByID(appointment.getDoctorID()).getName(), selectedSlotID);  
+        // Display doctor list
+        displayDoctorList(doctors);
 
-                    Appointment selectedAppointment = patientController.getAppointmentByID(appointmentID);
-                    Slot slot = patientController.getSlotByID(selectedAppointment.getSlotID());
-                    if (slot != null) {
-                        // Make the slot available for booking again
-                        slot.setStatus(Slot.SlotStatus.AVAILABLE);
+        // Prompt the user to select a doctor
+        System.out.println("");
+        String selectedDoctorID = ConsoleUtility.validateInput(
+                "Enter the Doctor ID to schedule with (or press Enter to go back): ",
+                input -> {
+                    boolean exists = doctors.stream().anyMatch(d -> d.getUserID().equals(input));
+                    if (!exists) {
+                        if (input.isEmpty()) {
+                            return true;
+                        }
+                        System.out.println("Invalid ID, doctor does not exist.");
                     }
-    
-                    System.out.println("Appointment rescheduled successfully.");
-                } else {
-                    System.out.println("Appointment rescheduling cancelled.");
-                }
-            } else {
-                System.out.println("Appointment " + appointmentID + " cannot be rescheduled as it is not in a reschedulable status.");
-            }
+                    return exists || input.isEmpty();
+                });
+
+        if (selectedDoctorID.isEmpty()) {
+            System.out.println("\nReturning to Main Menu...");
+            return;
+        }
+
+        // Get available slots for selected doctor
+        List<Slot> availableSlots = patientController.getAvailableSlotsForDoctor(selectedDoctorID);
+        if (availableSlots.isEmpty()) {
+            System.out.println("\nNo available slots for the selected doctor.");
+            return;
+        }
+
+        // Display available slots
+        System.out.println("");
+        displayAvailableSlots(availableSlots);
+
+        // Prompt for slot selection
+        System.out.println("");
+        String selectedSlotID = ConsoleUtility.validateInput(
+                "Enter the Slot ID to schedule (or press Enter to go back): ",
+                input -> {
+                    boolean exists = availableSlots.stream().anyMatch(s -> s.getSlotID().equals(input));
+                    if (!exists) {
+                        if (input.isEmpty()) {
+                            return true;
+                        }
+                        System.out.println("Invalid ID, slot does not exist.");
+                    }
+                    return exists || input.isEmpty();
+                });
+
+        if (selectedSlotID.isEmpty()) {
+            System.out.println("\nReturning to Main Menu...");
+            return;
+        }
+
+        // Get selected objects
+        Doctor selectedDoctor = patientController.getDoctorByID(selectedDoctorID);
+        Slot selectedSlot = patientController.getSlotByID(selectedSlotID);
+
+        // Verify appointment information
+        System.out.println("\nAppointment Details:");
+        System.out.println("-".repeat(50));
+        System.out.printf("Doctor: %s%n", selectedDoctor.getName());
+        System.out.printf("Date: %s%n", selectedSlot.getDate());
+        System.out.printf("Time: %s - %s%n", selectedSlot.getStartTime(), selectedSlot.getEndTime());
+        System.out.println("-".repeat(50));
+
+        if (!ConsoleUtility.getConfirmation("\nDo you want to confirm this appointment?")) {
+            System.out.println("Appointment scheduling cancelled.");
+            return;
+        }
+
+        // Schedule the appointment
+        boolean success = patientController.scheduleAppointment(selectedDoctorID, selectedSlotID);
+        if (success) {
+            System.out.println("Appointment scheduled successfully. Waiting for doctor's approval.");
+            
+            // Display updated appointment information
+            List<Appointment> updatedAppointments = patientController.getFilteredAppointments("REQUESTED");
+            System.out.println("");
+            displayAppointments(updatedAppointments);
         } else {
-            System.out.println("Appointment with ID " + appointmentID + " not found.");
+            System.out.println("Failed to schedule the appointment. Please try again later.");
         }
     }
 
+    /**
+     * [OPTION 5] Reschedules an existing appointment.
+     */
+    private void rescheduleAppointment() {
+        ConsoleUtility.printHeader("RESCHEDULE AN APPOINTMENT");
 
-    private void displayreq(List<Appointment> appointments) {
-        // Define the mapping of appointment attributes to table columns
+        // Fetch scheduled appointments
+        List<Appointment> appointments = patientController.getFilteredAppointments("REQUESTED");
+
+        // Display scheduled appointments
+        displayAppointments(appointments);
+
+        // Prompt the user to select an appointment to reschedule
+        System.out.println("");
+        String appointmentID = ConsoleUtility.validateInput("Enter the Appointment ID to reschedule: ",
+                input -> {
+                    boolean exists = appointments.stream().anyMatch(a -> a.getAppointmentID().equals(input));
+                    if (!exists) {
+                        System.out.println("Invalid Appointment ID, appointment does not exist.");
+                    }
+                    return exists;
+                });
+
+        // Retrieve the appointment from the data manager
+        Appointment appointment = patientController.getAppointmentByID(appointmentID);
+
+        // Check if the appointment ID is valid
+        if (appointment == null) {
+            System.out.println("Invalid Appointment ID, appointment does not exist.");
+            return;
+        }
+
+        // Check if the appointment is in a reschedulable status
+        if (appointment.getStatus() != Appointment.AppointmentStatus.CONFIRMED &&
+                appointment.getStatus() != Appointment.AppointmentStatus.REQUESTED) {
+            System.out.println("Appointment cannot be rescheduled as it is not in a reschedulable status.");
+            return;
+        }
+
+        // Get the available slots for the selected doctor
+        List<Slot> availableSlots = patientController.getAvailableSlotsForDoctor(appointment.getDoctorID());
+        if (availableSlots.isEmpty()) {
+            System.out.println("\nNo available slots for the selected doctor.");
+
+            return;
+        }
+
+        // Display available slots
+        System.out.println("");
+        displayAvailableSlots(availableSlots);
+
+        // Ask the user to select a new slot
+        System.out.println("");
+        String selectedSlotID = ConsoleUtility.validateInput("Enter the Slot ID to reschedule to: ",
+                input -> {
+                    boolean exists = availableSlots.stream().anyMatch(s -> s.getSlotID().equals(input));
+                    if (!exists) {
+                        System.out.println("Invalid Slot ID, slot does not exist.");
+                    }
+                    return exists;
+                });
+
+        // Validate the selected slot
+        Slot selectedSlot = patientController.getSlotByID(selectedSlotID);
+        if (selectedSlot == null || !availableSlots.contains(selectedSlot)) {
+            System.out.println("Invalid Slot ID. Please try again.");
+            return;
+        }
+
+        // Confirm appointment details
+        System.out.println("\nNew Appointment Details:");
+        System.out.println("Doctor: " + patientController.getDoctorByID(appointment.getDoctorID()).getName());
+        System.out.println("Date: " + selectedSlot.getDate());
+        System.out.println("Time: " + selectedSlot.getStartTime() + " - " + selectedSlot.getEndTime());
+
+        // Check if the user wants to confirm the rescheduling
+        if (!ConsoleUtility.getConfirmation("\nDo you want to confirm this rescheduling?")) {
+            System.out.println("Rescheduling cancelled.");
+            return;
+        }
+
+        Slot slot = patientController.getSlotByID(appointment.getSlotID());
+
+        // Make the slot available for booking again
+        if (slot != null) {
+            slot.setStatus(Slot.SlotStatus.AVAILABLE);
+        }
+
+        // Update the appointment with the new slot and status
+        patientController.scheduleAppointment(appointment.getDoctorID(), selectedSlotID);
+        System.out.println("Appointment rescheduled successfully.");
+    }
+
+    /**
+     * Displays the list of scheduled appointments.
+     * 
+     * @param appointments The list of scheduled appointments to display
+     */
+    private void displayAppointments(List<Appointment> appointments) {
         LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
+
+        // Appointment ID column
         columnMapping.put("appointmentID", new TableBuilder.ColumnMapping("Appointment ID", null));
-        columnMapping.put("patientID", new TableBuilder.ColumnMapping("Patient ID", null));
-        columnMapping.put("doctorID", new TableBuilder.ColumnMapping("Doctor ID", null));
+
+        // Patient column with name and ID
+        columnMapping.put("patientID", new TableBuilder.ColumnMapping("Patient (ID)",
+                value -> {
+                    String patientId = value.toString();
+                    User patient = patientController.getUserByID(patientId);
+                    return patient != null ? patient.getName() + " (" + patientId + ")" : "Unknown";
+                }));
+
+        // Doctor column with name and ID
+        columnMapping.put("doctorID", new TableBuilder.ColumnMapping("Doctor (ID)",
+                value -> {
+                    String doctorId = value.toString();
+                    Doctor doctor = patientController.getDoctorByID(doctorId);
+                    return doctor != null ? doctor.getName() + " (" + doctorId + ")" : "Unknown";
+                }));
+
+        // Time column combining date and time from slot
+        columnMapping.put("slotID", new TableBuilder.ColumnMapping("Schedule",
+                value -> {
+                    String slotId = value.toString();
+                    Slot slot = patientController.getSlotByID(slotId);
+                    if (slot != null) {
+                        return slot.getDate() + " " + slot.getStartTime() + "-" + slot.getEndTime();
+                    }
+                    return "Unknown";
+                }));
+
         columnMapping.put("status", new TableBuilder.ColumnMapping("Status", null));
-    
-        // Create and display the table using TableBuilder
-        TableBuilder.createTable("Scheduled Appointments", appointments, columnMapping, 15); // Pass the appointments list
+
+        TableBuilder.createTable("Appointment List", appointments, columnMapping, 25);
     }
-
-
-    
-    // Placeholder method for generating a new slot ID
-    private String generateNewSlotID(String newDate, String newTime) {
-        // Implement logic to generate a new slot ID based on the date and time
-        return newDate + "T" + newTime; // Example format; adapt as needed*/
-    }
-
-
-    
-    
 
     /**
      * [OPTION 6] Cancels an existing appointment.
-     * 
-     * Allows the patient to cancel an appointment by entering the AppointmentID.
-     * If the appointment is confirmed or requested, it is updated to "CANCELLED" status, and the
-       associated time slot is made available for booking again.
      */
     private void cancelAppointment() {
-        // TODO: Implement logic to cancel an appointment
+        ConsoleUtility.printHeader("CANCEL AN APPOINTMENT");
 
-        Scanner scanner = new Scanner(System.in); // Scanner for user input
-        System.out.print("Enter the Appointment ID to cancel: ");
-        String appointmentID = scanner.nextLine(); // Read the appointment ID from the user
-      
-        // Retrieve the appointment from the data manager
+        // Fetch scheduled appointments
+        List<Appointment> appointments = patientController.getFilteredAppointments("SCHEDULED");
+
+        // Display scheduled appointments
+        displayAppointments(appointments);
+
+        // Prompt the user to select an appointment to cancel
+        System.out.println("");
+        String appointmentID = ConsoleUtility.validateInput("Enter the Appointment ID to cancel: ",
+                input -> {
+                    boolean exists = appointments.stream()
+                            .anyMatch(a -> a.getAppointmentID().equals(input));
+                    if (!exists) {
+                        System.out.println("Invalid Appointment ID, appointment does not exist.");
+                    }
+                    return exists;
+                });
+
+        // Retrieve the appointment object based on the selected appointment ID
         Appointment appointment = patientController.getAppointmentByID(appointmentID);
-        //System.out.println(appointment.getAppointmentID());
-    
-        if (appointment != null) {
-            // Check the current status of the appointment
-            if (appointment.getStatus() == Appointment.AppointmentStatus.CONFIRMED || 
-                appointment.getStatus() == Appointment.AppointmentStatus.REQUESTED) {
-                // Update the appointment status to CANCELLED
-                appointment.setStatus(Appointment.AppointmentStatus.CANCELLED);
-                System.out.println("Appointment " + appointmentID + " has been cancelled.");
-                Appointment selectedAppointment = patientController.getAppointmentByID(appointmentID);
-                Slot slot = patientController.getSlotByID(selectedAppointment.getSlotID());
-                if (slot != null) {
-                    // Make the slot available for booking again
-                    slot.setStatus(Slot.SlotStatus.AVAILABLE);
-                }
 
-            } else {
-                System.out.println("Appointment " + appointmentID + " cannot be cancelled as it is not confirmed or requested.");
-            }
-        } else {
-            System.out.println("Appointment with ID " + appointmentID + " not found.");
+        // Check if the appointment object is valid
+        if (appointment == null) {
+            System.out.println("Invalid Appointment ID, appointment does not exist.");
+            return;
         }
-        
-        
+
+        // Check if the appointment is in a cancellable status
+        if (appointment.getStatus() != Appointment.AppointmentStatus.CONFIRMED &&
+                appointment.getStatus() != Appointment.AppointmentStatus.REQUESTED) {
+            System.out.println("Appointment cannot be cancelled as it is not confirmed or requested.");
+            return;
+        }
+
+        // Update the appointment status to CANCELLED
+        appointment.setStatus(Appointment.AppointmentStatus.CANCELLED);
+        System.out.println("Appointment " + appointmentID + " has been cancelled.");
+
+        // Make the slot available for booking again
+        Slot slot = patientController.getSlotByID(appointment.getSlotID());
+        if (slot != null) {
+            slot.setStatus(Slot.SlotStatus.AVAILABLE);
+        }
     }
 
     /**
      * [OPTION 7] Views scheduled appointments.
-     * 
-     * Fetches a list of scheduled appointments for the patient, then displays the appointments in a table format
      */
-private void viewScheduledAppointments() {
-    System.out.println("");
-    List<Appointment> appointments = patientController.getScheduledAppointments(); // Fetch scheduled appointments
-    displayScheduledAppointments(appointments); // Pass the appointments to the display method
-}
-
-/**
- * Maps the attributes of each appointment to columns in a table, and then calls TableBuilder to generate and display the table
- * @param appointments A list of objects representing the scheduled appointments to display.
- */
-
-private void displayScheduledAppointments(List<Appointment> appointments) {
-    // Define the mapping of appointment attributes to table columns
-    LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
-    columnMapping.put("appointmentID", new TableBuilder.ColumnMapping("Appointment ID", null));
-    columnMapping.put("patientID", new TableBuilder.ColumnMapping("Patient ID", null));
-    columnMapping.put("doctorID", new TableBuilder.ColumnMapping("Doctor ID", null));
-    columnMapping.put("status", new TableBuilder.ColumnMapping("Status", null));
-    columnMapping.put("outcomeID", new TableBuilder.ColumnMapping("Outcome ID", null));
-
-    // Create and display the table using TableBuilder
-    TableBuilder.createTable("Scheduled Appointments", appointments, columnMapping, 15); // Pass the appointments list
-}
-
+    private void viewScheduledAppointments() {
+        ConsoleUtility.printHeader("VIEW SCHEDULED APPOINTMENTS");
+        List<Appointment> appointments = patientController.getFilteredAppointments("SCHEDULED"); // Fetch scheduled
+        displayAppointments(appointments); // Pass the appointments to the display method
+    }
 
     /**
      * [OPTION 8] Views past appointment outcome records.
-     * 
-     * Fetches a list of past appointmenr outcome records for the patient, then displays them in a table format
      */
     private void viewPastAppointmentOutcomeRecords() {
-        // Fetch past appointments
+        ConsoleUtility.printHeader("VIEW PAST APPOINTMENT OUTCOME RECORDS");
+
+        // Get and display past appointments
+        List<Appointment> appointments = patientController.getPastAppointments();
+        if (appointments.isEmpty()) {
+            System.out.println("No past appointments found.");
+            return;
+        }
+
+        displayAppointments(appointments);
+
+        // Prompt user to select an appointment
         System.out.println("");
-        List<Appointment> appointments = patientController.getPastAppointments(); // Fetch past appointments
-        displayPastAppointments(appointments); // Pass the appointments to the display method
+        String appointmentID = ConsoleUtility.validateInput(
+                "Enter the Appointment ID to view outcome (or press Enter to go back): ",
+                input -> {
+                    boolean exists = appointments.stream()
+                            .anyMatch(a -> a.getAppointmentID().equals(input) && a.getOutcomeID() != null);
+                    if (!exists) {
+                        if (input.isEmpty()) {
+                            return true;
+                        }
+                        System.out.println("Invalid ID, appointment does not exist or has no outcome.");
+                    }
+                    return exists || input.isEmpty();
+                });
+
+        if (appointmentID.isEmpty()) {
+            System.out.println("\nReturning to Main Menu...");
+            return;
+        }
+
+        // Display the outcome for the selected appointment
+        Outcome outcome = patientController.getOutcomeByAppointmentID(appointmentID);
+        if (outcome == null) {
+            System.out.println("No outcome record found for this appointment.");
+            return;
+        }
+
+        displayOutcome(outcome);
     }
 
     /**
-     * Maps the attributes of each appointment to columns in a table, and then calls TableBuilder to generate and display the table
+     * Displays the outcome details in a formatted table
      * 
-     * @param appointments A list of objects representing the past appointments to display.
+     * @param outcome The outcome record to display
      */
-    
-    private void displayPastAppointments(List<Appointment> appointments) {
-        // Define the mapping of appointment attributes to table columns
-        LinkedHashMap<String, TableBuilder.ColumnMapping> columnMapping = new LinkedHashMap<>();
-        columnMapping.put("appointmentID", new TableBuilder.ColumnMapping("Appointment ID", null));
-        columnMapping.put("patientID", new TableBuilder.ColumnMapping("Patient ID", null));
-        columnMapping.put("doctorID", new TableBuilder.ColumnMapping("Doctor ID", null));
-        columnMapping.put("status", new TableBuilder.ColumnMapping("Status", null));
-    
-        // Create and display the table using TableBuilder
-        TableBuilder.createTable("Past Appointments", appointments, columnMapping, 15); // Pass the appointments list
+    private void displayOutcome(Outcome outcome) {
+        // Get the appointment associated with this outcome
+        Appointment appointment = patientController.getAppointmentByOutcomeID(outcome.getOutcomeID());
+        if (appointment == null) {
+            System.out.println("Error: Could not find appointment details.");
+            return;
+        }
+
+        // Get slot and user information
+        Slot slot = patientController.getSlotByID(appointment.getSlotID());
+        User patient = patientController.getUserByID(appointment.getPatientID());
+        Doctor doctor = patientController.getDoctorByID(appointment.getDoctorID());
+
+        System.out.println("\nDETAILED APPOINTMENT INFORMATION");
+        System.out.println("-".repeat(50));
+        System.out.printf("Appointment ID: %s%n", appointment.getAppointmentID());
+        System.out.printf("Status: %s%n", appointment.getStatus());
+
+        System.out.println("\nPatient Information:");
+        System.out.printf("Patient ID: %s%n", patient.getUserID());
+        System.out.printf("Patient Name: %s%n", patient.getName());
+        System.out.printf("Contact: %s%n", patient.getContactNumber());
+
+        System.out.println("\nDoctor Information:");
+        System.out.printf("Doctor ID: %s%n", doctor.getUserID());
+        System.out.printf("Doctor Name: %s%n", doctor.getName());
+        System.out.printf("Contact: %s%n", doctor.getContactNumber());
+
+        System.out.println("\nSchedule Information:");
+        if (slot != null) {
+            System.out.printf("Date: %s%n", slot.getDate());
+            System.out.printf("Time: %s - %s%n", slot.getStartTime(), slot.getEndTime());
+            System.out.printf("Slot Status: %s%n", slot.getStatus());
+        } else {
+            System.out.println("Slot information not available");
+        }
+        System.out.println("-".repeat(50));
+
+        System.out.println("\nOUTCOME INFORMATION");
+        System.out.println("-".repeat(50));
+        System.out.printf("Outcome ID: %s%n", outcome.getOutcomeID());
+        System.out.printf("Service Provided: %s%n", outcome.getServiceProvided());
+        System.out.println("\nConsultation Notes:");
+        System.out.println(outcome.getConsultationNotes());
+
+        // Display prescription information if available
+        String prescriptionID = outcome.getPrescriptionID();
+        if (prescriptionID != null && !prescriptionID.isEmpty()) {
+            Prescription prescription = patientController.getPrescriptionByID(prescriptionID);
+            if (prescription != null) {
+                System.out.println("\nPRESCRIPTION DETAILS");
+                System.out.println("-".repeat(50));
+                System.out.printf("Prescription ID: %s%n", prescription.getPrescriptionID());
+
+                // Get and display medication details
+                String[] medicationIDs = prescription.getMedicationID().split(";");
+                System.out.println("\nPrescribed Medications:");
+                for (String medicationID : medicationIDs) {
+                    Medication medication = patientController.getMedicationByID(medicationID);
+                    if (medication != null) {
+                        System.out.printf("- %s (ID: %s)%n", medication.getName(), medicationID);
+                    }
+                }
+
+                System.out.printf("Status: %s%n", prescription.getStatus());
+                System.out.printf("Notes: %s%n", prescription.getNotes());
+            }
+        } else {
+            System.out.println("\nNo prescription was issued for this appointment.");
+        }
+        System.out.println("-".repeat(50));
     }
-    
+
 }
-
-

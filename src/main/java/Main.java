@@ -31,7 +31,20 @@ import controller.data.UserDataManager;
 import entity.User;
 /**
  * Main class for the Hospital Management System. This class serves as the entry
- * point for the application.
+ * point for the application and manages the initialization of all system components.
+ * 
+ * <p>This class is responsible for:
+ * <ul>
+ *   <li>Initializing all data managers</li>
+ *   <li>Loading data from CSV files</li>
+ *   <li>Setting up controllers</li>
+ *   <li>Managing the login process</li>
+ *   <li>Saving data on system exit</li>
+ * </ul>
+ * </p>
+ * 
+ * @author Your Name
+ * @version 1.0
  */
 public class Main {
 
@@ -53,6 +66,16 @@ public class Main {
 
     /**
      * The main method that starts the Hospital Management System.
+     * 
+     * <p>This method performs the following operations in order:
+     * <ol>
+     *   <li>Initializes all data managers and loads data from CSV files</li>
+     *   <li>Initializes all controllers</li>
+     *   <li>Sets up the login menu and displays the home screen</li>
+     *   <li>Saves all data when the program terminates</li>
+     * </ol>
+     * </p>
+     *
      * @param args Command line arguments (not used in this application)
      */
     public static void main(String[] args) {
@@ -113,7 +136,9 @@ public class Main {
                 outcomeDataManager,
                 medicationDataManager,
                 requestDataManager,
-                authController
+                authController,
+                prescriptionDataManager,
+                slotDataManager
             );
             doctorController = new DoctorController(
                 userDataManager,
@@ -130,12 +155,19 @@ public class Main {
                 historyDataManager,
                 slotDataManager,
                 doctorController,
-                authController
+                authController,
+                outcomeDataManager,
+                prescriptionDataManager,
+                medicationDataManager,
+                userDataManager
             );
             pharmacistController = new PharmacistController(
                 medicationDataManager,
-                requestDataManager,
-                authController
+                prescriptionDataManager,
+                outcomeDataManager,
+                appointmentDataManager,
+                slotDataManager,
+                userDataManager
             );
         } catch (Exception e) {
             System.err.println("Critical Error: Failed to initialize controllers. The system cannot start.");

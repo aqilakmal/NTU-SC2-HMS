@@ -158,28 +158,30 @@ public class DoctorController {
     }
 
     /**
-     * Retrieves slots with the "AVAIALBLE" status for the current doctor.
+     * Retrieves slots with the "AVAILABLE" status for the current doctor.
      *
-     * @return List of Available Slot objects for the current doctor
+     * @return List of Available Slot objects for the current doctor, ordered by date and start time
      */
     public List<Slot> getAvailableSlotsForDoctor() {
         Doctor currentDoctor = (Doctor) authController.getCurrentUser();
         return slotDataManager.getSlots().stream()
                 .filter(slot -> slot.getDoctorID().equals(currentDoctor.getUserID())
                 && slot.getStatus() == Slot.SlotStatus.AVAILABLE)
+                .sorted(Comparator.comparing(Slot::getDate).thenComparing(Slot::getStartTime))
                 .collect(Collectors.toList());
     }
 
     /**
-     * Retrieves slots with the "AVAIALBLE" status for a specific doctor.
+     * Retrieves slots with the "AVAILABLE" status for a specific doctor.
      *
      * @param doctorID The ID of the doctor
-     * @return List of available Slot objects for the specified doctor
+     * @return List of available Slot objects for the specified doctor, ordered by date and start time
      */
     public List<Slot> getAvailableSlotsForDoctor(String doctorID) {
         return slotDataManager.getSlots().stream()
                 .filter(slot -> slot.getDoctorID().equals(doctorID)
                 && slot.getStatus() == Slot.SlotStatus.AVAILABLE)
+                .sorted(Comparator.comparing(Slot::getDate).thenComparing(Slot::getStartTime))
                 .collect(Collectors.toList());
     }
 
@@ -438,9 +440,9 @@ public class DoctorController {
      */
     private String generateOutcomeID() {
         int count = 1;
-        String uniqueID = "R" + String.format("%02d", outcomeDataManager.getAllOutcomes().size() + 1);
+        String uniqueID = "O" + String.format("%02d", outcomeDataManager.getAllOutcomes().size() + 1);
         while (outcomeDataManager.getOutcomeByID(uniqueID) != null) {
-            uniqueID = "R" + String.format("%02d", count);
+            uniqueID = "O" + String.format("%02d", count);
             count++;
         }
         return uniqueID;
@@ -754,60 +756,42 @@ public class DoctorController {
         }
     }
 
-    //------------------------------------------Funtion 5-specific methods-------------------------------------------------
     /**
-     * Updates a slot and appointment record.
+     * Creates a new prescription for a medication.
      *
-     * @param accept If true, sets slot status to "BOOKED" and appointment to
-     * "CONFIRMED"; otherwise, sets slot to "REMOVED" and appointment to
-     * "CANCELED"
-     * @param appointment Appointment object to update
-     * @param slot Slot object to update
-     * @return true if update was successful; otherwise, return false.
+     * @param appointmentID The appointment ID this prescription belongs to
+     * @param medicationID The medication being prescribed
+     * @param quantity Quantity of medication to prescribe
+     * @param notes Instructions for taking the medication
+     * @return true if prescription was created successfully; otherwise false
      */
-    public boolean manageAppointment(Boolean accept, Appointment appointment, Slot slot) {
+    public Boolean createPrescription(String appointmentID, String medicationID, int quantity, String notes) {
         try {
-            if (accept) {
-                slot.setStatus(Slot.SlotStatus.BOOKED);
-                appointment.setStatus(Appointment.AppointmentStatus.CONFIRMED);
-
-            } else {
-                slot.setStatus(Slot.SlotStatus.REMOVED);
-                appointment.setStatus(Appointment.AppointmentStatus.CANCELED);
-            }
-            slotDataManager.updateSlot(slot);
-            appointmentDataManager.updateAppointment(appointment);
+            String prescriptionID = generatePrescriptionID();
+            Prescription newPrescription = new Prescription(
+                prescriptionID, 
+                appointmentID, 
+                medicationID, 
+                quantity, 
+                Prescription.PrescriptionStatus.PENDING, 
+                notes
+            );
+            prescriptionDataManager.addPrescription(newPrescription);
             return true;
         } catch (IllegalArgumentException e) {
-            System.err.println("Error managing appointment: " + e.getMessage());
+            System.err.println("Error creating prescription: " + e.getMessage());
             return false;
         }
     }
 
-    //------------------------------------------Funtion 6-specific methods-------------------------------------------------
-    //NIL
-    //------------------------------------------Funtion 7 & 8 methods-------------------------------------------------
     /**
-     * Adds new prescription.
+     * Retrieves a medication by its ID.
      *
-     * @param appointmentID The appointment ID linked to this prescription
-     * @param medicationID The medication ID used to prescribe medication
-     * @param quantity Quantity of medication prescribed
-     * @param notes Prescription notes, e.g. take 1 pill in the morning after
-     * meal
-     * @return true if addition was successful; otherwise, return false.
+     * @param medicationID The ID of the medication to retrieve
+     * @return The Medication object if found, null otherwise
      */
-    //String prescriptionID, String appointmentID, String medicationID, int quantity, PrescriptionStatus status, String notes
-    public Boolean addPrescription(String appointmentID, String medicationID, int quantity, String notes) {
-        try {
-            String prescriptionID = generatePrescriptionID();
-            Prescription newPrescription = new Prescription(prescriptionID, appointmentID, medicationID, quantity, Prescription.PrescriptionStatus.PENDING, notes);
-            prescriptionDataManager.addPrescription(newPrescription);
-            return true;
-        } catch (IllegalArgumentException e) {
-            System.err.println("Error adding prescription: " + e.getMessage());
-            return false;
-        }
+    public Medication getMedicationByID(String medicationID) {
+        return medicationDataManager.getMedicationByID(medicationID);
     }
 
     /**
@@ -955,5 +939,60 @@ public class DoctorController {
         return slots; // Return the sorted list
     }
 
-    //----------------------------------------------------------------------------------------------------
+    /**
+     * Retrieves pending appointments for the current doctor.
+     *
+     * @return List of appointments with REQUESTED status for the current doctor
+     */
+    public List<Appointment> getPendingAppointmentsForDoctor() {
+        Doctor currentDoctor = (Doctor) authController.getCurrentUser();
+        return appointmentDataManager.getFilteredAppointments(Map.of(
+                "doctorID", currentDoctor.getUserID()
+        )).stream()
+        .filter(appointment -> appointment.getStatus() == Appointment.AppointmentStatus.REQUESTED)
+        .collect(Collectors.toList());
+    }
+
+    /**
+     * Retrieves confirmed appointments for the current doctor.
+     *
+     * @return List of appointments with CONFIRMED status for the current doctor
+     */
+    public List<Appointment> getConfirmedAppointmentsForDoctor() {
+        Doctor currentDoctor = (Doctor) authController.getCurrentUser();
+        return appointmentDataManager.getFilteredAppointments(Map.of(
+                "doctorID", currentDoctor.getUserID()
+        )).stream()
+        .filter(appointment -> appointment.getStatus() == Appointment.AppointmentStatus.CONFIRMED)
+        .collect(Collectors.toList());
+    }
+
+    /**
+     * Updates an appointment and its associated slot status.
+     *
+     * @param accept If true, sets appointment to CONFIRMED and slot to BOOKED; 
+     *               if false, sets appointment to CANCELLED and slot to REMOVED
+     * @param appointment Appointment object to update
+     * @param slot Slot object to update
+     * @return true if update was successful; otherwise, return false
+     */
+    public boolean manageAppointment(Boolean accept, Appointment appointment, Slot slot) {
+        try {
+            if (accept) {
+                appointment.setStatus(Appointment.AppointmentStatus.CONFIRMED);
+                slot.setStatus(Slot.SlotStatus.BOOKED);
+            } else {
+                appointment.setStatus(Appointment.AppointmentStatus.CANCELLED);
+                slot.setStatus(Slot.SlotStatus.REMOVED);
+            }
+            
+            appointmentDataManager.updateAppointment(appointment);
+            slotDataManager.updateSlot(slot);
+            return true;
+        } catch (IllegalArgumentException e) {
+            System.err.println("Error managing appointment: " + e.getMessage());
+            return false;
+        }
+    }
+
 }

@@ -19,6 +19,8 @@ public class AdministratorController {
     private MedicationDataManager medicationDataManager;
     private RequestDataManager requestDataManager;
     private AuthenticationController authController;
+    private PrescriptionDataManager prescriptionDataManager;
+    private SlotDataManager slotDataManager;
 
     /**
      * Constructor for AdministratorController.
@@ -28,16 +30,20 @@ public class AdministratorController {
      * @param medicationDataManager The MedicationDataManager instance to manage medication data.
      * @param requestDataManager The RequestDataManager instance to manage replenishment request data.
      * @param authController The AuthenticationController instance to manage authentication.
+     * @param prescriptionDataManager The PrescriptionDataManager instance to manage prescription data.
      */
     public AdministratorController(UserDataManager userDataManager, AppointmentDataManager appointmentDataManager, 
                                    OutcomeDataManager outcomeDataManager, MedicationDataManager medicationDataManager,
-                                   RequestDataManager requestDataManager, AuthenticationController authController) {
+                                   RequestDataManager requestDataManager, AuthenticationController authController,
+                                   PrescriptionDataManager prescriptionDataManager, SlotDataManager slotDataManager) {
         this.userDataManager = userDataManager;
         this.appointmentDataManager = appointmentDataManager;
         this.outcomeDataManager = outcomeDataManager;
         this.medicationDataManager = medicationDataManager;
         this.requestDataManager = requestDataManager;
         this.authController = authController;
+        this.prescriptionDataManager = prescriptionDataManager;
+        this.slotDataManager = slotDataManager;
     }
 
     /**
@@ -254,6 +260,15 @@ public class AdministratorController {
     }
 
     /**
+     * Retrieves a prescription by its ID.
+     * @param prescriptionID The ID of the prescription to retrieve
+     * @return The Prescription object if found, null otherwise
+     */
+    public Prescription getPrescriptionByID(String prescriptionID) {
+        return prescriptionDataManager.getPrescriptionByID(prescriptionID);
+    }
+
+    /**
      * InventoryException extends Exception to handle exceptions related to inventory.
      */
     public class InventoryException extends Exception {
@@ -264,5 +279,14 @@ public class AdministratorController {
         public InventoryException(String message, Throwable cause) {
             super(message, cause);
         }
+    }
+
+    /**
+     * Retrieves a slot by its ID
+     * @param slotID The ID of the slot to retrieve
+     * @return The Slot object if found, null otherwise
+     */
+    public Slot getSlotByID(String slotID) {
+        return slotDataManager.getSlotByID(slotID);
     }
 }
